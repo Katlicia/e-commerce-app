@@ -7,4 +7,5 @@ backend/.env
 frontend/node_modules
 frontend/package-lock.json
 
+# ide
 .vscode/
