@@ -1,10 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./config/db');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
 dotenv.config();
-const authRoutes =  require('./routes/authRoutes')
-const userRoutes =  require('./routes/userRoutes')
+const authRoutes =  require('./routes/authRoutes');
+const userRoutes =  require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
+const cloudinary = require('cloudinary').v2;
+
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env_CLOUDINARY_SECRET_KEY
+})
 
 const app = express();
 
@@ -16,8 +24,9 @@ app.use(express.json());
 
 db();
 
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/', authRoutes);
+app.use('/', userRoutes);
+app.use('/', productRoutes);
 
 app.get('/', (req, res) => {
     res.send("API working.");
