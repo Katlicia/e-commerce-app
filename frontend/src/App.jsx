@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import axios from "axios";
 import { useEffect } from "react";
+import Home from "./components/Home.jsx";
 
 function App() {
   const [message, setMessage] = useState("");
@@ -24,6 +25,7 @@ function App() {
     <div>
       <h1>App</h1>
       <p>{message}</p>
+      <Home />
     </div>
   );
 }
