@@ -1,32 +1,20 @@
-import { useState } from "react";
 import "./App.css";
-import axios from "axios";
-import { useEffect } from "react";
 import Home from "./components/Home.jsx";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Header from "./layout/Header.jsx";
+import Footer from "./layout/Footer.jsx";
+import Topbar from "./components/Topbar.jsx";
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const fetchMessage = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/message");
-        setMessage(response.data.message);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchMessage();
-  }, []);
-
-  console.log(message);
-
   return (
-    <div>
-      <h1>App</h1>
-      <p>{message}</p>
-      <Home />
-    </div>
+    <BrowserRouter>
+      <Topbar/>
+      <Header />
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
+      <Footer />
+    </BrowserRouter>
   );
 }
 
