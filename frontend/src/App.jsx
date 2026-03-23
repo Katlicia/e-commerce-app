@@ -6,6 +6,9 @@ import Header from "./layout/Header.jsx";
 import Footer from "./layout/Footer.jsx";
 import Topbar from "./components/Topbar.jsx";
 import Carousel from "./components/Carousel.jsx";
+import Featured from "./components/Featured.jsx";
+import Chances from "./components/Chances.jsx";
+import ProductCard from "./components/ProductCard.jsx";
 
 function App() {
   return (
@@ -13,6 +16,8 @@ function App() {
       <Topbar />
       <Header />
       <Carousel />
+      <Featured />
+      <Chances />
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
