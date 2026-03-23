@@ -1,22 +1,28 @@
 import { CiHeart, CiSearch, CiShoppingCart, CiUser } from "react-icons/ci";
 import "../styles/Header.css";
-import "bootstrap/dist/css/bootstrap.css";
 import profileIcon from "../assets/profile-icon.svg";
 import shoppingCartIcon from "../assets/shopping-cart-icon.svg";
+import shoppingIcon from "../assets/shopping_1.svg";
+import messengerIcon from "../assets/messenger_1.svg";
+import presentIcon from "../assets/present_1.svg";
 
 const categories = [
-  "Gida Mutfak",
-  "Kagit Urunleri",
-  "Ofis Kirtasiye",
-  "Temizlik Urunleri",
-  "Cok Al Az Ode",
-  "Listeli Urunler",
+  "Gıda Mutfak",
+  "Kağıt Ürünleri",
+  "Ofis Kırtasiye",
+  "Temizlik Ürünleri",
+  "Çok Al Az Öde",
+  "Listeli Ürünler",
 ];
 
 const featuredLinks = [
-  { label: "Kampanyalar", colorClass: "header-link-blue", icon: "🎁" },
-  { label: "Ayni Urunleri", colorClass: "header-link-orange", icon: "⚡" },
-  { label: "Hemen Al", colorClass: "header-link-green", icon: "🧺" },
+  { label: "Kampanyalar", colorClass: "header-link-blue", icon: presentIcon },
+  {
+    label: "Ayın Ürünleri",
+    colorClass: "header-link-orange",
+    icon: messengerIcon,
+  },
+  { label: "Hemen Al", colorClass: "header-link-green", icon: shoppingIcon },
 ];
 
 function Header() {
@@ -24,7 +30,7 @@ function Header() {
     <header className="site-header">
       <div className="container">
         <div className="header-main d-flex align-items-center gap-3 gap-lg-4 py-3 flex-wrap flex-lg-nowrap">
-          <form className="header-search order-2 order-lg-1 flex-grow-1 w-100 w-lg-auto">
+          <form className="header-search flex-grow-1 w-100 w-lg-auto">
             <input
               className="header-search-input"
               type="text"
@@ -35,7 +41,7 @@ function Header() {
             </button>
           </form>
 
-          <div className="header-actions order-1 order-lg-2 ms-lg-auto">
+          <div className="header-actions ms-lg-auto">
             <a className="header-action" href="#0">
               <img
                 src={profileIcon}
@@ -99,7 +105,7 @@ function Header() {
                   className={`header-nav-link ${item.colorClass}`}
                   href="#0"
                 >
-                  <span>{item.icon}</span>
+                  <img style={{ paddingBottom: "3px" }} src={item.icon} />
                   {item.label}
                 </a>
               ))}
