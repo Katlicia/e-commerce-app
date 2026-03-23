@@ -9,6 +9,7 @@ import Carousel from "./components/Carousel.jsx";
 import Featured from "./components/Featured.jsx";
 import Chances from "./components/Chances.jsx";
 import ProductCard from "./components/ProductCard.jsx";
+import ProductList from "./components/ProductList.jsx";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Carousel />
       <Featured />
       <Chances />
+      <ProductList />
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
