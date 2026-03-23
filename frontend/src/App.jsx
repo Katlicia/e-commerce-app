@@ -10,6 +10,10 @@ import Featured from "./components/Featured.jsx";
 import Chances from "./components/Chances.jsx";
 import ProductList from "./components/ProductList.jsx";
 import HeaderLinks from "./components/HeaderLinks.jsx";
+import NewDeals from "./components/NewDeals.jsx";
+import AdBanners from "./components/AdBanners.jsx";
+import SuggestedProducts from "./components/SuggestedProducts.jsx";
+import Brands from "./components/Brands.jsx";
 
 function App() {
   return (
@@ -21,6 +25,12 @@ function App() {
       <Featured />
       <Chances />
       <ProductList />
+      <NewDeals />
+      <ProductList />
+      <AdBanners />
+      <SuggestedProducts />
+      <ProductList />
+      <Brands />
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
