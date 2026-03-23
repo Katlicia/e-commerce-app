@@ -1,0 +1,16 @@
+@media (max-width: 992px) {
+  .banner-list {
+    overflow-x: auto;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 16px;
+    padding-bottom: 4px;
+  }
+}
+
+@media (min-width: 992px) {
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}

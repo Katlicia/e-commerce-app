@@ -11,24 +11,26 @@
   padding: 0;
 }
 
-.product-arrow-left  { left: -28px; }
-.product-arrow-right { right: -28px; }
+.product-arrow-left {
+  left: -28px;
+}
+.product-arrow-right {
+  right: -28px;
+}
 
 @media (min-width: 992px) {
   .col-lg-5-custom {
     width: 20%;
+  }
+  .product-row::-webkit-scrollbar {
+    display: none;
   }
 }
 
 .product-row {
   flex-wrap: nowrap !important;
   overflow-x: auto;
-  scrollbar-width: none;
   padding-bottom: 4px;
-}
-
-.product-row::-webkit-scrollbar {
-  display: none;
 }
 
 .product-row .col-lg-5-custom {

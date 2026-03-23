@@ -1,0 +1,13 @@
+.brand-list {
+  scrollbar-width: none;
+}
+
+.brand-list::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 992px) {
+  .desktop-gap {
+    gap: 40px;
+  }
+}
