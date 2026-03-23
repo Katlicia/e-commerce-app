@@ -2,12 +2,12 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/Carousel.css";
-import icerikFoto from "../assets/icerik.png";
-import bicLogo from "../assets/bic-logo.png";
-import dogusLogo from "../assets/dogus-logo.png";
-import nestleLogo from "../assets/nestle-logo.png";
-import selpakLogo from "../assets/selpak-logo.png";
-import sleepyLogo from "../assets/sleepy-logo.png";
+import icerikFoto from "../assets/Carousel/icerik.png";
+import bicLogo from "../assets/Carousel/bic-logo.png";
+import dogusLogo from "../assets/Carousel/dogus-logo.png";
+import nestleLogo from "../assets/Carousel/nestle-logo.png";
+import selpakLogo from "../assets/Carousel/selpak-logo.png";
+import sleepyLogo from "../assets/Carousel/sleepy-logo.png";
 
 function Carousel() {
   var settings = {
