@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import "../styles/Chances.css";
 
-const TARGET = new Date(Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000);
+const TARGET = new Date(
+  Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000,
+);
 
 function getTimeLeft() {
   const diff = Math.max(0, TARGET - Date.now());
@@ -27,12 +29,14 @@ function Chances() {
   ];
 
   return (
-    <div className="chances-bar container d-flex justify-content-between align-items-center">
+    <div className="chances-bar container d-flex justify-content-between align-items-center px-2">
       <h2 className="chances-title">Kaçırılmayacak Fırsatlar</h2>
       <div className="chances-timer">
         {units.map((u) => (
           <div key={u.label} className="chances-box">
-            <span className="chances-value">{String(u.value).padStart(2, "0")}</span>
+            <span className="chances-value">
+              {String(u.value).padStart(2, "0")}
+            </span>
             <span className="chances-label">{u.label}</span>
           </div>
         ))}
