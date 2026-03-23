@@ -9,6 +9,7 @@ import nestleLogo from "../assets/Carousel/nestle-logo.png";
 import selpakLogo from "../assets/Carousel/selpak-logo.png";
 import sleepyLogo from "../assets/Carousel/sleepy-logo.png";
 
+// FIX MOBILE VIEW CAROUSEL WITH STICKY HEADER
 function Carousel() {
   var settings = {
     dots: false,
