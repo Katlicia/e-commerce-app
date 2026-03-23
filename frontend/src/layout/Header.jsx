@@ -1,10 +1,10 @@
-import { CiHeart, CiSearch, CiShoppingCart, CiUser } from "react-icons/ci";
+import { CiHeart, CiSearch } from "react-icons/ci";
 import "../styles/Header.css";
-import profileIcon from "../assets/profile-icon.svg";
-import shoppingCartIcon from "../assets/shopping-cart-icon.svg";
-import shoppingIcon from "../assets/shopping_1.svg";
-import messengerIcon from "../assets/messenger_1.svg";
-import presentIcon from "../assets/present_1.svg";
+import profileIcon from "../assets/Header/profile-icon.svg";
+import shoppingCartIcon from "../assets/Header/shopping-cart-icon.svg";
+import shoppingIcon from "../assets/Links/shopping_1.svg";
+import messengerIcon from "../assets/Links/messenger_1.svg";
+import presentIcon from "../assets/Links/present_1.svg";
 
 const categories = [
   "Gıda Mutfak",
@@ -34,7 +34,7 @@ function Header() {
             <input
               className="header-search-input"
               type="text"
-              placeholder="Urun, marka veya kategorilerde ara"
+              placeholder="Ürün, marka veya kategorilerde ara"
             />
             <button className="header-search-button" type="button">
               <CiSearch style={{ fontSize: "35px" }} />
@@ -98,7 +98,10 @@ function Header() {
               ))}
             </nav>
 
-            <div className="header-featured-links">
+            <div
+              className="header-featured-links"
+              style={{ borderLeft: "1px solid #eef1f3", paddingLeft: "15px" }}
+            >
               {featuredLinks.map((item) => (
                 <a
                   key={item.label}
