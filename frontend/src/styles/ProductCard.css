@@ -1,0 +1,24 @@
+.discount-tag-blue {
+  background: #e0f0ff;
+  color: #1a7fd4;
+}
+
+.discount-tag-green {
+  background: #e0f5e9;
+  color: #2a9d4e;
+}
+
+.mute-string {
+  color: #a5a5a5;
+  font-size: 0.9rem;
+}
+
+.card-button {
+  background-color: #ff7700;
+  color: white;
+}
+
+.card-button:hover {
+  background-color: #be5900;
+  color: white;
+}
