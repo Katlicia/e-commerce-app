@@ -1,0 +1,32 @@
+.carousel-container {
+  width: 100vw;
+  background: linear-gradient(180deg, #ffffff, #1cb7f4);
+}
+
+.logos {
+  gap: 16px;
+  padding: 24px 16px;
+}
+
+@media (max-width: 768px) {
+  .logos {
+    gap: 20px;
+    padding: 16px 12px;
+  }
+
+  .logos img {
+    max-height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logos {
+    gap: 12px;
+    padding: 12px 8px;
+    flex-wrap: wrap;
+  }
+
+  .logos img {
+    max-height: 22px;
+  }
+}
