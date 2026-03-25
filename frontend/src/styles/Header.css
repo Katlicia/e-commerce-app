@@ -257,3 +257,9 @@
     padding: 0 14px;
   }
 }
+
+@media (min-width: 1025px) {
+  .logo-width {
+    width: 300px;
+  }
+}
