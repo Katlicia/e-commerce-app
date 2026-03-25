@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const db = require('./config/db');
 const dotenv = require('dotenv');
 dotenv.config();
 const authRoutes =  require('./routes/authRoutes');
 const userRoutes =  require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -21,12 +23,14 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 db();
 
 app.use('/', authRoutes);
 app.use('/', userRoutes);
 app.use('/', productRoutes);
+app.use('/', categoryRoutes);
 
 app.get('/', (req, res) => {
     res.send("API working.");
