@@ -107,7 +107,8 @@ function getTimeLeft() {
   };
 }
 
-function ProductList({ title, showTimer }) {
+function ProductList({ title, settings = {} }) {
+  const { showTimer, banner } = settings;
   const rowRef = useRef(null);
   const [time, setTime] = useState(getTimeLeft());
 
@@ -156,9 +157,12 @@ function ProductList({ title, showTimer }) {
           <FaArrowAltCircleLeft />
         </button>
         <div className="row g-3 product-row" ref={rowRef}>
-          <div className="col-6 col-md-4 col-lg-5-custom">
-            <BannerCard />
-          </div>
+          {banner && (
+            <div className="col-6 col-md-4 col-lg-5-custom">
+              <BannerCard image={banner} />
+            </div>
+          )}
+
           {products.map((product) => (
             <div key={product.id} className="col-6 col-md-4 col-lg-5-custom">
               <ProductCard product={product} />
