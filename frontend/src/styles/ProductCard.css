@@ -16,9 +16,19 @@
 .card-button {
   background-color: #ff7700;
   color: white;
+  transition: transform 0.2s;
 }
 
 .card-button:hover {
   background-color: #be5900;
   color: white;
+  transform: scale(1.03);
+}
+
+.fav-icon {
+  transition: transform 0.2s;
+}
+
+.fav-icon:hover {
+  transform: scale(1.1);
 }

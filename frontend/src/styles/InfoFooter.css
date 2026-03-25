@@ -1,6 +1,7 @@
 .info-footer {
   padding: 40px 0;
   border-top: 1px solid #eef1f3;
+  position: relative;
 }
 
 .info-footer-logo {
@@ -80,8 +81,18 @@
   display: flex;
 }
 
+.bg-logo {
+  position: absolute;
+  top: 10%;
+  right: 25%;
+  z-index: -1;
+}
+
 @media (max-width: 768px) {
   .info-footer-phone {
     font-size: 22px;
+  }
+  .bg-logo {
+    display: none;
   }
 }
