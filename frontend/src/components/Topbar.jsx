@@ -1,12 +1,12 @@
-import "../styles/Topbar.css";
-import topbarImg from "../assets/topbar.png"
+import "../styles/TopBar.css";
+import topbarImg from "../assets/Banners/topbar.png";
 
-function Topbar() {
+function TopBar() {
   return (
     <div className="topbar">
-      <img src={topbarImg} alt="topbar"/>
+      <img src={topbarImg} alt="topbar" />
     </div>
-  )
+  );
 }
 
-export default Topbar;
+export default TopBar;
