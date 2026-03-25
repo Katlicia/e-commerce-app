@@ -79,7 +79,7 @@ const cartSlice = createSlice({
 
     removeFromFavourites: (state, action) => {
       const id = action.payload;
-      state.favourites = state.favourites.filter((item) => item._id !== id);
+      state.favourites = state.favourites.filter((item) => (item._id || item.id) !== id);
       localStorage.setItem("favourites", JSON.stringify(state.favourites));
     },
 
