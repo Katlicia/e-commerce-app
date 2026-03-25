@@ -49,14 +49,9 @@ function ProductCard({ product }) {
           src={favBadge}
           alt="favBadge"
           className="position-absolute"
-          style={{ top: 8, right: 8 }}
+          style={{ top: 8, right: 8, cursor: "pointer" }}
         />
-        <img
-          src={image}
-          alt={name}
-          className="card-img-top img-fluid"
-          style={{ borderBottom: "1px solid lightgrey" }}
-        />
+        <img src={image} alt={name} className="card-img-top img-fluid" />
         {discount && (
           <span
             className={`position-absolute px-2 rounded-2 discount-tag ${discount.startsWith("%") ? "discount-tag-green" : "discount-tag-blue"}`}
