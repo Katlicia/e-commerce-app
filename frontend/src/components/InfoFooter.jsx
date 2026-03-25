@@ -71,15 +71,13 @@ function InfoFooter() {
           ))}
 
           <div className="col-12 col-md-3 d-flex justify-content-center justify-content-md-start">
-            <div className="d-flex flex-column align-items-center gap-2">
-              <div className="d-flex gap-3 align-items-center">
-                <div className="d-flex flex-column gap-2">
-                  <img src={appStoreIcon} alt="App Store" className="info-footer-store-img" />
-                  <img src={googlePlayIcon} alt="Google Play" className="info-footer-store-img" />
-                </div>
-                <img src={qrCode} alt="QR Code" className="info-footer-qr" />
+            <div className="d-flex gap-3 align-items-center">
+              <div className="d-flex flex-column align-items-center gap-2">
+                <img src={appStoreIcon} alt="App Store" className="info-footer-store-img" />
+                <img src={encryptionLogo} alt="256 Bit SSL" className="info-footer-encryption" />
+                <img src={googlePlayIcon} alt="Google Play" className="info-footer-store-img" />
               </div>
-              <img src={encryptionLogo} alt="256 Bit SSL" className="info-footer-encryption" />
+              <img src={qrCode} alt="QR Code" className="info-footer-qr" />
             </div>
           </div>
 
