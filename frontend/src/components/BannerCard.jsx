@@ -1,10 +1,8 @@
-import banner from "../assets/banner.png";
-
-function BannerCard() {
+function BannerCard({ image }) {
   return (
     <div className="card h-100">
       <img
-        src={banner}
+        src={image}
         className="card-img img-fluid h-100"
         style={{ objectFit: "cover", cursor: "pointer" }}
       />
