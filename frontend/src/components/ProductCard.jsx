@@ -35,36 +35,37 @@ function ProductCard({ product }) {
   const badgeIcon = BADGES[badge];
 
   return (
-    <div className="card h-100 border rounded-3 p-2 position-relative">
-      {badgeIcon && (
+    <div className="card h-100 border rounded-3 p-2">
+      <div className="position-relative">
+        {badgeIcon && (
+          <img
+            src={badgeIcon}
+            alt={badge}
+            className="position-absolute"
+            style={{ top: 8, left: 8 }}
+          />
+        )}
         <img
-          src={badgeIcon}
-          alt={badge}
+          src={favBadge}
+          alt="favBadge"
           className="position-absolute"
-          style={{ top: 20, left: 10 }}
+          style={{ top: 8, right: 8 }}
         />
-      )}
-      <img
-        src={favBadge}
-        alt="favBadge"
-        className="position-absolute"
-        style={{ top: 20, right: 10 }}
-      />
-      <img
-        src={image}
-        alt={name}
-        className="card-img-top img-fluid"
-        style={{ borderBottom: "1px solid lightgrey" }}
-      />
-      {discount && (
-        // FIX ABSOLUTE POS
-        <span
-          className={`position-absolute px-2 rounded-2 discount-tag ${discount.startsWith("%") ? "discount-tag-green" : "discount-tag-blue"}`}
-          style={{ top: 200, left: 10 }}
-        >
-          {discount}
-        </span>
-      )}
+        <img
+          src={image}
+          alt={name}
+          className="card-img-top img-fluid"
+          style={{ borderBottom: "1px solid lightgrey" }}
+        />
+        {discount && (
+          <span
+            className={`position-absolute px-2 rounded-2 discount-tag ${discount.startsWith("%") ? "discount-tag-green" : "discount-tag-blue"}`}
+            style={{ bottom: 8, left: 8 }}
+          >
+            {discount}
+          </span>
+        )}
+      </div>
       <div className="card-body d-flex flex-column gap-2 p-0 mt-2">
         <div className="flex-grow-1">
           <p className="card-subtitle mute-string">Ürün Kodu: {code}</p>
