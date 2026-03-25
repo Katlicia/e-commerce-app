@@ -1,0 +1,9 @@
+.justify-footer {
+  justify-content: center;
+}
+
+@media (min-width: 992px) {
+  .justify-footer {
+    justify-content: space-between;
+  }
+}
