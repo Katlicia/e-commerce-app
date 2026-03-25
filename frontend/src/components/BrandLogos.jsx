@@ -10,7 +10,7 @@ import "../styles/BrandLogos.css";
 function BrandLogos() {
   return (
     <div className="container my-4">
-      <div className="row flex-nowrap overflow-x-auto brand-list g-3 desktop-gap">
+      <div className="row flex-nowrap overflow-x-auto brand-list g-3 desktop-gap mb-5">
         <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
           <img src={caykurLogo} className="img-fluid" />
         </div>

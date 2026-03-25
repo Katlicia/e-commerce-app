@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import ProductCard from "./ProductCard";
 import tempIcon from "../assets/temp.png";
-import banner from "../assets/banner.png";
 import "../styles/ProductList.css";
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
 import BannerCard from "./BannerCard";
