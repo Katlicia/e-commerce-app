@@ -1,7 +1,7 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.css";
 import Home from "./components/Home.jsx";
-import { BrowserRouter, Links, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Header from "./layout/Header.jsx";
 import Footer from "./layout/Footer.jsx";
 import Topbar from "./components/Topbar.jsx";
@@ -14,6 +14,8 @@ import NewDeals from "./components/NewDeals.jsx";
 import AdBanners from "./components/AdBanners.jsx";
 import SuggestedProducts from "./components/SuggestedProducts.jsx";
 import Brands from "./components/Brands.jsx";
+import PopularLinks from "./components/PopularLinks.jsx";
+import ReliabilitySection from "./components/ReliabilitySection.jsx";
 
 function App() {
   return (
@@ -31,6 +33,8 @@ function App() {
       <SuggestedProducts />
       <ProductList />
       <Brands />
+      <PopularLinks />
+      <ReliabilitySection />
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
