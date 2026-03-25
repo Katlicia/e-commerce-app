@@ -10,6 +10,7 @@ import logo from "../assets/Footer/logo.svg";
 function Header() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { favourites, cart, totalAmount } = useSelector((store) => store.cart);
 
   return (
     <header className="site-header sticky-top">
@@ -93,7 +94,7 @@ function Header() {
             )}
 
             <a className="header-action header-action-icon-only" href="#0">
-              <span className="header-heart-badge">2</span>
+              <span className="header-heart-badge">{favourites.length}</span>
               <CiHeart
                 style={{ fontSize: "40px" }}
                 className="header-action-icon"
@@ -101,20 +102,22 @@ function Header() {
             </a>
 
             <a className="header-cart" href="#0">
-              <span className="header-badge">2</span>
-              <img
-                src={shoppingCartIcon}
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  backgroundColor: "#F1F2F6",
-                  padding: "5px",
-                  borderRadius: "10px",
-                }}
-              />
+              <div className="position-relative">
+                <img
+                  src={shoppingCartIcon}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    backgroundColor: "#F1F2F6",
+                    padding: "5px",
+                    borderRadius: "10px",
+                  }}
+                />
+                <span className="header-badge">{cart.length}</span>
+              </div>
               <span className="header-action-text">
                 <small>Sepetiniz</small>
-                <strong>280.00tl</strong>
+                <strong>{totalAmount}₺</strong>
               </span>
             </a>
           </div>
