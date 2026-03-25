@@ -4,6 +4,7 @@ import appStoreIcon from "../assets/Footer/app-store.png";
 import googlePlayIcon from "../assets/Footer/google-play.png";
 import qrCode from "../assets/Footer/qr-code.png";
 import encryptionLogo from "../assets/Footer/256bit.png";
+import bgLogo from "../assets/Footer/bg-logo.png";
 import "../styles/InfoFooter.css";
 
 const sections = [
@@ -124,6 +125,7 @@ function InfoFooter() {
           </div>
         </div>
       </div>
+      <img src={bgLogo} className="bg-logo" />
     </div>
   );
 }
