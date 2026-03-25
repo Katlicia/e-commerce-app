@@ -28,9 +28,16 @@ function App() {
       <TopBar />
       <Header />
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
-        <Route path="/register" element={user ? <Navigate to="/" /> : <RegisterPage />} />
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/" /> : <LoginPage />}
+        />
+        <Route
+          path="/register"
+          element={user ? <Navigate to="/" /> : <RegisterPage />}
+        />
         <Route path="/" element={<Home />} />
+        <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
     </BrowserRouter>
