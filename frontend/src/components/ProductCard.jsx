@@ -7,6 +7,8 @@ import indirimBadge from "../assets/Products/indirim.svg";
 import favBadge from "../assets/Products/fav.svg";
 import { FaRegStar } from "react-icons/fa6";
 import { FaStar } from "react-icons/fa6";
+import { useDispatch } from "react-redux";
+import { addToCart, addToFavourites } from "../redux/cartSlice";
 
 const BADGES = {
   yeni: yeniBadge,
@@ -29,6 +31,8 @@ function ProductCard({ product }) {
     features,
   } = product;
 
+  const dispatch = useDispatch();
+
   const [inCart, setInCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
@@ -48,7 +52,8 @@ function ProductCard({ product }) {
         <img
           src={favBadge}
           alt="favBadge"
-          className="position-absolute"
+          className="position-absolute fav-icon"
+          onClick={() => dispatch(addToFavourites(product))}
           style={{ top: 8, right: 8, cursor: "pointer" }}
         />
         <img src={image} alt={name} className="card-img-top img-fluid" />
@@ -90,7 +95,12 @@ function ProductCard({ product }) {
             {price}₺
           </p>
         </div>
-        <button className="btn card-button w-100 mt-auto">Sepete Ekle</button>
+        <button
+          className="btn card-button w-100 mt-auto"
+          onClick={() => dispatch(addToCart(product))}
+        >
+          Sepete Ekle
+        </button>
       </div>
     </div>
   );
