@@ -12,10 +12,10 @@
 }
 
 .product-arrow-left {
-  left: -28px;
+  left: -35px;
 }
 .product-arrow-right {
-  right: -28px;
+  right: -35px;
 }
 
 @media (min-width: 992px) {

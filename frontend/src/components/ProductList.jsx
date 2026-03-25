@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import tempIcon from "../assets/temp.png";
 import "../styles/ProductList.css";
+import "../styles/Chances.css";
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
 import BannerCard from "./BannerCard";
 
@@ -93,8 +94,28 @@ const products = [
   },
 ];
 
-function ProductList() {
+const TARGET = new Date(
+  Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000,
+);
+
+function getTimeLeft() {
+  const diff = Math.max(0, TARGET - Date.now());
+  return {
+    saat: Math.floor(diff / 3600000),
+    dakika: Math.floor((diff % 3600000) / 60000),
+    saniye: Math.floor((diff % 60000) / 1000),
+  };
+}
+
+function ProductList({ title, showTimer }) {
   const rowRef = useRef(null);
+  const [time, setTime] = useState(getTimeLeft());
+
+  useEffect(() => {
+    if (!showTimer) return;
+    const id = setInterval(() => setTime(getTimeLeft()), 1000);
+    return () => clearInterval(id);
+  }, [showTimer]);
 
   function scrollLeft() {
     rowRef.current.scrollBy({ left: -600, behavior: "smooth" });
@@ -105,26 +126,52 @@ function ProductList() {
   }
 
   return (
-    <div className="container my-4 position-relative">
-      <button className="product-arrow product-arrow-left" onClick={scrollLeft}>
-        <FaArrowAltCircleLeft />
-      </button>
-      <div className="row g-3 product-row" ref={rowRef}>
-        <div className="col-6 col-md-4 col-lg-5-custom">
-          <BannerCard />
+    <div className="container my-4">
+      {title && (
+        <div className="chances-bar d-flex justify-content-between align-items-center px-2 mb-2">
+          <h2 className="chances-title">{title}</h2>
+          {showTimer && (
+            <div className="chances-timer">
+              {[
+                { value: time.saat, label: "Saat" },
+                { value: time.dakika, label: "Dakika" },
+                { value: time.saniye, label: "Saniye" },
+              ].map((u) => (
+                <div key={u.label} className="chances-box">
+                  <span className="chances-value">
+                    {String(u.value).padStart(2, "0")}
+                  </span>
+                  <span className="chances-label">{u.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        {products.map((product) => (
-          <div key={product.id} className="col-6 col-md-4 col-lg-5-custom">
-            <ProductCard product={product} />
+      )}
+      <div className="position-relative">
+        <button
+          className="product-arrow product-arrow-left"
+          onClick={scrollLeft}
+        >
+          <FaArrowAltCircleLeft />
+        </button>
+        <div className="row g-3 product-row" ref={rowRef}>
+          <div className="col-6 col-md-4 col-lg-5-custom">
+            <BannerCard />
           </div>
-        ))}
+          {products.map((product) => (
+            <div key={product.id} className="col-6 col-md-4 col-lg-5-custom">
+              <ProductCard product={product} />
+            </div>
+          ))}
+        </div>
+        <button
+          className="product-arrow product-arrow-right"
+          onClick={scrollRight}
+        >
+          <FaArrowAltCircleRight />
+        </button>
       </div>
-      <button
-        className="product-arrow product-arrow-right"
-        onClick={scrollRight}
-      >
-        <FaArrowAltCircleRight />
-      </button>
     </div>
   );
 }
