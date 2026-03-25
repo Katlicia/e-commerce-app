@@ -1,0 +1,38 @@
+@media (min-width: 768px) {
+  .hero-text-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .hero-text-wrapper::before,
+  .hero-text-wrapper::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #dee2e6;
+  }
+
+  .hero-text {
+    background: #f1f3f5;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: black;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-text {
+    display: none;
+  }
+}
+
+.popular-link {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
