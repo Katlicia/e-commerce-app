@@ -1,0 +1,16 @@
+.col-category {
+  flex: 0 0 33.33%;
+}
+
+@media (max-width: 992px) {
+  .col-category {
+    flex: 0 0 220px;
+  }
+}
+
+.category-section-all {
+  font-size: 13px;
+  font-weight: 600;
+  color: #515d66;
+  text-decoration: none;
+}
