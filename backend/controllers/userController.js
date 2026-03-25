@@ -8,7 +8,7 @@ exports.getUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
   if (!user) {
-    res.status(404).json({ message: "User not found." });
+    res.status(404).json({ message: "Kullanıcı bulunamadı" });
   }
   res.status(200).json(user);
 };
@@ -31,7 +31,7 @@ exports.updateUser = async (req, res) => {
     const updatedUser = await user.save();
     res.status(200).json(updatedUser);
   } else {
-    res.status(404).json({ message: "User not found." });
+    res.status(404).json({ message: "Kullanıcı bulunamadı" });
   }
 };
 
@@ -39,8 +39,8 @@ exports.deleteUser = async (req, res) => {
   const user = await User.findById(req.params.id);
   if (user) {
     await user.deleteOne();
-    res.status(200).json({ message: "User deleted." });
+    res.status(200).json({ message: "Kullanıcı silindi" });
   } else {
-    res.status(404).json({ message: "User not found." });
+    res.status(404).json({ message: "Kullanıcı bulunamadı" });
   }
 };
