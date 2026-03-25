@@ -27,9 +27,7 @@ const cartSlice = createSlice({
     addToCart: (state, action) => {
       const product = action.payload;
       const id = product._id || product.id;
-      const existing = state.cart.find(
-        (item) => (item._id || item.id) === id
-      );
+      const existing = state.cart.find((item) => (item._id || item.id) === id);
       if (existing) {
         existing.quantity += 1;
       } else {
@@ -37,19 +35,32 @@ const cartSlice = createSlice({
       }
       state.totalAmount = state.cart.reduce(
         (sum, item) => sum + parseFloat(item.price) * item.quantity,
-        0
+        0,
       );
       localStorage.setItem("cart", JSON.stringify(state.cart));
     },
 
     removeFromCart: (state, action) => {
       const id = action.payload;
-      state.cart = state.cart.filter(
-        (item) => (item._id || item.id) !== id
-      );
+      state.cart = state.cart.filter((item) => (item._id || item.id) !== id);
       state.totalAmount = state.cart.reduce(
         (sum, item) => sum + parseFloat(item.price) * item.quantity,
-        0
+        0,
+      );
+      localStorage.setItem("cart", JSON.stringify(state.cart));
+    },
+
+    decreaseCart: (state, action) => {
+      const id = action.payload;
+      const existing = state.cart.find((item) => (item._id || item.id) === id);
+      if (existing && existing.quantity > 1) {
+        existing.quantity -= 1;
+      } else {
+        state.cart = state.cart.filter((item) => (item._id || item.id) !== id);
+      }
+      state.totalAmount = state.cart.reduce(
+        (sum, item) => sum + parseFloat(item.price) * item.quantity,
+        0,
       );
       localStorage.setItem("cart", JSON.stringify(state.cart));
     },
@@ -58,7 +69,7 @@ const cartSlice = createSlice({
       const product = action.payload;
       const id = product._id || product.id;
       const already = state.favourites.find(
-        (item) => (item._id || item.id) === id
+        (item) => (item._id || item.id) === id,
       );
       if (!already) {
         state.favourites.push(product);
@@ -83,6 +94,7 @@ const cartSlice = createSlice({
 
 export const {
   addToCart,
+  decreaseCart,
   removeFromCart,
   addToFavourites,
   removeFromFavourites,
