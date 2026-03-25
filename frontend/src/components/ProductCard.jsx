@@ -1,14 +1,23 @@
-import { useState } from "react";
 import "../styles/ProductCard.css";
 import yeniBadge from "../assets/Products/yeni.svg";
 import firsatiBadge from "../assets/Products/gunun_firsati.svg";
 import ensatanBadge from "../assets/Products/en_cok_satan.svg";
 import indirimBadge from "../assets/Products/indirim.svg";
-import favBadge from "../assets/Products/fav.svg";
-import { FaRegStar } from "react-icons/fa6";
-import { FaStar } from "react-icons/fa6";
-import { useDispatch } from "react-redux";
-import { addToCart, addToFavourites } from "../redux/cartSlice";
+import {
+  FaRegStar,
+  FaStar,
+  FaHeart,
+  FaRegHeart,
+  FaTrash,
+} from "react-icons/fa6";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToCart,
+  decreaseCart,
+  removeFromCart,
+  addToFavourites,
+  removeFromFavourites,
+} from "../redux/cartSlice";
 
 const BADGES = {
   yeni: yeniBadge,
@@ -18,23 +27,17 @@ const BADGES = {
 };
 
 function ProductCard({ product }) {
-  const {
-    image,
-    code,
-    name,
-    rating,
-    reviewCount,
-    price,
-    oldPrice,
-    badge,
-    discount,
-    features,
-  } = product;
+  const { image, code, name, rating, reviewCount, price, badge, discount } =
+    product;
 
   const dispatch = useDispatch();
+  const { cart, favourites } = useSelector((state) => state.cart);
 
-  const [inCart, setInCart] = useState(false);
-  const [quantity, setQuantity] = useState(1);
+  const productId = product._id || product.id;
+  const cartItem = cart.find((item) => (item._id || item.id) === productId);
+  const isFavourite = favourites.some(
+    (item) => (item._id || item.id) === productId,
+  );
 
   const badgeIcon = BADGES[badge];
 
@@ -49,13 +52,27 @@ function ProductCard({ product }) {
             style={{ top: 8, left: 8 }}
           />
         )}
-        <img
-          src={favBadge}
-          alt="favBadge"
+        <span
           className="position-absolute fav-icon"
-          onClick={() => dispatch(addToFavourites(product))}
-          style={{ top: 8, right: 8, cursor: "pointer" }}
-        />
+          onClick={() =>
+            isFavourite
+              ? dispatch(removeFromFavourites(productId))
+              : dispatch(addToFavourites(product))
+          }
+          style={{
+            top: 8,
+            right: 8,
+            cursor: "pointer",
+            fontSize: "20px",
+            color: isFavourite ? "#ff7700" : "#adb5bd",
+          }}
+        >
+          {isFavourite ? (
+            <FaHeart />
+          ) : (
+            <FaRegHeart className="fav-icon-color" />
+          )}
+        </span>
         <img src={image} alt={name} className="card-img-top img-fluid" />
         {discount && (
           <span
@@ -79,9 +96,7 @@ function ProductCard({ product }) {
                 stars.push(
                   <span
                     key={i}
-                    style={{
-                      color: i < rating ? "#ff7700" : "#dee2e6",
-                    }}
+                    style={{ color: i < rating ? "#ff7700" : "#dee2e6" }}
                   >
                     {i < rating ? <FaStar /> : <FaRegStar />}
                   </span>,
@@ -95,12 +110,43 @@ function ProductCard({ product }) {
             {price}₺
           </p>
         </div>
-        <button
-          className="btn card-button w-100 mt-auto"
-          onClick={() => dispatch(addToCart(product))}
-        >
-          Sepete Ekle
-        </button>
+        {cartItem ? (
+          <div
+            className="d-flex align-items-center justify-content-between card-button rounded-2 px-1"
+            style={{ height: "38px" }}
+          >
+            <button
+              className="btn p-0 px-2 h-100"
+              style={{ color: "inherit" }}
+              onClick={() =>
+                cartItem.quantity === 1
+                  ? dispatch(removeFromCart(productId))
+                  : dispatch(decreaseCart(productId))
+              }
+            >
+              {cartItem.quantity === 1 ? (
+                <FaTrash />
+              ) : (
+                <span style={{ fontSize: "20px" }}>−</span>
+              )}
+            </button>
+            <span className="fw-semibold">{cartItem.quantity}</span>
+            <button
+              className="btn p-0 px-2 h-100"
+              style={{ fontSize: "20px", color: "inherit" }}
+              onClick={() => dispatch(addToCart(product))}
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <button
+            className="btn card-button w-100 mt-auto"
+            onClick={() => dispatch(addToCart(product))}
+          >
+            Sepete Ekle
+          </button>
+        )}
       </div>
     </div>
   );
