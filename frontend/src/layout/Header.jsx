@@ -5,7 +5,7 @@ import shoppingCartIcon from "../assets/Header/shopping-cart-icon.svg";
 
 function Header() {
   return (
-    <header className="site-header fixed-top">
+    <header className="site-header sticky-top">
       <div className="container">
         <div className="header-main d-flex align-items-center gap-3 gap-lg-4 py-3 flex-wrap flex-lg-nowrap">
           <form className="header-search flex-grow-1 w-100 w-lg-auto">
