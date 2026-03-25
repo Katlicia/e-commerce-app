@@ -8,7 +8,7 @@ exports.getProducts = async (req, res) => {
     .search()
     .filter()
     .pagination(resultPerPage);
-  const products = await productFilter.query;
+  const products = await productFilter.query.populate("category", "name slug");
 
   res.json(products);
 };
@@ -19,7 +19,10 @@ exports.adminProducts = async (req, res) => {
 };
 
 exports.getProductById = async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).populate(
+    "category",
+    "name slug",
+  );
 
   res.json(product);
 };
@@ -62,9 +65,9 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await product.remove();
-    res.json({ message: "Product deleted" });
+    res.json({ message: "Ürün silindi" });
   } else {
-    res.status(404).json({ message: "Product not found." });
+    res.status(404).json({ message: "Ürün bulunamadı" });
   }
 };
 
@@ -102,7 +105,7 @@ exports.updateProduct = async (req, res) => {
 
   req.body.images = allImage;
 
-  res.json({ message: "Product edited." });
+  res.json({ message: "Ürün güncellendi" });
 };
 
 exports.createReview = async (req, res) => {
