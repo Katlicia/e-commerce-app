@@ -4,6 +4,7 @@ import "../styles/ProductList.css";
 import "../styles/Chances.css";
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
 import BannerCard from "./BannerCard";
+import Loading from "./Loading";
 import { useDispatch, useSelector } from "react-redux";
 import { getProducts } from "../redux/productSlice";
 
@@ -164,19 +165,22 @@ function ProductList({ title, settings = {} }) {
         >
           <FaArrowAltCircleLeft />
         </button>
-        <div className="row g-3 product-row" ref={rowRef}>
-          {banner && (
-            <div className="col-6 col-md-4 col-lg-5-custom">
-              <BannerCard image={banner} />
-            </div>
-          )}
-
-          {products.map((product) => (
-            <div key={product._id} className="col-6 col-md-4 col-lg-5-custom">
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <Loading />
+        ) : (
+          <div className="row g-3 product-row" ref={rowRef}>
+            {banner && (
+              <div className="col-6 col-md-4 col-lg-5-custom">
+                <BannerCard image={banner} />
+              </div>
+            )}
+            {products.map((product) => (
+              <div key={product._id} className="col-6 col-md-4 col-lg-5-custom">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        )}
         <button
           className="product-arrow product-arrow-right"
           onClick={scrollRight}
