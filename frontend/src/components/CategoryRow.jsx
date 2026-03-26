@@ -1,69 +1,69 @@
 import ProductCard from "./ProductCard";
 import BannerCard from "./BannerCard";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import "../styles/ProductList.css";
 import "../styles/CategoryRow.css";
 import okulBanner from "../assets/Banners/okul.png";
 import arabaBanner from "../assets/Banners/araba.png";
+import { useDispatch, useSelector } from "react-redux";
+import { getProducts } from "../redux/productSlice";
 
-import tempIcon from "../assets/temp.png";
-const products = [
-  {
-    id: 1,
-    name: "Faber Castell Sulu Boya 21 Renk Büyük Boy",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 123123,
-    rating: 4,
-    reviewCount: 68,
-  },
-  {
-    id: 2,
-    name: "Fatih Pastel Boya 12 Renk King Size",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 123124,
-    rating: 5,
-    reviewCount: 88,
-  },
-  {
-    id: 3,
-    name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 123125,
-    rating: 4,
-    reviewCount: 68,
-  },
-  {
-    id: 4,
-    name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 123126,
-    rating: 5,
-    reviewCount: 88,
-  },
-];
+// const products = [
+//   {
+//     id: 1,
+//     name: "Faber Castell Sulu Boya 21 Renk Büyük Boy",
+//     price: "128.00",
+//     oldPrice: "148.00",
+//     image: tempIcon,
+//     badge: null,
+//     code: 123123,
+//     rating: 4,
+//     reviewCount: 68,
+//   },
+//   {
+//     id: 2,
+//     name: "Fatih Pastel Boya 12 Renk King Size",
+//     price: "128.00",
+//     oldPrice: "148.00",
+//     image: tempIcon,
+//     badge: null,
+//     code: 123124,
+//     rating: 5,
+//     reviewCount: 88,
+//   },
+//   {
+//     id: 3,
+//     name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
+//     price: "128.00",
+//     oldPrice: "148.00",
+//     image: tempIcon,
+//     badge: null,
+//     code: 123125,
+//     rating: 4,
+//     reviewCount: 68,
+//   },
+//   {
+//     id: 4,
+//     name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
+//     price: "128.00",
+//     oldPrice: "148.00",
+//     image: tempIcon,
+//     badge: null,
+//     code: 123126,
+//     rating: 5,
+//     reviewCount: 88,
+//   },
+// ];
 
 function CategorySection({ title, image }) {
   const rowRef = useRef(null);
 
-  function scrollLeft() {
-    rowRef.current.scrollBy({ left: -400, behavior: "smooth" });
-  }
+  const dispatch = useDispatch();
+  const { products, loading } = useSelector((state) => state.product);
 
-  function scrollRight() {
-    rowRef.current.scrollBy({ left: 400, behavior: "smooth" });
-  }
+  useEffect(() => {
+    dispatch(getProducts());
+  }, [dispatch]);
 
   return (
     <div>
@@ -79,7 +79,7 @@ function CategorySection({ title, image }) {
             <BannerCard image={image} />
           </div>
           {products.map((product) => (
-            <div key={product.id} className="col-category">
+            <div key={product._id} className="col-category">
               <ProductCard product={product} />
             </div>
           ))}
