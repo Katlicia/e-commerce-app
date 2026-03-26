@@ -2,10 +2,14 @@ import ReliabilitySection from "../components/ReliabilitySection";
 import footerIcon from "../assets/Footer/footer.png";
 import "../styles/Footer.css";
 import InfoFooter from "../components/InfoFooter";
+import Brands from "../components/Brands";
+import PopularLinks from "../components/PopularLinks";
 
 function Footer() {
   return (
     <div>
+      <Brands />
+      <PopularLinks />
       <ReliabilitySection />
       <InfoFooter />
       <div className="border-top py-3">
