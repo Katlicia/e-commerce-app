@@ -1,3 +1,7 @@
+:root {
+  --orange-btn: #ff7700;
+}
+
 .discount-tag-blue {
   background: #e0f0ff;
   color: #1a7fd4;
@@ -14,13 +18,13 @@
 }
 
 .card-button {
-  background-color: #ff7700;
+  background-color: var(--orange-btn);
   color: white;
   transition: transform 0.2s;
 }
 
 .card-button:hover {
-  background-color: #be5900;
+  background-color: #df6902;
   color: white;
   transform: scale(1.03);
 }
@@ -33,7 +37,7 @@
   transform: scale(1.3);
 }
 .fav-icon-color:hover {
-  color: #ff7700;
+  color: var(--orange-btn);
 }
 
 .card {
@@ -43,4 +47,5 @@
 
 .card:hover {
   transform: scale(1.02);
+  border-color: var(--orange-btn) !important;
 }
