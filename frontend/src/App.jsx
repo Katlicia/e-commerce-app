@@ -11,6 +11,7 @@ import TopBar from "./components/Topbar.jsx";
 import CartDrawer from "./components/CartDrawer.jsx";
 
 import Home from "./components/Home.jsx";
+import CategoryList from "./layout/CategoryList.jsx";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
@@ -29,6 +30,7 @@ function App() {
           element={user ? <Navigate to="/" /> : <RegisterPage />}
         />
         <Route path="/" element={<Home />} />
+        <Route path="/products" element={<CategoryList />} />
         <Route path="/:id" element={<ProductDetails />} />
         <Route path="*" element={<Home />} />
       </Routes>
