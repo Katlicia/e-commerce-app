@@ -5,6 +5,10 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    code: {
+        type: String,
+        unique: true,
+    },
     description: {
         type: String,
         required: true
@@ -66,6 +70,16 @@ const productSchema = new mongoose.Schema({
             }
         }
     ]
-}, {timeStamps: true})
+}, { timestamps: true });
+
+const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+productSchema.pre("save", async function () {
+    if (!this.code) {
+        this.code = Array.from({ length: 8 }, () =>
+            CHARS[Math.floor(Math.random() * CHARS.length)]
+        ).join("");
+    }
+});
 
 module.exports = mongoose.model('Product', productSchema);
