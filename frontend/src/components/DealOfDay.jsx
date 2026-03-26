@@ -5,8 +5,10 @@ import firsatiBadge from "../assets/Products/gunun_firsati.svg";
 import { FaRegStar, FaStar, FaCheck } from "react-icons/fa6";
 import "../styles/DealOfDay.css";
 import "../styles/Chances.css";
+import { useNavigate } from "react-router-dom";
 
 const featuredProduct = {
+  id: 1,
   image: tempIcon,
   name: "Nescafe Gold 900 Gr Teneke + Nestle Coffee Mate Kahve Kreması 2 Kg Alana Çelik Termos 1.2 Lt HEDİYE",
   rating: 5,
@@ -121,6 +123,8 @@ function getTimeLeft() {
 }
 
 function DealOfDay() {
+  const navigate = useNavigate();
+
   const [time, setTime] = useState(getTimeLeft());
   const {
     image,
@@ -143,7 +147,10 @@ function DealOfDay() {
     <div className="container my-4">
       <div className="row g-3">
         <div className="col-12 col-lg-3">
-          <div className="deal-featured-card">
+          <div
+            className="deal-featured-card"
+            onClick={() => navigate(`/${featuredProduct.id}`)}
+          >
             <h2 className="chances-title mb-3">Günün Fırsatı</h2>
             <hr style={{ color: "#8f8f8f" }} />
             <div className="position-relative">
