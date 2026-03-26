@@ -63,11 +63,12 @@ function ProductCard({ product }) {
         )}
         <span
           className="position-absolute fav-icon"
-          onClick={() =>
+          onClick={(e) => {
+            e.stopPropagation();
             isFavourite
               ? dispatch(removeFromFavourites(productId))
-              : dispatch(addToFavourites(product))
-          }
+              : dispatch(addToFavourites(product));
+          }}
           style={{
             top: 8,
             right: 8,
@@ -116,7 +117,7 @@ function ProductCard({ product }) {
             <span className="mute-string mt-1">({reviewCount})</span>
           </div>
           <p className="card-text fw-bold mb-0" style={{ fontSize: "1.2rem" }}>
-            {price}₺
+            {Number(price).toFixed(2)}₺
           </p>
         </div>
         {cartItem ? (
@@ -127,11 +128,12 @@ function ProductCard({ product }) {
             <button
               className="btn p-0 px-2 h-100"
               style={{ color: "inherit" }}
-              onClick={() =>
+              onClick={(e) => {
+                e.stopPropagation();
                 cartItem.quantity === 1
                   ? dispatch(removeFromCart(productId))
-                  : dispatch(decreaseCart(productId))
-              }
+                  : dispatch(decreaseCart(productId));
+              }}
             >
               {cartItem.quantity === 1 ? (
                 <FaTrash />
@@ -143,7 +145,10 @@ function ProductCard({ product }) {
             <button
               className="btn p-0 px-2 h-100"
               style={{ fontSize: "20px", color: "inherit" }}
-              onClick={() => dispatch(addToCart(product))}
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(addToCart(product));
+              }}
             >
               +
             </button>
@@ -151,7 +156,10 @@ function ProductCard({ product }) {
         ) : (
           <button
             className="btn card-button w-100 mt-auto"
-            onClick={() => dispatch(addToCart(product))}
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch(addToCart(product));
+            }}
           >
             Sepete Ekle
           </button>
