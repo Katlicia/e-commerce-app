@@ -22,13 +22,17 @@ const popularSearches = [
   "Karton Koli",
 ];
 
+function flatten(tree) {
+  return tree.flatMap((cat) => [cat, ...flatten(cat.children || [])]);
+}
+
 function PopularLinks() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     axios
       .get("http://localhost:5000/categories")
-      .then((res) => setCategories(res.data))
+      .then((res) => setCategories(flatten(res.data).slice(0, 27)))
       .catch((err) => console.error(err));
   }, []);
 
