@@ -7,7 +7,7 @@ import RegisterPage from "./pages/RegisterPage.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
 import Header from "./layout/Header.jsx";
 import Footer from "./layout/Footer.jsx";
-import TopBar from "./components/Topbar.jsx";
+import TopBar from "./components/TopBar.jsx";
 import CartDrawer from "./components/CartDrawer.jsx";
 
 import Home from "./components/Home.jsx";

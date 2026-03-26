@@ -6,8 +6,6 @@ import AdBanners from "./AdBanners";
 import CategoryRow from "./CategoryRow";
 import AdBar from "./AdBar";
 import DealOfDay from "./DealOfDay";
-import Brands from "./Brands";
-import PopularLinks from "./PopularLinks";
 import banner from "../assets/Banners/banner.png";
 import banner1 from "../assets/Banners/banner1.png";
 import banner2 from "../assets/Banners/banner2.png";
@@ -28,7 +26,10 @@ function Home() {
       <ProductList title="Yeni Gelenler" />
       <AdBanners banners={[banner1, banner2, banner3]} />
       <ProductList title="Önerilen Ürünler" />
-      <CategoryRow left="Okul Kırtasiye" right="Temizlik" />
+      <CategoryRow
+        left={{ title: "Okul Kırtasiye", slug: "okul-ve-kirtasiye" }}
+        right={{ title: "Temizlik", slug: "temizlik" }}
+      />
       <AdBar />
       <ProductList title="Son Gezdiğin Ürünler" />
       <AdBanners banners={[liptonBanner, cifBanner]} />
