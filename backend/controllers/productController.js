@@ -19,10 +19,11 @@ exports.adminProducts = async (req, res) => {
 };
 
 exports.getProductById = async (req, res) => {
-  const product = await Product.findById(req.params.id).populate(
-    "category",
-    "name slug",
-  );
+  const product = await Product.findById(req.params.id).populate({
+    path: "category",
+    select: "name slug parent",
+    populate: { path: "parent", select: "name slug" },
+  });
 
   res.json(product);
 };
@@ -120,13 +121,13 @@ exports.createReview = async (req, res) => {
 
   const product = await Product.findById(productId);
 
-  product.reviews.puush(review);
+  product.reviews.push(review);
 
   let avg = 0;
-  product.reviews.foreach((rev) => {
-    avg + rev.rating;
+  product.reviews.forEach((rev) => {
+    avg += rev.rating;
   });
-  products.rating = avg / product.reviews.length;
+  product.rating = avg / product.reviews.length;
 
   await product.save({ validateBeforeSave: false });
 
