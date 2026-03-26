@@ -6,11 +6,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../redux/authSlice";
 import { Link } from "react-router-dom";
 import logo from "../assets/Footer/logo.svg";
+import { useEffect } from "react";
+import { calculateCart } from "../redux/cartSlice";
 
 function Header() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { favourites, cart, totalAmount } = useSelector((store) => store.cart);
+
+  useEffect(() => {
+    dispatch(calculateCart());
+  }, [])
 
   return (
     <header className="site-header sticky-top">
@@ -101,7 +107,13 @@ function Header() {
               />
             </a>
 
-            <a className="header-cart" href="#0">
+            <a
+              className="header-cart"
+              href="#0"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#cartDrawer"
+              aria-controls="cartDrawer"
+            >
               <div className="position-relative">
                 <img
                   src={shoppingCartIcon}
