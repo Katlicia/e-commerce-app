@@ -89,17 +89,24 @@ function ProductDetails() {
       <div className="container my-4">
         <div className="pd-breadcrumb mb-3">
           <Link to="/">Anasayfa</Link>
+          {product.category?.parent && (
+            <>
+              {" / "}
+              <Link to={`/kategori/${product.category.parent.slug}`}>
+                {product.category.parent.name}
+              </Link>
+            </>
+          )}
           {product.category && (
             <>
               {" / "}
-              <Link
-                style={{ color: "black" }}
-                to={`/kategori/${product.category.slug}`}
-              >
+              <Link to={`/kategori/${product.category.slug}`}>
                 {product.category.name}
               </Link>
             </>
           )}
+          {" / "}
+          <span style={{ color: "black" }}>{product.name}</span>
         </div>
 
         <div className="product-details-wrapper">
