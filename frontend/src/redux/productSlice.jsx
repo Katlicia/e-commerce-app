@@ -8,8 +8,9 @@ const initialState = {
   loading: false,
 };
 
-export const getProducts = createAsyncThunk("products", async () => {
-  const response = await fetch(`${BASE_URL}/products`);
+export const getProducts = createAsyncThunk("products", async (params = {}) => {
+  const keyword = params?.keyword || "";
+  const response = await fetch(`${BASE_URL}/products?keyword=${keyword}`);
   return await response.json();
 });
 
