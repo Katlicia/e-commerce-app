@@ -35,3 +35,12 @@
 .fav-icon-color:hover {
   color: #ff7700;
 }
+
+.card {
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
