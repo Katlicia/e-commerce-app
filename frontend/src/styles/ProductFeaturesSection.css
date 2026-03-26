@@ -1,0 +1,105 @@
+.pfs-wrapper {
+  background: #fff;
+  overflow: hidden;
+}
+
+.pfs-tabs {
+  display: flex;
+  border-bottom: 2px solid #e9ecef;
+  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.pfs-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pfs-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 14px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6c757d;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.pfs-tab:hover {
+  color: #ff4d2d;
+}
+.pfs-tab.active {
+  color: #ff4d2d;
+  border-bottom-color: #ff4d2d;
+}
+
+.pfs-content {
+  padding: 24px;
+}
+
+.pfs-description {
+  font-size: 14px;
+  color: #495057;
+  line-height: 1.8;
+}
+
+.pfs-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #212529;
+  margin-bottom: 12px;
+}
+
+.pfs-feature-list {
+  padding-left: 18px;
+  font-size: 13px;
+  color: #495057;
+  line-height: 2;
+}
+
+.pfs-media-img {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+  max-height: 340px;
+}
+
+.pfs-review {
+  border-bottom: 1px solid #e9ecef;
+  padding: 14px 0;
+}
+.pfs-review-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.pfs-review-rating {
+  color: #ff7700;
+  font-size: 14px;
+}
+.pfs-review-comment {
+  font-size: 13px;
+  color: #495057;
+  margin: 0;
+}
+
+.pfs-installment-table th {
+  font-size: 13px;
+  font-weight: 600;
+  background: #f8f9fa;
+}
+.pfs-installment-table td {
+  font-size: 13px;
+}
+
+.pfs-empty {
+  color: #6c757d;
+  font-size: 14px;
+  padding: 12px 0;
+}

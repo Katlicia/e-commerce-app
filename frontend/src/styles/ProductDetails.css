@@ -1,0 +1,312 @@
+:root {
+  --orange-btn: #ff7700;
+  --btn-hover: #ce2d04;
+  --border-color: #e5e8ec;
+}
+
+.product-details-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+}
+
+.pd-breadcrumb {
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+.pd-breadcrumb a {
+  color: #6c757d;
+  text-decoration: none;
+}
+.pd-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.pd-timer-banner {
+  color: #fff;
+  border-radius: 8px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.pd-timer-label {
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pd-timer-value {
+  background: linear-gradient(90deg, #ff4d2d, var(--orange-btn));
+  font-weight: 600;
+}
+
+.pd-main-image {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.pd-thumbnails {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pd-thumb {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 4px;
+  cursor: pointer;
+}
+.pd-thumb.active,
+.pd-thumb:hover {
+  border-color: #ff4d2d;
+}
+
+.pd-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #212529;
+  line-height: 1.3;
+}
+
+.pd-meta {
+  font-size: 13px;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pd-brand {
+  color: var(--orange-btn);
+  font-weight: 700;
+  text-decoration: none;
+}
+.pd-code {
+  color: #6c757d;
+}
+
+.pd-price {
+  font-size: 28px;
+  font-weight: 800;
+  color: #f83b0a;
+}
+.pd-price-sub {
+  font-size: 12px;
+  color: #6c757d;
+  margin-left: 6px;
+}
+.pd-discount-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-left: 10px;
+}
+
+.pd-features {
+  list-style: disc;
+  padding-left: 18px;
+  font-size: 13px;
+  color: #929292;
+  line-height: 1.9;
+}
+
+.pd-viewers {
+  font-size: 13px;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pd-viewers-dot {
+  width: 8px;
+  height: 8px;
+  background: #ff4d2d;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.pd-stock-warning {
+  font-size: 13px;
+  color: #212529;
+}
+.pd-stock-count {
+  color: #ff4d2d;
+  font-weight: 700;
+}
+.pd-taksit-link {
+  color: #2878ff;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pd-qty-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+  height: 48px;
+}
+.pd-qty-btn {
+  width: 44px;
+  height: 100%;
+  border: 0;
+  background: #fff;
+  font-size: 20px;
+  color: #8d979e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.pd-qty-num {
+  min-width: 36px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+}
+.pd-add-btn {
+  height: 48px;
+  background: var(--orange-btn);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  flex: 1;
+  transition: background 0.2s;
+}
+.pd-add-btn:hover {
+  background: var(--btn-hover);
+}
+
+.pd-actions {
+  display: flex;
+  justify-content: space-around;
+  gap: 8px;
+}
+.pd-action-btn {
+  border: none;
+  flex: 1;
+  max-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  color: #495057;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.3;
+  transition: transform 0.2s;
+}
+
+.pd-action-btn:hover {
+  transform: scale(1.1);
+}
+
+.pd-action-btn img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.pd-action-btn span {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.pd-action-btn:hover {
+  border-color: var(--btn-hover);
+  color: #ff4d2d;
+}
+
+.pd-shipping {
+  width: 100%;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pd-shipping-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pd-coupon {
+  border: 1.5px dashed #ff4d2d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pd-coupon-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ff4d2d;
+}
+.pd-coupon-btn {
+  background: #ff4d2d;
+  color: #fff;
+  border: 0;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.pd-payment-logos {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pd-payment-logos img {
+  height: 24px;
+  object-fit: contain;
+}
+
+.star-header {
+  color: #ff4d2d;
+  font-size: large;
+}
+
+.r-border {
+  padding-right: 15px;
+  border-right: 1px solid var(--border-color);
+}
+
+.b-box {
+  border-radius: 20px;
+  flex: 1;
+}
+
+@media (max-width: 572px) {
+  .pd-timer-banner {
+    display: none;
+  }
+}
