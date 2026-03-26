@@ -33,8 +33,6 @@ function Home() {
       <ProductList title="Son Gezdiğin Ürünler" />
       <AdBanners banners={[liptonBanner, cifBanner]} />
       <DealOfDay />
-      <Brands />
-      <PopularLinks />
     </>
   );
 }
