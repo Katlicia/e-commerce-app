@@ -17,6 +17,7 @@ import PopularLinks from "./components/PopularLinks.jsx";
 import TopBar from "./components/Topbar.jsx";
 import AdBar from "./components/AdBar.jsx";
 import DealOfDay from "./components/DealOfDay.jsx";
+import CartDrawer from "./components/CartDrawer.jsx";
 
 import Home from "./components/Home.jsx";
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
+      <CartDrawer />
     </BrowserRouter>
   );
 }
