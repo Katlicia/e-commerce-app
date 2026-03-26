@@ -4,19 +4,30 @@ import profileIcon from "../assets/Header/profile-icon.svg";
 import shoppingCartIcon from "../assets/Header/shopping-cart-icon.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../redux/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/Footer/logo.svg";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { calculateCart } from "../redux/cartSlice";
+import { getKeyword } from "../redux/generalSlice";
 
 function Header() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { user } = useSelector((state) => state.auth);
   const { favourites, cart, totalAmount } = useSelector((store) => store.cart);
 
+  const [keyword, setKeyword] = useState("");
+
   useEffect(() => {
     dispatch(calculateCart());
-  }, [])
+  }, []);
+
+  const sendKeyword = () => {
+    dispatch(getKeyword(keyword.toLowerCase()));
+    setKeyword("");
+    navigate("/products");
+  };
 
   return (
     <header className="site-header sticky-top">
@@ -25,13 +36,26 @@ function Header() {
           <Link to="/" className="logo-width">
             <img src={logo} />
           </Link>
-          <form className="header-search flex-grow-1 w-100 w-lg-auto">
+          <form
+            className="header-search flex-grow-1 w-100 w-lg-auto"
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendKeyword();
+            }}
+          >
             <input
+              onChange={(e) => setKeyword(e.target.value)}
+              value={keyword}
               className="header-search-input"
               type="text"
               placeholder="Ürün, marka veya kategorilerde ara"
             />
-            <button className="header-search-button" type="button">
+            <button
+              onClick={sendKeyword}
+              onSubmit={sendKeyword}
+              className="header-search-button"
+              type="button"
+            >
               <CiSearch style={{ fontSize: "35px" }} />
             </button>
           </form>
@@ -129,7 +153,7 @@ function Header() {
               </div>
               <span className="header-action-text">
                 <small>Sepetiniz</small>
-                <strong>{totalAmount}₺</strong>
+                <strong>{Number(totalAmount).toFixed(2)}₺</strong>
               </span>
             </a>
           </div>
