@@ -18,6 +18,7 @@ import {
   addToFavourites,
   removeFromFavourites,
 } from "../redux/cartSlice";
+import { useNavigate } from "react-router-dom";
 
 const BADGES = {
   yeni: yeniBadge,
@@ -27,8 +28,13 @@ const BADGES = {
 };
 
 function ProductCard({ product }) {
-  const { image, code, name, rating, reviewCount, price, badge, discount } =
+  const { _id, images, code, name, rating, reviews, price, badge, discount } =
     product;
+
+  const image = images?.[0]?.url || "";
+  const reviewCount = reviews?.length || 0;
+
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
   const { cart, favourites } = useSelector((state) => state.cart);
@@ -42,7 +48,10 @@ function ProductCard({ product }) {
   const badgeIcon = BADGES[badge];
 
   return (
-    <div className="card h-100 border rounded-3 p-2">
+    <div
+      className="card h-100 border rounded-3 p-2"
+      onClick={() => navigate(`/${_id}`)}
+    >
       <div className="position-relative">
         {badgeIcon && (
           <img
