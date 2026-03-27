@@ -9,13 +9,37 @@ const productSchema = new mongoose.Schema({
         type: String,
         unique: true,
     },
-    description: {
+    description: [
+        {
+            type: String,
+            required: true
+        }
+    ],
+    features: [{ type: String }],
+    brand: {
         type: String,
-        required: true
     },
+    badge: {
+        type: String,
+        enum: ["yeni", "gunun-firsati", "en-cok-satan", "indirimli"],
+    },
+    descriptionImages: [
+        {
+            public_id: { type: String },
+            url: { type: String }
+        }
+    ],
     price: {
         type: Number,
         required: true
+    },
+    discountPercent: {
+        type: Number,
+        min: 1,
+        max: 99,
+    },
+    discountedPrice: {
+        type: Number,
     },
     stock: {
         type: Number,
@@ -79,6 +103,11 @@ productSchema.pre("save", async function () {
         this.code = Array.from({ length: 8 }, () =>
             CHARS[Math.floor(Math.random() * CHARS.length)]
         ).join("");
+    }
+    if (this.badge === "indirimli" && this.discountPercent) {
+        this.discountedPrice = +(this.price * (1 - this.discountPercent / 100)).toFixed(2);
+    } else {
+        this.discountedPrice = undefined;
     }
 });
 
