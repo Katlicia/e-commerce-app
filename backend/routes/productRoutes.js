@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getProducts,
   getProductById,
+  getProductByBadge,
   createProduct,
   deleteProduct,
   updateProduct,
@@ -12,6 +13,7 @@ const router = express.Router();
 const { authenticationMiddle, isAdmin } = require("../middleware/auth");
 
 router.get("/products", getProducts);
+router.get("/products/badge/:badge", getProductByBadge);
 router.get("/admin/products", authenticationMiddle, isAdmin, adminProducts);
 router.get("/products/:id", getProductById);
 router.post("/products/new", authenticationMiddle, isAdmin, createProduct);
