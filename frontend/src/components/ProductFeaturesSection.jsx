@@ -8,7 +8,18 @@ function ProductFeaturesSection({ product }) {
 
   if (!product) return null;
 
-  const { description, images, reviews, price } = product;
+  const { description, images, reviews, price, features } = product;
+
+  const descriptions = description
+    ? description
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((s) => s + " ")
+    : [];
+
+  const featureArray = features
+    ? features.map((s) => s.trim() + " ").filter(Boolean)
+    : [];
 
   return (
     <div className="pfs-wrapper container my-4">
@@ -27,16 +38,19 @@ function ProductFeaturesSection({ product }) {
       <div className="pfs-content">
         {activeTab === 0 && (
           <div>
-            <p className="pfs-description">{description}</p>
+            {descriptions.length > 0 &&
+              descriptions.map((d, i) => (
+                <p key={i} className="pfs-description d-inline">
+                  {d}
+                </p>
+              ))}
+
             <div className="row g-4 mt-2">
               <div className="col-lg-6">
                 <h6 className="pfs-section-title">ÖNE ÇIKAN ÖZELLİKLER</h6>
                 <ul className="pfs-feature-list">
-                  {description ? (
-                    description
-                      .split(".")
-                      .filter((s) => s.trim().length > 4)
-                      .map((f, i) => <li key={i}>{f.trim()}.</li>)
+                  {features?.length > 0 ? (
+                    featureArray.map((f, i) => <li key={i}>{f.trim()}</li>)
                   ) : (
                     <li>Ürün özellikleri mevcut değil.</li>
                   )}
@@ -55,9 +69,16 @@ function ProductFeaturesSection({ product }) {
           </div>
         )}
 
-        {activeTab === 1 && (
-          <p className="pfs-empty">Ürün özellikleri henüz eklenmemiş.</p>
-        )}
+        {activeTab === 1 &&
+          (features?.length > 0 ? (
+            <ul className="pfs-feature-list">
+              {features.map((f, i) => (
+                <li key={i}>{f}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="pfs-empty">Ürün özellikleri henüz eklenmemiş.</p>
+          ))}
 
         {activeTab === 2 && (
           <div>
