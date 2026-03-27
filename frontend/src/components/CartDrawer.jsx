@@ -1,15 +1,17 @@
 import { useSelector, useDispatch } from "react-redux";
 import { decreaseCart, addToCart, removeFromCart } from "../redux/cartSlice";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa6";
 import "../styles/CartDrawer.css";
 import { PiShoppingCartLight } from "react-icons/pi";
 import cartImg from "../assets/Cart/cargo.svg";
+import CartProgress from "./CartProgress";
 
 const FREE_SHIPPING_THRESHOLD = 500;
 
 function CartDrawer() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { cart, totalAmount } = useSelector((state) => state.cart);
 
   const remaining = Math.max(FREE_SHIPPING_THRESHOLD - totalAmount, 0);
@@ -50,15 +52,44 @@ function CartDrawer() {
                   className="cart-item d-flex gap-3 py-3 border-bottom"
                 >
                   <img
-                    src={item.image}
+                    src={item.images?.[0]?.url}
                     alt={item.name}
                     className="cart-item-img rounded-2"
                   />
                   <div className="flex-grow-1 d-flex flex-column justify-content-between">
                     <p className="cart-item-name mb-1">{item.name}</p>
-                    <p className="cart-item-price fw-bold mb-0">
-                      {(parseFloat(item.price) * item.quantity).toFixed(2)}₺
-                    </p>
+                    {item.discountedPrice ? (
+                      <div className="d-flex justify-content-between">
+                        <div className="d-flex align-items-center gap-1">
+                          <p className="cart-item-price fw-bold mb-0">
+                            {(
+                              parseFloat(item.discountedPrice) * item.quantity
+                            ).toFixed(2)}
+                            ₺
+                          </p>
+                          <del
+                            className="text-muted"
+                            style={{ fontSize: "0.8rem" }}
+                          >
+                            {(parseFloat(item.price) * item.quantity).toFixed(
+                              2,
+                            )}
+                            ₺
+                          </del>
+                        </div>
+                        <span
+                          className="discount-badge"
+                          style={{ alignSelf: "flex-start" }}
+                        >
+                          %{item.discountPercent} indirim
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="cart-item-price fw-bold mb-0">
+                        {(parseFloat(item.price) * item.quantity).toFixed(2)}₺
+                      </p>
+                    )}
+
                     <div className="d-flex align-items-center gap-2 mt-1">
                       <div className="cart-qty-control d-flex align-items-center">
                         <button
@@ -88,31 +119,7 @@ function CartDrawer() {
         )}
 
         <div className="cart-footer px-3 pt-3 pb-4">
-          <div className="cart-shipping-bar mb-3">
-            <div
-              className="cart-shipping-progress"
-              style={{ width: `${progress}%` }}
-            />
-            <div
-              className="cart-shipping-truck"
-              style={{ left: `${progress}%` }}
-            >
-              <img src={cartImg} style={{ width: "28px", height: "28px" }} />
-            </div>
-          </div>
-          <p className="cart-shipping-text text-center mb-3">
-            {remaining === 0 ? (
-              <>
-                Kargo <strong>ücretsiz!</strong>
-              </>
-            ) : (
-              <>
-                Sepetinize <strong>{remaining.toFixed(2)} TL</strong> daha
-                eklerseniz.{" "}
-                <strong className="text-danger">KARGO ÜCRETSİZ</strong>
-              </>
-            )}
-          </p>
+          <CartProgress progress={progress} remaining={remaining} />
 
           <div className="d-flex justify-content-between align-items-center mb-3">
             <span className="fw-bold">ARA TOPLAM:</span>
@@ -128,13 +135,13 @@ function CartDrawer() {
             >
               Alışverişe Devam Et
             </button>
-            <Link
-              to="/cart"
+            <button
               className="btn orange-btn flex-grow-1 rounded-pill"
+              onClick={() => navigate("/cart")}
               data-bs-dismiss="offcanvas"
             >
               Sepete Git
-            </Link>
+            </button>
           </div>
         </div>
       </div>
