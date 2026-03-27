@@ -71,11 +71,11 @@ function ProductDetails() {
   const currentImg = images[activeImg]?.url || "";
   const isFavourite = favourites.some((f) => (f._id || f.id) === productId);
   const features = product.description
-    ? product.description
-        .split("،")
-        .map((s) => s.trim())
-        .filter(Boolean)
+    ? product.description.map((s) => s.trim()).filter(Boolean)
     : [];
+  const price = product.price || 0;
+  const discountedPrice = product.discountedPrice || null;
+  const discountPercent = product.discountPercent || null;
 
   function handleAddToCart() {
     for (let i = 0; i < quantity; i++) {
@@ -186,15 +186,27 @@ function ProductDetails() {
               <hr className="my-0" style={{ color: "var(--border-color)" }} />
 
               <div className="d-flex align-items-center flex-wrap gap-2">
-                <span className="pd-price">
-                  {Number(product.price).toFixed(2).replace(".", ",")}₺
-                </span>
-                <span className="pd-price-sub">KDV Dahil</span>
-                {product.oldPrice && (
-                  <span className="pd-discount-badge">
-                    %{Math.round((1 - product.price / product.oldPrice) * 100)}{" "}
-                    indirim
-                  </span>
+                {discountedPrice ? (
+                  <>
+                    <span className="pd-price">
+                      {Number(discountedPrice).toFixed(2).replace(".", ",")}₺
+                    </span>
+                    <del className="muted-text">
+                      {Number(price).toFixed(2).replace(".", ",")}₺
+                    </del>
+                    <span className="pd-price-sub">KDV Dahil</span>
+
+                    <span className="pd-discount-badge d-flex">
+                      %{discountPercent} indirim
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="pd-price">
+                      {Number(price).toFixed(2).replace(".", ",")}₺
+                    </span>
+                    <span className="pd-price-sub">KDV Dahil</span>
+                  </>
                 )}
               </div>
 
