@@ -9,8 +9,11 @@ const initialState = {
 };
 
 export const getProducts = createAsyncThunk("products", async (params = {}) => {
-  const keyword = params?.keyword || "";
-  const response = await fetch(`${BASE_URL}/products?keyword=${keyword}`);
+  const query = new URLSearchParams();
+  if (params.keyword) query.set("keyword", params.keyword);
+  if (params.brand) query.set("brand", params.brand);
+  if (params.category) query.set("category", params.category);
+  const response = await fetch(`${BASE_URL}/products?${query.toString()}`);
   return await response.json();
 });
 
