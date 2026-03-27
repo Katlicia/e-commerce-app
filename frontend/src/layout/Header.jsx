@@ -122,14 +122,16 @@ function Header() {
                 </span>
               </Link>
             )}
-
-            <a className="header-action header-action-icon-only" href="#0">
+            <Link
+              className="header-action header-action-icon-only"
+              to="/favourites"
+            >
               <span className="header-heart-badge">{favourites.length}</span>
               <CiHeart
                 style={{ fontSize: "40px" }}
                 className="header-action-icon"
               />
-            </a>
+            </Link>
 
             <a
               className="header-cart"
