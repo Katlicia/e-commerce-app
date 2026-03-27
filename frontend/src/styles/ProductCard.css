@@ -45,7 +45,22 @@
   cursor: pointer;
 }
 
+.orange-text {
+  color: var(--orange-btn);
+}
+
 .card:hover {
   transform: scale(1.02);
   border-color: var(--orange-btn) !important;
+}
+
+.discount-badge {
+  bottom: 8px;
+  left: 8px;
+  background: #dbf4e5;
+  color: #1a9647;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
