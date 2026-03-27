@@ -12,7 +12,7 @@ import ProductList from "../components/ProductList";
 import { FaTrash } from "react-icons/fa6";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { FaRegBookmark } from "react-icons/fa";
-import { CiSearch } from "react-icons/ci";
+import { CiSearch, CiShoppingBasket } from "react-icons/ci";
 import CartProgress from "../components/CartProgress";
 import smileEmoji from "../assets/Emoji/smile.svg";
 
@@ -73,6 +73,7 @@ function CartPage() {
 
         {cart.length === 0 ? (
           <div className="text-center py-5">
+            <CiShoppingBasket style={{ fontSize: "64px" }} />
             <p className="fs-5 text-muted">Sepetiniz boş.</p>
             <Link to="/" className="btn orange-btn mt-2 rounded-pill px-4">
               Alışverişe Başla
@@ -349,10 +350,7 @@ function CartPage() {
         )}
       </div>
 
-      {/* Alt ürün listesi */}
-      <div className="container">
-        <ProductList title="Sepetinizdeki Ürünleri Alanlar Bunları da Aldı" />
-      </div>
+      <ProductList title="Sepetinizdeki Ürünleri Alanlar Bunları da Aldı" />
     </>
   );
 }
