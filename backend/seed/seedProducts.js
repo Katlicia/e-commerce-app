@@ -18,11 +18,22 @@ const productsBySlug = {
   "hazir-kahveler": [
     {
       name: "Nescafé Classic 200g",
-      description: "Klasik çözünür kahve, yoğun aroma.",
+      description: [
+        "Klasik çözünür kahve, yoğun aroma.",
+        "İyi kahve.",
+        "Yoğun tat.",
+      ],
       price: 89.9,
       stock: 150,
       rating: 4,
       badge: "en-cok-satan",
+      features: ["Çözünür kahve", "200g", "Yoğun aroma"],
+      brand: "Nescafé",
+      reviews: [
+        { name: "Ahmet Y.", comment: "Çok güzel bir kahve, her sabah içiyorum.", rating: 5 },
+        { name: "Zeynep K.", comment: "Aroması harika, fiyatına göre kaliteli.", rating: 4 },
+        { name: "Murat D.", comment: "Beklentimi karşıladı, tavsiye ederim.", rating: 4 },
+      ],
     },
     {
       name: "Jacobs Monarch 200g",
@@ -30,6 +41,10 @@ const productsBySlug = {
       price: 99.9,
       stock: 120,
       rating: 5,
+      reviews: [
+        { name: "Selin A.", comment: "Şimdiye kadar içtiğim en iyi hazır kahve.", rating: 5 },
+        { name: "Emre T.", comment: "Yumuşak tadı çok hoş, ikinci paketi aldım.", rating: 5 },
+      ],
     },
     {
       name: "Nescafé 3ü1 Arada 48'li",
@@ -38,6 +53,7 @@ const productsBySlug = {
       stock: 200,
       rating: 4,
       badge: "indirimli",
+      discountPercent: 15,
     },
     {
       name: "Douwe Egberts 200g",
@@ -187,6 +203,12 @@ const productsBySlug = {
       stock: 200,
       rating: 5,
       badge: "en-cok-satan",
+      reviews: [
+        { name: "Büşra M.", comment: "Çikolata sevenler için vazgeçilmez!", rating: 5 },
+        { name: "Can Ö.", comment: "Oreo parçaları çok güzel dağılmış.", rating: 5 },
+        { name: "Fatma S.", comment: "Çocuklar çok seviyor.", rating: 4 },
+        { name: "Hakan R.", comment: "Fiyatı biraz yüksek ama lezzeti iyi.", rating: 4 },
+      ],
     },
     {
       name: "Toblerone 360g",
@@ -209,6 +231,7 @@ const productsBySlug = {
       stock: 180,
       rating: 4,
       badge: "indirimli",
+      discountPercent: 20,
     },
     {
       name: "Nestle KitKat 24'lü",
@@ -303,6 +326,7 @@ const productsBySlug = {
       stock: 130,
       rating: 4,
       badge: "indirimli",
+      discountPercent: 10,
     },
     {
       name: "Fairy Non Bio 2.5kg",
@@ -400,6 +424,11 @@ const productsBySlug = {
       stock: 200,
       rating: 5,
       badge: "en-cok-satan",
+      reviews: [
+        { name: "Deniz A.", comment: "Saçlarım çok yumuşadı, kesinlikle tavsiye ederim.", rating: 5 },
+        { name: "Gizem Y.", comment: "Kokusu harika, uzun süre devam ediyor.", rating: 5 },
+        { name: "Serkan B.", comment: "Oldukça kaliteli bir ürün.", rating: 4 },
+      ],
     },
     {
       name: "Head & Shoulders Mentol 550ml",
@@ -422,6 +451,7 @@ const productsBySlug = {
       stock: 140,
       rating: 4,
       badge: "indirimli",
+      discountPercent: 25,
     },
   ],
   "dis-macunu": [
@@ -439,6 +469,10 @@ const productsBySlug = {
       stock: 350,
       rating: 5,
       badge: "en-cok-satan",
+      reviews: [
+        { name: "Ayşe K.", comment: "Ağzım sabah akşam tertemiz hissettiriyor.", rating: 5 },
+        { name: "Berk D.", comment: "Uzun süredir kullanıyorum, bırakamıyorum.", rating: 5 },
+      ],
     },
     {
       name: "Sensodyne Repair & Protect 75ml",
@@ -526,6 +560,12 @@ const productsBySlug = {
       stock: 150,
       rating: 5,
       badge: "en-cok-satan",
+      reviews: [
+        { name: "Nilüfer A.", comment: "Bebeğim hiç kızarmadı, çok memnunuz.", rating: 5 },
+        { name: "Tolga M.", comment: "Gece boyunca sızdırmıyor, harika.", rating: 5 },
+        { name: "Esra B.", comment: "Biraz pahalı ama kalitesi iyi.", rating: 4 },
+        { name: "Caner Y.", comment: "Her zaman Pampers alıyoruz.", rating: 5 },
+      ],
     },
     {
       name: "Huggies Elite Soft 3 Beden 72'li",
@@ -541,6 +581,7 @@ const productsBySlug = {
       stock: 130,
       rating: 4,
       badge: "indirimli",
+      discountPercent: 18,
     },
     {
       name: "Bebedor Pants 4 Beden 44'lü",
@@ -590,6 +631,11 @@ const productsBySlug = {
       stock: 200,
       rating: 5,
       badge: "en-cok-satan",
+      reviews: [
+        { name: "Elif S.", comment: "Renkler çok canlı, çocuğum çok sevdi.", rating: 5 },
+        { name: "Onur K.", comment: "Fiyatına göre kalitesi oldukça iyi.", rating: 4 },
+        { name: "Melis T.", comment: "Okulda kullanıyoruz, çok beğendik.", rating: 5 },
+      ],
     },
     {
       name: "Staedtler Kurşun Kalem Seti 12'li",
@@ -642,6 +688,7 @@ const productsBySlug = {
       stock: 350,
       rating: 4,
       badge: "indirimli",
+      discountPercent: 12,
     },
     {
       name: "UHU Stick Yapıştırıcı 40g",
@@ -696,6 +743,7 @@ const productsBySlug = {
       stock: 130,
       rating: 5,
       badge: "indirimli",
+      discountPercent: 30,
     },
     {
       name: "Glorix Çamaşır Suyu Orijinal 1L",
@@ -788,7 +836,7 @@ async function seed() {
   for (const [slug, products] of Object.entries(productsBySlug)) {
     const category = await Category.findOne({ slug });
     if (!category) {
-      console.warn(`  ⚠ Kategori bulunamadı: ${slug}`);
+      console.warn(`Kategori bulunamadı: ${slug}`);
       skipped++;
       continue;
     }
@@ -801,13 +849,19 @@ async function seed() {
         price: p.price,
         stock: p.stock,
         rating: p.rating,
+        badge: p.badge,
+        discountPercent: p.discountPercent,
+        brand: p.brand,
+        features: p.features,
+        descriptionImages: p.descriptionImages,
         category: category._id,
         user: adminUser._id,
         images: [img(`${slug}-${i}`)],
+        reviews: (p.reviews || []).map((r) => ({ ...r, user: adminUser._id })),
       });
       created++;
     }
-    console.log(`  ✓ ${category.name} → ${products.length} ürün`);
+    console.log(`${category.name} → ${products.length} ürün`);
   }
 
   console.log(`\nToplam ${created} ürün eklendi. ${skipped} kategori atlandı.`);
