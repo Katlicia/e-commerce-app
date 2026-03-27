@@ -28,8 +28,18 @@ const BADGES = {
 };
 
 function ProductCard({ product }) {
-  const { _id, images, code, name, rating, reviews, price, badge, discount } =
-    product;
+  const {
+    _id,
+    images,
+    code,
+    name,
+    rating,
+    reviews,
+    price,
+    discountPercent,
+    discountedPrice,
+    badge,
+  } = product;
 
   const image = images?.[0]?.url || "";
   const reviewCount = reviews?.length || 0;
@@ -61,6 +71,11 @@ function ProductCard({ product }) {
             style={{ top: 8, left: 8 }}
           />
         )}
+        {discountedPrice && (
+          <span className="position-absolute discount-badge">
+            %{discountPercent} indirim
+          </span>
+        )}
         <span
           className="position-absolute fav-icon"
           onClick={(e) => {
@@ -84,14 +99,6 @@ function ProductCard({ product }) {
           )}
         </span>
         <img src={image} alt={name} className="card-img-top img-fluid" />
-        {discount && (
-          <span
-            className={`position-absolute px-2 rounded-2 discount-tag ${discount.startsWith("%") ? "discount-tag-green" : "discount-tag-blue"}`}
-            style={{ bottom: 8, left: 8 }}
-          >
-            {discount}
-          </span>
-        )}
       </div>
       <div className="card-body d-flex flex-column gap-2 p-0 mt-2">
         <div className="flex-grow-1">
@@ -116,9 +123,24 @@ function ProductCard({ product }) {
             })()}
             <span className="mute-string mt-1">({reviewCount})</span>
           </div>
-          <p className="card-text fw-bold mb-0" style={{ fontSize: "1.2rem" }}>
-            {Number(price).toFixed(2)}₺
-          </p>
+          {discountedPrice ? (
+            <div className="d-flex align-items-center gap-2 orange-text">
+              <p
+                className="card-text fw-bold mb-0"
+                style={{ fontSize: "1.2rem" }}
+              >
+                {Number(discountedPrice).toFixed(2)}₺
+              </p>
+              <del className="text-muted">{Number(price).toFixed(2)}₺</del>
+            </div>
+          ) : (
+            <p
+              className="card-text fw-bold mb-0"
+              style={{ fontSize: "1.2rem" }}
+            >
+              {Number(price).toFixed(2)}₺
+            </p>
+          )}
         </div>
         {cartItem ? (
           <div
