@@ -341,9 +341,11 @@ function CartPage() {
                   </span>
                 </div>
 
-                <button className="btn orange-btn w-100 rounded-pill py-2 fw-semibold">
-                  Sepeti Onayla
-                </button>
+                <Link to="/checkout">
+                  <button className="btn orange-btn w-100 rounded-pill py-2 fw-semibold">
+                    Sepeti Onayla
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
