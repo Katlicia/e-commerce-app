@@ -380,7 +380,7 @@ async function seed() {
   await insertTree(categoryTree);
 
   const count = await Category.countDocuments();
-  console.log(`✓ ${count} kategori eklendi.`);
+  console.log(`${count} kategori eklendi.`);
 
   await mongoose.disconnect();
 }
