@@ -21,11 +21,14 @@ function Home() {
       <Featured />
       <ProductList
         title="Kaçırılmayacak Fırsatlar"
-        settings={{ showTimer: true, banner: banner }}
+        settings={{ showTimer: true, banner: banner, badge: "indirimli" }}
       />
-      <ProductList title="Yeni Gelenler" />
+      <ProductList title="Yeni Gelenler" settings={{ badge: "yeni" }} />
       <AdBanners banners={[banner1, banner2, banner3]} />
-      <ProductList title="Önerilen Ürünler" />
+      <ProductList
+        title="Önerilen Ürünler"
+        settings={{ badge: "en-cok-satan" }}
+      />
       <CategoryRow
         left={{ title: "Okul Kırtasiye", slug: "okul-ve-kirtasiye" }}
         right={{ title: "Temizlik", slug: "temizlik" }}
