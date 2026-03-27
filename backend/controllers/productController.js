@@ -8,7 +8,7 @@ exports.getProducts = async (req, res) => {
     .search()
     .filter()
     .pagination(resultPerPage);
-  const products = await productFilter.query.populate("category", "name slug");
+  const products = await productFilter.query;
 
   res.json(products);
 };
@@ -26,6 +26,12 @@ exports.getProductById = async (req, res) => {
   });
 
   res.json(product);
+};
+
+exports.getProductByBadge = async (req, res) => {
+  const { badge } = req.params;
+  const products = await Product.find({ badge });
+  res.json(products);
 };
 
 exports.createProduct = async (req, res) => {
