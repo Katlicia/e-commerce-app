@@ -39,7 +39,6 @@ const MOCK_ORDERS = [
 ];
 
 const CONTENT_TITLES = {
-  ozet: "Özet",
   siparisler: "Siparişlerim",
   "uyelik-bilgilerim": "Üyelik Bilgilerim",
   "iletisim-izinleri": "İletişim İzinleri",
@@ -89,11 +88,7 @@ function UserProfile() {
           <div className="col-12 col-lg-3">
             <div className="profile-sidebar">
               <div className="d-flex flex-column px-4">
-                {/* Özet */}
-                <div
-                  className={`dot-border${activeNav === "ozet" ? " nav-active" : ""}`}
-                  onClick={() => setActiveNav("ozet")}
-                >
+                <div className={"dot-border"}>
                   <span className={activeNav === "ozet" ? "orange-text" : ""}>
                     <strong>Özet</strong>
                   </span>
@@ -136,10 +131,8 @@ function UserProfile() {
                   </div>
                 </div>
 
-                {/* Siparişler */}
                 {navItem("siparisler", "Siparişler")}
 
-                {/* Müşteri İlişkileri */}
                 <div className="dot-border">
                   <div
                     className="d-flex align-items-center gap-2"
@@ -212,7 +205,12 @@ function UserProfile() {
             {activeNav === "adreslerim" && <ProfileAddressForm />}
             {activeNav === "sifre-degistir" && <ProfilePasswordForm />}
 
-            {!["siparisler", "uyelik-bilgilerim", "adreslerim", "sifre-degistir"].includes(activeNav) && (
+            {![
+              "siparisler",
+              "uyelik-bilgilerim",
+              "adreslerim",
+              "sifre-degistir",
+            ].includes(activeNav) && (
               <p className="text-muted">Bu bölüm yakında aktif olacak.</p>
             )}
           </div>
