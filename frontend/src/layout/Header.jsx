@@ -9,13 +9,15 @@ import logo from "../assets/Footer/logo.svg";
 import { useEffect, useState } from "react";
 import { calculateCart, clearCartLocal } from "../redux/cartSlice";
 import { getKeyword } from "../redux/generalSlice";
+import { clearFavouritesLocal } from "../redux/favouriteSlice";
 
 function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-  const { favourites, cart, totalAmount } = useSelector((store) => store.cart);
+  const { cart, totalAmount } = useSelector((store) => store.cart);
+  const { favourites } = useSelector((store) => store.favourite);
 
   const [keyword, setKeyword] = useState("");
 
@@ -98,7 +100,11 @@ function Header() {
                   <li>
                     <button
                       className="dropdown-item text-danger"
-                      onClick={() => { dispatch(logoutUser()); dispatch(clearCartLocal()); }}
+                      onClick={() => {
+                        dispatch(logoutUser());
+                        dispatch(clearCartLocal());
+                        dispatch(clearFavouritesLocal());
+                      }}
                     >
                       Çıkış Yap
                     </button>
