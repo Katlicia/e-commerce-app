@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa6";
 import "../styles/CartDrawer.css";
 import { PiShoppingCartLight } from "react-icons/pi";
-import cartImg from "../assets/Cart/cargo.svg";
 import CartProgress from "./CartProgress";
 
 const FREE_SHIPPING_THRESHOLD = 500;
