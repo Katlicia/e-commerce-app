@@ -15,9 +15,11 @@ import {
   addToCartWithSync,
   decreaseCartWithSync,
   removeFromCartWithSync,
-  addToFavourites,
-  removeFromFavourites,
 } from "../redux/cartSlice";
+import {
+  addToFavouritesWithSync,
+  removeFromFavouritesWithSync,
+} from "../redux/favouriteSlice";
 import { useNavigate } from "react-router-dom";
 
 const BADGES = {
@@ -47,7 +49,8 @@ function ProductCard({ product }) {
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
-  const { cart, favourites } = useSelector((state) => state.cart);
+  const { cart } = useSelector((state) => state.cart);
+  const { favourites } = useSelector((state) => state.favourite);
 
   const productId = product._id || product.id;
   const cartItem = cart.find((item) => (item._id || item.id) === productId);
@@ -81,8 +84,8 @@ function ProductCard({ product }) {
           onClick={(e) => {
             e.stopPropagation();
             isFavourite
-              ? dispatch(removeFromFavourites(productId))
-              : dispatch(addToFavourites(product));
+              ? dispatch(removeFromFavouritesWithSync(productId))
+              : dispatch(addToFavouritesWithSync(product));
           }}
           style={{
             top: 8,

@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import { getProductDetail } from "../redux/productSlice";
+import { addToCartWithSync } from "../redux/cartSlice";
 import {
-  addToCartWithSync,
-  addToFavourites,
-  removeFromFavourites,
-} from "../redux/cartSlice";
+  addToFavouritesWithSync,
+  removeFromFavouritesWithSync,
+} from "../redux/favouriteSlice";
 import { FaStar, FaRegStar } from "react-icons/fa6";
 import HeaderLinks from "../components/HeaderLinks";
 import "../styles/ProductDetails.css";
@@ -48,7 +48,7 @@ function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { product } = useSelector((state) => state.product);
-  const { favourites } = useSelector((state) => state.cart);
+  const { favourites } = useSelector((state) => state.favourite);
 
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -270,8 +270,8 @@ function ProductDetails() {
                   className="pd-action-btn"
                   onClick={() =>
                     isFavourite
-                      ? dispatch(removeFromFavourites(productId))
-                      : dispatch(addToFavourites(product))
+                      ? dispatch(removeFromFavouritesWithSync(productId))
+                      : dispatch(addToFavouritesWithSync(product))
                   }
                 >
                   <img src={heartIcon} alt="Heart Icon" />
