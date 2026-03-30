@@ -35,7 +35,10 @@ function Home() {
       />
       <AdBar />
       <ProductList title="Son Gezdiğin Ürünler" />
-      <AdBanners banners={[liptonBanner, cifBanner]} />
+      <AdBanners
+        banners={[liptonBanner, cifBanner]}
+        slugs={["lipton", "cif"]}
+      />
       <DealOfDay />
     </>
   );

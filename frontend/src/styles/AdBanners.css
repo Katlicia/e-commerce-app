@@ -14,3 +14,12 @@
     height: auto;
   }
 }
+
+.banner-clickable {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.banner-clickable:hover {
+  transform: scale(1.05);
+}
