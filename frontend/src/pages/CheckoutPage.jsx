@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { logoutUser } from "../redux/authSlice";
-import { getUserAddresses, addUserAddress } from "../redux/userSlice";
+import { getUserAddresses, addUserAddress, editUserAddress } from "../redux/userSlice";
 import CheckoutComponent from "../components/CheckoutComponent";
 import CartSummary from "../components/CartSummary";
-import { FiEdit2 } from "react-icons/fi";
+import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
 import CardOutlineLogo from "../assets/Checkout/card-outline.svg";
 import CardsLogo from "../assets/Checkout/cards.svg";
 import HepsipayLogo from "../assets/Checkout/hepsipay.svg";
@@ -39,6 +39,8 @@ function CheckoutPage() {
     expiry: "",
     cvv: "",
   });
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [addressValue, setAddressValue] = useState("");
   const [selectedInstallment, setSelectedInstallment] = useState(0);
   const [localAddresses, setLocalAddresses] = useState([]);
 
@@ -49,6 +51,29 @@ function CheckoutPage() {
       dispatch(getUserAddresses());
     }
   }, [user]);
+
+  const handleEditStart = (idx, addr) => {
+    setEditingIndex(idx);
+    setAddressValue(addr);
+  };
+
+  const handleEditSave = (idx) => {
+    if (!addressValue.trim()) return;
+    if (user) {
+      dispatch(editUserAddress({ index: idx, address: addressValue }));
+    } else {
+      setLocalAddresses((prev) =>
+        prev.map((a, i) => (i === idx ? addressValue : a)),
+      );
+    }
+    setEditingIndex(null);
+    setAddressValue("");
+  };
+
+  const handleEditCancel = () => {
+    setEditingIndex(null);
+    setAddressValue("");
+  };
 
   const handleAddAddress = () => {
     if (!newAddress.trim()) return;
@@ -135,17 +160,48 @@ function CheckoutPage() {
                   <div
                     key={idx}
                     className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-center justify-content-between"
-                    onClick={() => setSelectedAddressIdx(idx)}
+                    onClick={() => editingIndex !== idx && setSelectedAddressIdx(idx)}
                   >
-                    <div className="d-flex align-items-center gap-3">
-                      <span
-                        className={`checkout-radio-dot${selectedAddressIdx === idx ? " active" : ""}`}
-                      />
-                      <p className="checkout-address-text mb-0 fw-semibold">
-                        {addr}
-                      </p>
-                    </div>
-                    <FiEdit2 size={16} className="text-muted" />
+                    {editingIndex === idx ? (
+                      <>
+                        <input
+                          className="form-control form-control-sm me-2"
+                          value={addressValue}
+                          onChange={(e) => setAddressValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleEditSave(idx);
+                            if (e.key === "Escape") handleEditCancel();
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          autoFocus
+                        />
+                        <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button className="btn p-0 text-success" onClick={() => handleEditSave(idx)}>
+                            <FiCheck />
+                          </button>
+                          <button className="btn p-0 text-muted" onClick={handleEditCancel}>
+                            <FiX />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="d-flex align-items-center gap-3">
+                          <span
+                            className={`checkout-radio-dot${selectedAddressIdx === idx ? " active" : ""}`}
+                          />
+                          <p className="checkout-address-text mb-0 fw-semibold">
+                            {addr}
+                          </p>
+                        </div>
+                        <button
+                          className="btn p-0 text-muted"
+                          onClick={(e) => { e.stopPropagation(); handleEditStart(idx, addr); }}
+                        >
+                          <FiEdit2 size={16} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 ))
               )}
