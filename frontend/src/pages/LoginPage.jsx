@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, forgetPassword } from "../redux/authSlice";
 import { fetchCart } from "../redux/cartSlice";
+import { fetchFavourites } from "../redux/favouriteSlice";
 import { useNavigate, Link } from "react-router-dom";
 
 function LoginPage() {
@@ -22,6 +23,7 @@ function LoginPage() {
     const result = await dispatch(loginUser(formData));
     if (result.meta.requestStatus === "fulfilled") {
       dispatch(fetchCart());
+      dispatch(fetchFavourites());
       navigate("/");
     }
   }
