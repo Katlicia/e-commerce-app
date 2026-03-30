@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCartWithSync, decreaseCartWithSync, removeFromCartWithSync } from "../redux/cartSlice";
+import {
+  addToCartWithSync,
+  decreaseCartWithSync,
+  removeFromCartWithSync,
+  syncClearCart,
+} from "../redux/cartSlice";
 import HeaderLinks from "../components/HeaderLinks";
 import addressIcon from "../assets/Cart/address.svg";
 import checkoutIcon from "../assets/Cart/checkout.svg";
@@ -24,7 +29,6 @@ function CartPage() {
 
   const { cart, totalAmount } = useSelector((state) => state.cart);
   const [coupon, setCoupon] = useState("");
-
 
   return (
     <>
@@ -93,9 +97,7 @@ function CartPage() {
                   <button
                     className="btn p-0 text-danger"
                     onClick={() =>
-                      cart.forEach((item) =>
-                        dispatch(removeFromCartWithSync(item._id || item.id)),
-                      )
+                      cart.forEach((item) => dispatch(syncClearCart()))
                     }
                   >
                     <span className="text-selected">
