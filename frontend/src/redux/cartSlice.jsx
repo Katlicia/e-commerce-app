@@ -45,7 +45,8 @@ const cartSlice = createSlice({
       const id = action.payload;
       state.cart = state.cart.filter((item) => (item._id || item.id) !== id);
       state.totalAmount = state.cart.reduce(
-        (sum, item) => sum + parseFloat(item.price) * item.quantity,
+        (sum, item) =>
+          sum + parseFloat(item.discountedPrice || item.price) * item.quantity,
         0,
       );
       localStorage.setItem("cart", JSON.stringify(state.cart));
@@ -89,7 +90,8 @@ const cartSlice = createSlice({
 
     calculateCart: (state) => {
       state.totalAmount = state.cart.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) =>
+          sum + parseFloat(item.discountedPrice || item.price) * item.quantity,
         0,
       );
     },
