@@ -101,7 +101,7 @@ exports.forgetPassword = async (req, res) => {
 
   await user.save({ validateBeforeSave: false });
 
-  const passwordUrl = `${req.protocol}://${req.get("host")}/reset/${resetToken}`;
+  const passwordUrl = `http://localhost:5173/reset/${resetToken}`;
 
   const message = `Password Reset: ${passwordUrl}`;
 
@@ -153,7 +153,7 @@ exports.resetPassword = async (req, res) => {
     });
   }
 
-  user.password = req.body.password;
+  user.password = await bcrypt.hash(req.body.password, 10);
   user.resetPasswordExpire = undefined;
   user.resetPasswordToken = undefined;
 
