@@ -1,0 +1,61 @@
+.checkout-email-input {
+  border: 1px solid #bdbdbd;
+}
+
+.checkout-hint {
+  font-size: 0.85rem;
+}
+
+.checkout-address-item {
+  cursor: pointer;
+}
+
+.checkout-radio-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ff7700;
+  background-color: transparent;
+  flex-shrink: 0;
+}
+
+.checkout-radio-dot.active {
+  background-color: #ff7700;
+}
+
+.checkout-address-text {
+  font-size: 0.9rem;
+}
+
+.checkout-kargo-item {
+  cursor: pointer;
+  flex: 1 1 calc(50% - 8px);
+}
+
+.checkout-kargo-label {
+  font-size: 0.85rem;
+}
+
+.checkout-kargo-price {
+  font-size: 0.8rem;
+}
+
+.checkout-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ff7700;
+  background-color: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkout-checkbox:checked {
+  background-color: #ff7700;
+}
+
+.checkout-sozlesme-label {
+  font-size: 0.85rem;
+}
