@@ -44,6 +44,15 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    favourites: [
+      {
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+      },
+    ],
   },
   { timestamps: true },
 );
