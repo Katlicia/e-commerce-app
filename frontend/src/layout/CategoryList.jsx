@@ -12,6 +12,10 @@ function CategoryDropdown({ cat, selectedCategory, onSelect }) {
   const [children, setChildren] = useState([]);
   const [loadingChildren, setLoadingChildren] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const toggle = () => {
     if (!open && children.length === 0) {
       setLoadingChildren(true);

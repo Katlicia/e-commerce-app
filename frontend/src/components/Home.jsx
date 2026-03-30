@@ -12,8 +12,13 @@ import banner2 from "../assets/Banners/banner2.png";
 import banner3 from "../assets/Banners/banner3.png";
 import liptonBanner from "../assets/Banners/lipton-banner.png";
 import cifBanner from "../assets/Banners/cif-banner.png";
+import { useEffect } from "react";
 
 function Home() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <HeaderLinks />

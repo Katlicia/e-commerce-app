@@ -61,6 +61,7 @@ function ProductDetails() {
 
   useEffect(() => {
     const interval = setInterval(() => setTime(getTimeLeft()), 1000);
+    window.scrollTo(0, 0);
     return () => clearInterval(interval);
   }, []);
 
