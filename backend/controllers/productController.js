@@ -3,7 +3,7 @@ const ProductFilter = require("../utils/productFilter");
 const cloaudinary = require("cloudinary").v2;
 
 exports.getProducts = async (req, res) => {
-  const resultPerPage = 10;
+  const resultPerPage = req.query.limit ? parseInt(req.query.limit) : 10;
   const productFilter = new ProductFilter(Product.find(), req.query)
     .search()
     .filter()

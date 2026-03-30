@@ -13,6 +13,7 @@ export const getProducts = createAsyncThunk("products", async (params = {}) => {
   if (params.keyword) query.set("keyword", params.keyword);
   if (params.brand) query.set("brand", params.brand);
   if (params.category) query.set("category", params.category);
+  if (params.limit) query.set("limit", params.limit);
   const response = await fetch(`${BASE_URL}/products?${query.toString()}`);
   return await response.json();
 });
