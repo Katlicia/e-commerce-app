@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import tempIcon from "../assets/temp.png";
 import firsatiBadge from "../assets/Products/gunun_firsati.svg";
-import { FaRegStar, FaStar, FaCheck } from "react-icons/fa6";
+import { FaRegStar, FaStar } from "react-icons/fa6";
 import "../styles/DealOfDay.css";
 import "../styles/Chances.css";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getProducts } from "../redux/productSlice";
 
 const featuredProduct = {
   id: 1,
@@ -18,96 +20,6 @@ const featuredProduct = {
   stock: 620,
   totalStock: 896,
 };
-
-const gridProducts = [
-  {
-    id: 1,
-    name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
-    price: "128.00",
-    image: tempIcon,
-    badge: null,
-    code: 1,
-    rating: 5,
-    reviewCount: 68,
-  },
-  {
-    id: 2,
-    name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
-    price: "128.00",
-    image: tempIcon,
-    badge: null,
-    code: 2,
-    rating: 5,
-    reviewCount: 68,
-  },
-  {
-    id: 3,
-    name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: "en-cok-satan",
-    code: 3,
-    rating: 5,
-    reviewCount: 68,
-    stock: "Stokta 82 adet var",
-  },
-  {
-    id: 4,
-    name: "Selpak Extra Rulo Kağıt Havlu 8'Li Paket",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 4,
-    rating: 5,
-    reviewCount: 68,
-    stock: "Sadece 2 adet kaldı",
-  },
-  {
-    id: 5,
-    name: "Apple Bluetooth AirPods Max MGYH3",
-    price: "128.00",
-    image: tempIcon,
-    badge: null,
-    code: 5,
-    rating: 5,
-    reviewCount: 68,
-  },
-  {
-    id: 6,
-    name: "Logitech G203 Wired 8000 DPI For PC/Mac",
-    price: "128.00",
-    image: tempIcon,
-    badge: null,
-    code: 6,
-    rating: 5,
-    reviewCount: 68,
-  },
-  {
-    id: 7,
-    name: "Laptop MateBook Pro 8GB 256GB - 2K Display",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 7,
-    rating: 5,
-    reviewCount: 68,
-    stock: "Stokta 82 adet var",
-  },
-  {
-    id: 8,
-    name: "Samsung Galaxy S21 FE 8GB/128GB",
-    price: "128.00",
-    oldPrice: "148.00",
-    image: tempIcon,
-    badge: null,
-    code: 8,
-    rating: 5,
-    reviewCount: 68,
-  },
-];
 
 const TARGET = new Date(
   Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000,
@@ -124,6 +36,14 @@ function getTimeLeft() {
 
 function DealOfDay() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [gridProducts, setGridProducts] = useState([]);
+
+  useEffect(() => {
+    dispatch(getProducts({ limit: 8 })).then((res) => {
+      if (res.payload) setGridProducts(res.payload);
+    });
+  }, []);
 
   const [time, setTime] = useState(getTimeLeft());
   const {
@@ -214,7 +134,7 @@ function DealOfDay() {
         <div className="col-12 col-lg-9">
           <div className="row row-cols-2 row-cols-md-4 g-3">
             {gridProducts.map((product) => (
-              <div key={product.id} className="col">
+              <div key={product._id} className="col">
                 <ProductCard product={product} />
               </div>
             ))}
