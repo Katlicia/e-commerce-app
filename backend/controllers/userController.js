@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
 exports.getUsers = async (req, res) => {
   const users = await User.find().select("-password");
@@ -62,6 +63,45 @@ exports.getUserAddresses = async (req, res) => {
     res.status(200).json(req.user.addresses);
   } catch (err) {
     console.error("getUserAddresses error:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Mevcut ve yeni şifre gerekli." });
+    }
+    const user = await User.findById(req.user._id);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Mevcut şifre hatalı." });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Yeni şifre en az 6 karakter olmalıdır." });
+    }
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.status(200).json({ message: "Şifre güncellendi." });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.updateUserAddress = async (req, res) => {
+  try {
+    const { index, address } = req.body;
+    if (index === undefined || !address) {
+      return res.status(400).json({ message: "Index ve address gerekli." });
+    }
+    if (index < 0 || index >= req.user.addresses.length) {
+      return res.status(400).json({ message: "Geçersiz adres index." });
+    }
+    req.user.addresses[index] = address;
+    await req.user.save();
+    res.status(200).json(req.user.addresses);
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
