@@ -8,13 +8,22 @@ exports.authenticationMiddle = async (req, res, next) => {
     return res.status(403).json({ message: "You are not logged in." });
   }
 
-  const decodedData = jwt.verify(token, process.env.JWT_KEY);
+  let decodedData;
+  try {
+    decodedData = jwt.verify(token, process.env.JWT_KEY);
+  } catch (err) {
+    return res.status(403).json({ message: "Invalid or expired token." });
+  }
 
   if (!decodedData) {
     return res.status(403).json({ message: "Invalid token." });
   }
 
-  req.user = await User.findById(decodedData.id);
+  try {
+    req.user = await User.findById(decodedData.id);
+  } catch (err) {
+    return res.status(500).json({ message: "Database error." });
+  }
 
   if (!req.user) {
     return res.status(401).json({ message: "User not found." });
