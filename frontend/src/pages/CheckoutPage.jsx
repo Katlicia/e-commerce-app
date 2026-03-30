@@ -318,7 +318,6 @@ function CheckoutPage() {
                     <span
                       className={`checkout-radio-dot${selectedPayment === "hepsipay" ? " active" : ""}`}
                     />
-                    {/* <img src={HepsipayLogo} alt="hepsipay" height={20} /> */}
                     <span>Hepsi Pay</span>
                   </div>
                   <img src={HepsipayLogo} alt="hepsipay" height={28} />

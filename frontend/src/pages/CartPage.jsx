@@ -14,12 +14,9 @@ import { RiFileExcel2Line } from "react-icons/ri";
 import { FaRegBookmark } from "react-icons/fa";
 import { CiSearch, CiShoppingBasket } from "react-icons/ci";
 import CartProgress from "../components/CartProgress";
-import smileEmoji from "../assets/Emoji/smile.svg";
+import CartSummary from "../components/CartSummary";
 
-const KDV1_RATE = 0.01;
-const KDV20_RATE = 0.2;
 const FREE_SHIPPING_THRESHOLD = 500;
-const SHIPPING_COST = 49.9;
 
 function CartPage() {
   const dispatch = useDispatch();
@@ -28,21 +25,6 @@ function CartPage() {
   const { cart, totalAmount } = useSelector((state) => state.cart);
   const [coupon, setCoupon] = useState("");
 
-  const totalDiscount = +cart
-    .filter((item) => item.discountedPrice)
-    .reduce(
-      (sum, item) =>
-        sum +
-        (parseFloat(item.price) - parseFloat(item.discountedPrice)) *
-          item.quantity,
-      0,
-    )
-    .toFixed(2);
-
-  const kdv1 = +(totalAmount * KDV1_RATE).toFixed(2);
-  const kdv20 = +(totalAmount * KDV20_RATE).toFixed(2);
-  const shipping = totalAmount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const total = +(totalAmount + shipping).toFixed(2);
 
   return (
     <>
@@ -264,8 +246,8 @@ function CartPage() {
                 />
 
                 <h6 className="fw-bold mb-3">Sipariş Özeti</h6>
-
-                <div
+                <CartSummary />
+                {/* <div
                   className="d-flex justify-content-between mb-2"
                   style={{ fontSize: "0.875rem" }}
                 >
@@ -309,9 +291,9 @@ function CartPage() {
                       -{totalDiscount.toFixed(2)}₺
                     </span>
                   </div>
-                )}
+                )} */}
 
-                <hr className="my-2" />
+                {/* <hr className="my-2" />
 
                 <div className="d-flex justify-content-between mb-3">
                   <span className="fw-bold">TOPLAM</span>
@@ -321,7 +303,7 @@ function CartPage() {
                   >
                     {total.toFixed(2)}₺
                   </span>
-                </div>
+                </div> */}
 
                 <div className="d-flex align-items-center gap-2 mb-3">
                   <input
