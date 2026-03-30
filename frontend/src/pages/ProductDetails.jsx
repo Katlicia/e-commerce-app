@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import { getProductDetail } from "../redux/productSlice";
 import {
-  addToCart,
+  addToCartWithSync,
   addToFavourites,
   removeFromFavourites,
 } from "../redux/cartSlice";
@@ -79,7 +79,7 @@ function ProductDetails() {
 
   function handleAddToCart() {
     for (let i = 0; i < quantity; i++) {
-      dispatch(addToCart({ ...product, image: currentImg }));
+      dispatch(addToCartWithSync({ ...product, image: currentImg }));
     }
   }
 

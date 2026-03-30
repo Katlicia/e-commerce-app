@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { addToCart, decreaseCart, removeFromCart } from "../redux/cartSlice";
+import { addToCartWithSync, decreaseCartWithSync, removeFromCartWithSync } from "../redux/cartSlice";
 import HeaderLinks from "../components/HeaderLinks";
 import addressIcon from "../assets/Cart/address.svg";
 import checkoutIcon from "../assets/Cart/checkout.svg";
@@ -94,7 +94,7 @@ function CartPage() {
                     className="btn p-0 text-danger"
                     onClick={() =>
                       cart.forEach((item) =>
-                        dispatch(removeFromCart(item._id || item.id)),
+                        dispatch(removeFromCartWithSync(item._id || item.id)),
                       )
                     }
                   >
@@ -171,8 +171,8 @@ function CartPage() {
                           className="btn btn-sm px-2 py-1"
                           onClick={() =>
                             item.quantity === 1
-                              ? dispatch(removeFromCart(itemId))
-                              : dispatch(decreaseCart(itemId))
+                              ? dispatch(removeFromCartWithSync(itemId))
+                              : dispatch(decreaseCartWithSync(itemId))
                           }
                         >
                           {item.quantity === 1 ? <FaTrash size={11} /> : "−"}
@@ -189,7 +189,7 @@ function CartPage() {
                         </span>
                         <button
                           className="btn btn-sm px-2 py-1"
-                          onClick={() => dispatch(addToCart(item))}
+                          onClick={() => dispatch(addToCartWithSync(item))}
                         >
                           +
                         </button>

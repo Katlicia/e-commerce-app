@@ -12,9 +12,9 @@ import {
 } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addToCart,
-  decreaseCart,
-  removeFromCart,
+  addToCartWithSync,
+  decreaseCartWithSync,
+  removeFromCartWithSync,
   addToFavourites,
   removeFromFavourites,
 } from "../redux/cartSlice";
@@ -153,8 +153,8 @@ function ProductCard({ product }) {
               onClick={(e) => {
                 e.stopPropagation();
                 cartItem.quantity === 1
-                  ? dispatch(removeFromCart(productId))
-                  : dispatch(decreaseCart(productId));
+                  ? dispatch(removeFromCartWithSync(productId))
+                  : dispatch(decreaseCartWithSync(productId));
               }}
             >
               {cartItem.quantity === 1 ? (
@@ -169,7 +169,7 @@ function ProductCard({ product }) {
               style={{ fontSize: "20px", color: "inherit" }}
               onClick={(e) => {
                 e.stopPropagation();
-                dispatch(addToCart(product));
+                dispatch(addToCartWithSync(product));
               }}
             >
               +
@@ -180,7 +180,7 @@ function ProductCard({ product }) {
             className="btn card-button w-100 mt-auto"
             onClick={(e) => {
               e.stopPropagation();
-              dispatch(addToCart(product));
+              dispatch(addToCartWithSync(product));
             }}
           >
             Sepete Ekle

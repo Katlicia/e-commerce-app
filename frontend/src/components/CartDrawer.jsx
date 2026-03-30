@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { decreaseCart, addToCart, removeFromCart } from "../redux/cartSlice";
+import { decreaseCartWithSync, addToCartWithSync, removeFromCartWithSync } from "../redux/cartSlice";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa6";
 import "../styles/CartDrawer.css";
@@ -95,8 +95,8 @@ function CartDrawer() {
                           className="btn cart-qty-btn"
                           onClick={() =>
                             item.quantity === 1
-                              ? dispatch(removeFromCart(itemId))
-                              : dispatch(decreaseCart(itemId))
+                              ? dispatch(removeFromCartWithSync(itemId))
+                              : dispatch(decreaseCartWithSync(itemId))
                           }
                         >
                           {item.quantity === 1 ? <FaTrash size={12} /> : "−"}
@@ -104,7 +104,7 @@ function CartDrawer() {
                         <span className="cart-qty-num">{item.quantity}</span>
                         <button
                           className="btn cart-qty-btn"
-                          onClick={() => dispatch(addToCart(item))}
+                          onClick={() => dispatch(addToCartWithSync(item))}
                         >
                           +
                         </button>

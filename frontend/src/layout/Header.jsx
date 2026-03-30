@@ -7,7 +7,7 @@ import { logoutUser } from "../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/Footer/logo.svg";
 import { useEffect, useState } from "react";
-import { calculateCart } from "../redux/cartSlice";
+import { calculateCart, clearCartLocal } from "../redux/cartSlice";
 import { getKeyword } from "../redux/generalSlice";
 
 function Header() {
@@ -98,7 +98,7 @@ function Header() {
                   <li>
                     <button
                       className="dropdown-item text-danger"
-                      onClick={() => dispatch(logoutUser())}
+                      onClick={() => { dispatch(logoutUser()); dispatch(clearCartLocal()); }}
                     >
                       Çıkış Yap
                     </button>
