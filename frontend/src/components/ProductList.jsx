@@ -61,8 +61,6 @@ function ProductList({ title, settings = {} }) {
     rowRef.current.scrollBy({ left: 600, behavior: "smooth" });
   }
 
-  console.log(products);
-
   return (
     <div className="container my-4">
       {title && (
