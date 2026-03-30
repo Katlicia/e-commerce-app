@@ -15,6 +15,7 @@ import CartPage from "./pages/CartPage.jsx";
 import FavouritesPage from "./pages/FavouritesPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
+import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
@@ -33,11 +34,15 @@ function App() {
           element={user ? <Navigate to="/" /> : <RegisterPage />}
         />
         <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<UserProfile />} />
+        <Route
+          path="/profile"
+          element={user ? <UserProfile /> : <Navigate to="/" />}
+        />
         <Route path="/products" element={<CategoryList />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/favourites" element={<FavouritesPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/reset/:token" element={<ResetPasswordPage />} />
         <Route path="/:id" element={<ProductDetails />} />
         <Route path="*" element={<Home />} />
       </Routes>
