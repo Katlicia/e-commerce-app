@@ -8,7 +8,7 @@ import "../styles/FavouritesPage.css";
 import ProductList from "../components/ProductList";
 
 function FavouritesPage() {
-  const { favourites } = useSelector((state) => state.cart);
+  const { favourites } = useSelector((state) => state.favourite);
   const [displayed, setDisplayed] = useState(favourites);
   const [fadingIds, setFadingIds] = useState(new Set());
   const prevIds = useRef(new Set(favourites.map((f) => f._id || f.id)));
