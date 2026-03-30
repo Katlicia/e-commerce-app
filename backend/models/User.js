@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    addresses: [{ type: String }],
     resetPasswordToken: {
       type: String,
     },

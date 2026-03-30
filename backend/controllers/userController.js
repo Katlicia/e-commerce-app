@@ -8,17 +8,15 @@ exports.getUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
   if (!user) {
-    res.status(404).json({ message: "Kullanıcı bulunamadı" });
+    return res.status(404).json({ message: "Kullanıcı bulunamadı" });
   }
   res.status(200).json(user);
 };
 
-// exports.getUserDetail = async (req, res) => {
-//   const user = await User.findById(req.params.id);
-//   res.status.json(200).json({
-//     user,
-//   });
-// };
+exports.getUserDetail = async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -isAdmin");
+  res.status(200).json(user);
+};
 
 exports.updateUser = async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -42,5 +40,28 @@ exports.deleteUser = async (req, res) => {
     res.status(200).json({ message: "Kullanıcı silindi" });
   } else {
     res.status(404).json({ message: "Kullanıcı bulunamadı" });
+  }
+};
+
+exports.addUserAddresses = async (req, res) => {
+  try {
+    const updated = await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { addresses: req.body.address } },
+      { new: true },
+    );
+    res.status(201).json(updated.addresses);
+  } catch (err) {
+    console.error("addUserAddresses error:", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getUserAddresses = async (req, res) => {
+  try {
+    res.status(200).json(req.user.addresses);
+  } catch (err) {
+    console.error("getUserAddresses error:", err.message);
+    res.status(500).json({ message: err.message });
   }
 };
