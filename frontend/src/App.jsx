@@ -14,6 +14,7 @@ import CategoryList from "./layout/CategoryList.jsx";
 import CartPage from "./pages/CartPage.jsx";
 import FavouritesPage from "./pages/FavouritesPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
@@ -32,6 +33,7 @@ function App() {
           element={user ? <Navigate to="/" /> : <RegisterPage />}
         />
         <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/products" element={<CategoryList />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/favourites" element={<FavouritesPage />} />
