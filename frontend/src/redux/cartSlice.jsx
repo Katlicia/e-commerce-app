@@ -34,7 +34,8 @@ const cartSlice = createSlice({
         state.cart.push({ ...product, quantity: 1 });
       }
       state.totalAmount = state.cart.reduce(
-        (sum, item) => sum + parseFloat(item.price) * item.quantity,
+        (sum, item) =>
+          sum + parseFloat(item.discountedPrice || item.price) * item.quantity,
         0,
       );
       localStorage.setItem("cart", JSON.stringify(state.cart));
@@ -59,7 +60,8 @@ const cartSlice = createSlice({
         state.cart = state.cart.filter((item) => (item._id || item.id) !== id);
       }
       state.totalAmount = state.cart.reduce(
-        (sum, item) => sum + parseFloat(item.price) * item.quantity,
+        (sum, item) =>
+          sum + parseFloat(item.discountedPrice || item.price) * item.quantity,
         0,
       );
       localStorage.setItem("cart", JSON.stringify(state.cart));
@@ -79,7 +81,9 @@ const cartSlice = createSlice({
 
     removeFromFavourites: (state, action) => {
       const id = action.payload;
-      state.favourites = state.favourites.filter((item) => (item._id || item.id) !== id);
+      state.favourites = state.favourites.filter(
+        (item) => (item._id || item.id) !== id,
+      );
       localStorage.setItem("favourites", JSON.stringify(state.favourites));
     },
 
