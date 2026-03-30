@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../redux/authSlice";
+import { loginUser, forgetPassword } from "../redux/authSlice";
 import { useNavigate, Link } from "react-router-dom";
 
 function LoginPage() {
@@ -9,6 +9,8 @@ function LoginPage() {
   const { loading, error } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState(null);
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,6 +21,20 @@ function LoginPage() {
     const result = await dispatch(loginUser(formData));
     if (result.meta.requestStatus === "fulfilled") {
       navigate("/");
+    }
+  }
+
+  async function handleForgetPassword() {
+    if (!formData.email) {
+      setResetError("Lütfen önce e-posta adresinizi girin.");
+      return;
+    }
+    setResetError(null);
+    const result = await dispatch(forgetPassword(formData.email));
+    if (forgetPassword.fulfilled.match(result)) {
+      setResetSent(true);
+    } else {
+      setResetError(result.payload);
     }
   }
 
@@ -38,7 +54,7 @@ function LoginPage() {
             required
           />
         </div>
-        <div className="mb-3">
+        <div className="mb-1">
           <label className="form-label">Şifre</label>
           <input
             type="password"
@@ -49,6 +65,27 @@ function LoginPage() {
             required
           />
         </div>
+        <div className="text-end mb-3">
+          <button
+            type="button"
+            className="btn btn-link p-0 text-decoration-none"
+            style={{ fontSize: 13, color: "#f83b0a" }}
+            onClick={handleForgetPassword}
+            disabled={loading}
+          >
+            Şifremi unuttum
+          </button>
+        </div>
+        {resetError && (
+          <div className="alert alert-danger py-2" style={{ fontSize: 13 }}>
+            {resetError}
+          </div>
+        )}
+        {resetSent && (
+          <div className="alert alert-success py-2" style={{ fontSize: 13 }}>
+            Şifre sıfırlama bağlantısı <strong>{formData.email}</strong> adresine gönderildi.
+          </div>
+        )}
         <button type="submit" className="btn w-100 card-button" disabled={loading}>
           {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
         </button>

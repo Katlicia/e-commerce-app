@@ -31,6 +31,33 @@ export const addUserAddress = createAsyncThunk(
   },
 );
 
+export const editUserAddress = createAsyncThunk(
+  "user/editAddress",
+  async ({ index, address }, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.put("/users/me/addresses", { index, address });
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Adres güncellenemedi.");
+    }
+  },
+);
+
+export const changePassword = createAsyncThunk(
+  "user/changePassword",
+  async ({ currentPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.put("/users/me/password", {
+        currentPassword,
+        newPassword,
+      });
+      return data.message;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Şifre güncellenemedi.");
+    }
+  },
+);
+
 export const updateUser = createAsyncThunk(
   "user/update",
   async ({ userId, formData }, { rejectWithValue }) => {
@@ -79,6 +106,31 @@ export const userSlice = createSlice({
         state.addresses = action.payload;
       })
       .addCase(addUserAddress.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(editUserAddress.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editUserAddress.fulfilled, (state, action) => {
+        state.loading = false;
+        state.addresses = action.payload;
+      })
+      .addCase(editUserAddress.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(changePassword.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
