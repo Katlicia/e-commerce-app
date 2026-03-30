@@ -33,7 +33,7 @@ exports.register = async (req, res) => {
 
   const cookieOptions = {
     httpOnly: true,
-    expires: new Date(Date.now() + 30 * 24 * 24 * 60 * 1000),
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   };
 
   res.status(201).cookie("token", token, cookieOptions).json({
@@ -101,7 +101,7 @@ exports.forgetPassword = async (req, res) => {
 
   await user.save({ validateBeforeSave: false });
 
-  const passwordUrl = `http://localhost:5173/reset/${resetToken}`;
+  const passwordUrl = `${process.env.CLIENT_URL}/reset/${resetToken}`;
 
   const message = `Password Reset: ${passwordUrl}`;
 
@@ -132,7 +132,7 @@ exports.forgetPassword = async (req, res) => {
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
 
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Email could not be sent." });
   }
 };
 
@@ -169,7 +169,12 @@ exports.resetPassword = async (req, res) => {
   };
 
   res.status(200).cookie("token", token, cookieOptions).json({
-    user,
+    user: {
+      _id: user._id,
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+    },
     token,
   });
 };

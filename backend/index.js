@@ -15,14 +15,14 @@ const cloudinary = require("cloudinary").v2;
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env_CLOUDINARY_SECRET_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET_KEY,
 });
 
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   }),
 );
