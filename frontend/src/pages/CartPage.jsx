@@ -81,9 +81,7 @@ function CartPage() {
           </div>
         ) : (
           <div className="row g-4 align-items-start">
-            {/* Sol: Ürün listesi */}
             <div className="col-12 col-lg-8">
-              {/* Araç çubuğu */}
               <div className="cart-toolbar d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                 <div className="cart-search d-flex align-items-center border rounded-2 px-3 py-1">
                   <input
