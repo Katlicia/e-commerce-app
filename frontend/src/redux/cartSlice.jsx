@@ -1,13 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../utils/axiosInstance";
 
-const getFavouritesFromStorage = () => {
-  if (localStorage.getItem("favourites")) {
-    return JSON.parse(localStorage.getItem("favourites"));
-  }
-  return [];
-};
-
 const getCartFromStorage = () => {
   if (localStorage.getItem("cart")) {
     return JSON.parse(localStorage.getItem("cart"));
@@ -68,7 +61,6 @@ export const syncClearCart = createAsyncThunk("cart/syncClear", async () => {
 });
 
 const initialState = {
-  favourites: getFavouritesFromStorage(),
   cart: getCartFromStorage(),
   totalAmount: 0,
 };
@@ -109,26 +101,6 @@ const cartSlice = createSlice({
       localStorage.setItem("cart", JSON.stringify(state.cart));
     },
 
-    addToFavourites: (state, action) => {
-      const product = action.payload;
-      const id = product._id || product.id;
-      const already = state.favourites.find(
-        (item) => (item._id || item.id) === id,
-      );
-      if (!already) {
-        state.favourites.push(product);
-        localStorage.setItem("favourites", JSON.stringify(state.favourites));
-      }
-    },
-
-    removeFromFavourites: (state, action) => {
-      const id = action.payload;
-      state.favourites = state.favourites.filter(
-        (item) => (item._id || item.id) !== id,
-      );
-      localStorage.setItem("favourites", JSON.stringify(state.favourites));
-    },
-
     calculateCart: (state) => {
       state.totalAmount = calcTotal(state.cart);
     },
@@ -163,8 +135,6 @@ export const {
   addToCart,
   decreaseCart,
   removeFromCart,
-  addToFavourites,
-  removeFromFavourites,
   calculateCart,
   clearCartLocal,
 } = cartSlice.actions;
