@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import { logoutUser } from "../redux/authSlice";
 import { getUserAddresses, addUserAddress } from "../redux/userSlice";
 import CheckoutComponent from "../components/CheckoutComponent";
+import CartSummary from "../components/CartSummary";
 import { FiEdit2 } from "react-icons/fi";
 import CardOutlineLogo from "../assets/Checkout/card-outline.svg";
 import CardsLogo from "../assets/Checkout/cards.svg";
 import HepsipayLogo from "../assets/Checkout/hepsipay.svg";
 import TransferLogo from "../assets/Checkout/transfer.svg";
-import WalletLogo from "../assets/Checkout/wallet.svg";
 import coinsLogo from "../assets/Checkout/coins.png";
 import "../styles/CheckoutPage.css";
 
@@ -25,6 +25,7 @@ function CheckoutPage() {
   const user = useSelector((state) => state.auth.user);
   const { addresses: apiAddresses } = useSelector((state) => state.user);
   const { totalAmount } = useSelector((state) => state.cart);
+  const { cart } = useSelector((state) => state.cart);
 
   const [email, setEmail] = useState("");
   const [selectedAddressIdx, setSelectedAddressIdx] = useState(0);
@@ -353,7 +354,44 @@ function CheckoutPage() {
             </button>
           </div>
 
-          <div className="col-12 col-lg-6"></div>
+          <div className="col-12 col-lg-6">
+            <div className="d-flex flex-column gap-2 mb-4">
+              {cart.flatMap((item) =>
+                Array.from({ length: item.quantity }, (_, i) => (
+                  <div
+                    key={`${item._id || item.id}-${i}`}
+                    className="d-flex align-items-center justify-content-between gap-3"
+                  >
+                    <img
+                      src={item.images?.[0]?.url}
+                      alt={item.name}
+                      style={{
+                        width: 64,
+                        height: 64,
+                        objectFit: "contain",
+                        flexShrink: 0,
+                      }}
+                      className="rounded-2 border"
+                    />
+                    <p
+                      className="mb-0 flex-grow-1"
+                      style={{ fontSize: "0.875rem" }}
+                    >
+                      {item.name}
+                    </p>
+                    <p
+                      className="mb-0 fw-semibold"
+                      style={{ fontSize: "0.875rem", flexShrink: 0 }}
+                    >
+                      {Number(item.discountedPrice || item.price).toFixed(2)}₺
+                    </p>
+                  </div>
+                )),
+              )}
+            </div>
+            <hr />
+            <CartSummary />
+          </div>
         </div>
       </div>
     </div>
