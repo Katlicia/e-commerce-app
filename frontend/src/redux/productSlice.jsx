@@ -23,6 +23,21 @@ export const getProductDetail = createAsyncThunk("product", async (id) => {
   return await response.json();
 });
 
+export const createReview = createAsyncThunk(
+  "product/createReview",
+  async ({ productId, comment, rating }, { rejectWithValue }) => {
+    const response = await fetch(`${BASE_URL}/products/newReview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ productId, comment, rating }),
+    });
+    const data = await response.json();
+    if (!response.ok) return rejectWithValue(data.message);
+    return data;
+  }
+);
+
 export const productSlice = createSlice({
   name: "product",
   initialState,
