@@ -1,6 +1,6 @@
 const Product = require("../models/Product");
 const ProductFilter = require("../utils/productFilter");
-const cloaudinary = require("cloudinary").v2;
+const cloudinary = require("cloudinary").v2;
 
 exports.getProducts = async (req, res) => {
   const resultPerPage = req.query.limit ? parseInt(req.query.limit) : 10;
@@ -45,7 +45,7 @@ exports.createProduct = async (req, res) => {
 
   let allImage = [];
   for (let i = 0; i < images.length; i++) {
-    const result = await cloaudinary.uploader.upload(images[i], {
+    const result = await cloudinary.uploader.upload(images[i], {
       folder: "products",
     });
 
@@ -71,7 +71,7 @@ exports.deleteProduct = async (req, res) => {
       await cloudinary.uploader.destroy(product.images[i].public_id);
     }
 
-    await product.remove();
+    await Product.deleteOne({ _id: product._id });
     res.json({ message: "Ürün silindi" });
   } else {
     res.status(404).json({ message: "Ürün bulunamadı" });
@@ -79,38 +79,31 @@ exports.deleteProduct = async (req, res) => {
 };
 
 exports.updateProduct = async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+  const rawImages = req.body.images;
+  delete req.body.images;
+
+  if (rawImages) {
+    const images = Array.isArray(rawImages) ? rawImages : [rawImages];
+    const current = await Product.findById(req.params.id);
+    if (current) {
+      for (const img of current.images) {
+        await cloudinary.uploader.destroy(img.public_id);
+      }
+    }
+    const allImage = [];
+    for (const img of images) {
+      const result = await cloudinary.uploader.upload(img, {
+        folder: "products",
+      });
+      allImage.push({ public_id: result.public_id, url: result.secure_url });
+    }
+    req.body.images = allImage;
+  }
+
+  await Product.findByIdAndUpdate(req.params.id, req.body, {
+    returnDocument: "after",
     runValidators: true,
   });
-
-  let images = [];
-
-  if (typeof req.body.images === "string") {
-    images.push(req.body.images);
-  } else {
-    images = req.body.images;
-  }
-
-  if (images !== undefined) {
-    for (let i = 0; i < product.images.length; i++) {
-      await cloudinary.uploader.destroy(product.images[i].public_id);
-    }
-  }
-
-  let allImage = [];
-  for (let i = 0; i < images.length; i++) {
-    const result = await cloaudinary.uploader.upload(images[i], {
-      folder: "products",
-    });
-
-    allImage.push({
-      public_id: result.public_id,
-      url: result.secure_url,
-    });
-  }
-
-  req.body.images = allImage;
 
   res.json({ message: "Ürün güncellendi" });
 };
