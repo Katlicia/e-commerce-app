@@ -4,6 +4,7 @@ const generateToken = require("../utils/generateToken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
+const { isAdmin } = require("../middleware/auth");
 
 exports.register = async (req, res) => {
   const { name, surname, email, password } = req.body;
@@ -64,6 +65,41 @@ exports.login = async (req, res) => {
         surname: user.surname,
         email: user.email,
         token: token,
+      });
+    } else {
+      return res.status(401).json({ message: "Incorrect password." });
+    }
+  } else {
+    res.status(401).json({ message: "Invalid credentials." });
+  }
+};
+
+exports.adminLogin = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+
+  if (user) {
+    if (await bcrypt.compare(password, user.password)) {
+      if (!user.isAdmin) {
+        return res
+          .status(403)
+          .json({ message: "Access denied. Not an admin." });
+      }
+
+      const token = generateToken(user._id);
+
+      const cookieOptions = {
+        httpOnly: true,
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      };
+
+      res.status(200).cookie("token", token, cookieOptions).json({
+        _id: user._id,
+        name: user.name,
+        surname: user.surname,
+        email: user.email,
+        token: token,
+        isAdmin: user.isAdmin,
       });
     } else {
       return res.status(401).json({ message: "Incorrect password." });
@@ -168,13 +204,16 @@ exports.resetPassword = async (req, res) => {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   };
 
-  res.status(200).cookie("token", token, cookieOptions).json({
-    user: {
-      _id: user._id,
-      name: user.name,
-      surname: user.surname,
-      email: user.email,
-    },
-    token,
-  });
+  res
+    .status(200)
+    .cookie("token", token, cookieOptions)
+    .json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        surname: user.surname,
+        email: user.email,
+      },
+      token,
+    });
 };
