@@ -7,7 +7,6 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const User = require("../models/User");
 
-// Placeholder görseller (kategori slug → unsplash arama terimi bazlı)
 const img = (id) => ({
   public_id: `seed_${id}`,
   url: `https://picsum.photos/seed/${id}/400/400`,
@@ -30,9 +29,21 @@ const productsBySlug = {
       features: ["Çözünür kahve", "200g", "Yoğun aroma"],
       brand: "Nescafé",
       reviews: [
-        { name: "Ahmet Y.", comment: "Çok güzel bir kahve, her sabah içiyorum.", rating: 5 },
-        { name: "Zeynep K.", comment: "Aroması harika, fiyatına göre kaliteli.", rating: 4 },
-        { name: "Murat D.", comment: "Beklentimi karşıladı, tavsiye ederim.", rating: 4 },
+        {
+          name: "Ahmet Y.",
+          comment: "Çok güzel bir kahve, her sabah içiyorum.",
+          rating: 5,
+        },
+        {
+          name: "Zeynep K.",
+          comment: "Aroması harika, fiyatına göre kaliteli.",
+          rating: 4,
+        },
+        {
+          name: "Murat D.",
+          comment: "Beklentimi karşıladı, tavsiye ederim.",
+          rating: 4,
+        },
       ],
     },
     {
@@ -42,8 +53,16 @@ const productsBySlug = {
       stock: 120,
       rating: 5,
       reviews: [
-        { name: "Selin A.", comment: "Şimdiye kadar içtiğim en iyi hazır kahve.", rating: 5 },
-        { name: "Emre T.", comment: "Yumuşak tadı çok hoş, ikinci paketi aldım.", rating: 5 },
+        {
+          name: "Selin A.",
+          comment: "Şimdiye kadar içtiğim en iyi hazır kahve.",
+          rating: 5,
+        },
+        {
+          name: "Emre T.",
+          comment: "Yumuşak tadı çok hoş, ikinci paketi aldım.",
+          rating: 5,
+        },
       ],
     },
     {
@@ -204,10 +223,22 @@ const productsBySlug = {
       rating: 5,
       badge: "en-cok-satan",
       reviews: [
-        { name: "Büşra M.", comment: "Çikolata sevenler için vazgeçilmez!", rating: 5 },
-        { name: "Can Ö.", comment: "Oreo parçaları çok güzel dağılmış.", rating: 5 },
+        {
+          name: "Büşra M.",
+          comment: "Çikolata sevenler için vazgeçilmez!",
+          rating: 5,
+        },
+        {
+          name: "Can Ö.",
+          comment: "Oreo parçaları çok güzel dağılmış.",
+          rating: 5,
+        },
         { name: "Fatma S.", comment: "Çocuklar çok seviyor.", rating: 4 },
-        { name: "Hakan R.", comment: "Fiyatı biraz yüksek ama lezzeti iyi.", rating: 4 },
+        {
+          name: "Hakan R.",
+          comment: "Fiyatı biraz yüksek ama lezzeti iyi.",
+          rating: 4,
+        },
       ],
     },
     {
@@ -425,8 +456,16 @@ const productsBySlug = {
       rating: 5,
       badge: "en-cok-satan",
       reviews: [
-        { name: "Deniz A.", comment: "Saçlarım çok yumuşadı, kesinlikle tavsiye ederim.", rating: 5 },
-        { name: "Gizem Y.", comment: "Kokusu harika, uzun süre devam ediyor.", rating: 5 },
+        {
+          name: "Deniz A.",
+          comment: "Saçlarım çok yumuşadı, kesinlikle tavsiye ederim.",
+          rating: 5,
+        },
+        {
+          name: "Gizem Y.",
+          comment: "Kokusu harika, uzun süre devam ediyor.",
+          rating: 5,
+        },
         { name: "Serkan B.", comment: "Oldukça kaliteli bir ürün.", rating: 4 },
       ],
     },
@@ -470,8 +509,16 @@ const productsBySlug = {
       rating: 5,
       badge: "en-cok-satan",
       reviews: [
-        { name: "Ayşe K.", comment: "Ağzım sabah akşam tertemiz hissettiriyor.", rating: 5 },
-        { name: "Berk D.", comment: "Uzun süredir kullanıyorum, bırakamıyorum.", rating: 5 },
+        {
+          name: "Ayşe K.",
+          comment: "Ağzım sabah akşam tertemiz hissettiriyor.",
+          rating: 5,
+        },
+        {
+          name: "Berk D.",
+          comment: "Uzun süredir kullanıyorum, bırakamıyorum.",
+          rating: 5,
+        },
       ],
     },
     {
@@ -561,9 +608,21 @@ const productsBySlug = {
       rating: 5,
       badge: "en-cok-satan",
       reviews: [
-        { name: "Nilüfer A.", comment: "Bebeğim hiç kızarmadı, çok memnunuz.", rating: 5 },
-        { name: "Tolga M.", comment: "Gece boyunca sızdırmıyor, harika.", rating: 5 },
-        { name: "Esra B.", comment: "Biraz pahalı ama kalitesi iyi.", rating: 4 },
+        {
+          name: "Nilüfer A.",
+          comment: "Bebeğim hiç kızarmadı, çok memnunuz.",
+          rating: 5,
+        },
+        {
+          name: "Tolga M.",
+          comment: "Gece boyunca sızdırmıyor, harika.",
+          rating: 5,
+        },
+        {
+          name: "Esra B.",
+          comment: "Biraz pahalı ama kalitesi iyi.",
+          rating: 4,
+        },
         { name: "Caner Y.", comment: "Her zaman Pampers alıyoruz.", rating: 5 },
       ],
     },
@@ -632,9 +691,21 @@ const productsBySlug = {
       rating: 5,
       badge: "en-cok-satan",
       reviews: [
-        { name: "Elif S.", comment: "Renkler çok canlı, çocuğum çok sevdi.", rating: 5 },
-        { name: "Onur K.", comment: "Fiyatına göre kalitesi oldukça iyi.", rating: 4 },
-        { name: "Melis T.", comment: "Okulda kullanıyoruz, çok beğendik.", rating: 5 },
+        {
+          name: "Elif S.",
+          comment: "Renkler çok canlı, çocuğum çok sevdi.",
+          rating: 5,
+        },
+        {
+          name: "Onur K.",
+          comment: "Fiyatına göre kalitesi oldukça iyi.",
+          rating: 4,
+        },
+        {
+          name: "Melis T.",
+          comment: "Okulda kullanıyoruz, çok beğendik.",
+          rating: 5,
+        },
       ],
     },
     {

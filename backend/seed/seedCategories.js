@@ -270,7 +270,7 @@ const categoryTree = [
         slug: "bebek-bezi-mendil",
         children: [
           { name: "Bebek Bezi", slug: "bebek-bezi" },
-          { name: "Islak Mendil", slug: "bebek-islak-mendil" },
+          { name: "Bebek Islak Mendil", slug: "bebek-islak-mendil" },
           { name: "Emzirme Ürünleri", slug: "emzirme-urunleri" },
         ],
       },
