@@ -10,6 +10,7 @@ const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const favouriteRoutes = require("./routes/favouriteRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -38,6 +39,7 @@ app.use("/", productRoutes);
 app.use("/", categoryRoutes);
 app.use("/", cartRoutes);
 app.use("/", favouriteRoutes);
+app.use("/", orderRoutes);
 
 app.get("/", (req, res) => {
   res.send("API working.");
