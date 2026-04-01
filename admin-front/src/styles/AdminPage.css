@@ -1,0 +1,81 @@
+.admin-page {
+  min-height: 80vh;
+  padding: 2rem 0 4rem;
+}
+
+.admin-table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6c757d;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+.admin-table img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.admin-badge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.admin-form-card {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.admin-form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #495057;
+  margin-bottom: 4px;
+}
+
+.admin-image-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.admin-desc-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-panel-card {
+  width: 100%;
+  min-height: 200px;
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+.admin-panel-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
