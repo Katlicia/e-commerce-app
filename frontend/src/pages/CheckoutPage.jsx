@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/authSlice";
+import { clearCartLocal } from "../redux/cartSlice";
 import {
   getUserAddresses,
   addUserAddress,
@@ -17,6 +18,7 @@ import TransferLogo from "../assets/Checkout/transfer.svg";
 import coinsLogo from "../assets/Checkout/coins.png";
 import "../styles/CheckoutPage.css";
 import { useFormik } from "formik";
+import { createOrder } from "../redux/orderSlice";
 
 
 const KARGO_OPTIONS = [
@@ -28,10 +30,12 @@ const KARGO_OPTIONS = [
 
 function CheckoutPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const { addresses: apiAddresses } = useSelector((state) => state.user);
   const { totalAmount } = useSelector((state) => state.cart);
   const { cart } = useSelector((state) => state.cart);
+  const { loading: orderLoading, success: orderSuccess, error: orderError } = useSelector((state) => state.order);
 
   const [addressError, setAddressError] = useState("");
   const [selectedAddressIdx, setSelectedAddressIdx] = useState(0);
@@ -91,7 +95,20 @@ function CheckoutPage() {
         return;
       }
       setAddressError("");
-      console.log("Sipariş:", { email: user ? user.email : values.email, addresses, selectedAddressIdx, selectedKargo, selectedPayment, ...values });
+
+      const items = cart.map((item) => ({
+        product: item._id || item.id,
+        price: item.discountedPrice || item.price,
+        quantity: item.quantity,
+      }));
+
+      dispatch(
+        createOrder({
+          items,
+          totalAmount,
+          address: addresses[selectedAddressIdx],
+        })
+      );
     },
   });
 
@@ -100,6 +117,16 @@ function CheckoutPage() {
       dispatch(getUserAddresses());
     }
   }, [user]);
+
+  useEffect(() => {
+    if (orderSuccess) {
+      dispatch(clearCartLocal());
+      navigate("/profile");
+    }
+    if (orderError) {
+      alert("Sipariş oluşturulamadı: " + orderError);
+    }
+  }, [orderSuccess, orderError]);
 
   const handleEditStart = (idx, addr) => {
     setEditingIndex(idx);
@@ -540,8 +567,9 @@ function CheckoutPage() {
               <button
                 type="submit"
                 className="btn orange-btn w-100 rounded py-3 fw-semibold mb-5"
+                disabled={orderLoading}
               >
-                Siparişi Tamamla
+                {orderLoading ? "İşleniyor..." : "Siparişi Tamamla"}
               </button>
             </form>
           </div>
