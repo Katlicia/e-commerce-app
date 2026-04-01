@@ -39,6 +39,7 @@ function App() {
           element={user ? <UserProfile /> : <Navigate to="/" />}
         />
         <Route path="/products" element={<CategoryList />} />
+
         <Route path="/cart" element={<CartPage />} />
         <Route path="/favourites" element={<FavouritesPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
