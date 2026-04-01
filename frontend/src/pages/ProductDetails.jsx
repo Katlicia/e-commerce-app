@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
-import { getProductDetail } from "../redux/productSlice";
+import { getProductDetail, createReview } from "../redux/productSlice";
 import { addToCartWithSync } from "../redux/cartSlice";
 import {
   addToFavouritesWithSync,
@@ -49,6 +49,12 @@ function ProductDetails() {
   const dispatch = useDispatch();
   const { product } = useSelector((state) => state.product);
   const { favourites } = useSelector((state) => state.favourite);
+  const { user } = useSelector((state) => state.auth);
+
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -77,6 +83,19 @@ function ProductDetails() {
   const price = product.price || 0;
   const discountedPrice = product.discountedPrice || null;
   const discountPercent = product.discountPercent || null;
+
+  async function handleReviewSubmit(e) {
+    e.preventDefault();
+    if (!reviewComment.trim()) return;
+    setReviewSubmitting(true);
+    await dispatch(createReview({ productId, comment: reviewComment, rating: reviewRating }));
+    setReviewComment("");
+    setReviewRating(5);
+    setReviewSubmitting(false);
+    setReviewSuccess(true);
+    dispatch(getProductDetail(id));
+    setTimeout(() => setReviewSuccess(false), 3000);
+  }
 
   function handleAddToCart() {
     for (let i = 0; i < quantity; i++) {
@@ -386,6 +405,74 @@ function ProductDetails() {
       </div>
       <ProductList title={"Benzer Ürünler"} />
       <ProductFeaturesSection product={product} />
+
+      <div className="container my-5">
+        <h5 className="fw-bold mb-4">Yorumlar ({product.reviews?.length || 0})</h5>
+
+        {user ? (
+          <form onSubmit={handleReviewSubmit} className="pd-review-form mb-5">
+            <div className="mb-3">
+              <label className="fw-semibold mb-2 d-block" style={{ fontSize: 14 }}>Puanınız</label>
+              <div className="d-flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    style={{ fontSize: 22, cursor: "pointer", color: star <= reviewRating ? "#ff7700" : "#dee2e6" }}
+                    onClick={() => setReviewRating(star)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="fw-semibold mb-2 d-block" style={{ fontSize: 14 }}>Yorumunuz</label>
+              <textarea
+                className="form-control"
+                rows={3}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Ürün hakkında görüşlerinizi yazın..."
+              />
+            </div>
+            {reviewSuccess && (
+              <p className="text-success mb-2" style={{ fontSize: 13 }}>Yorumunuz eklendi!</p>
+            )}
+            <button
+              type="submit"
+              className="btn pd-add-btn rounded-pill px-4"
+              disabled={reviewSubmitting}
+            >
+              {reviewSubmitting ? "Gönderiliyor..." : "Yorum Yap"}
+            </button>
+          </form>
+        ) : (
+          <div className="pd-review-login mb-5">
+            <p style={{ fontSize: 14, color: "#6c757d" }}>
+              Yorum yapabilmek için{" "}
+              <Link to="/login" style={{ color: "#ff4d2d", fontWeight: 600 }}>giriş yapın</Link>.
+            </p>
+          </div>
+        )}
+
+        {product.reviews?.length > 0 ? (
+          <div className="d-flex flex-column gap-3">
+            {product.reviews.map((rev, i) => (
+              <div key={i} className="pd-review-item">
+                <div className="d-flex align-items-center gap-2 mb-1">
+                  <span className="fw-semibold" style={{ fontSize: 14 }}>{rev.name}</span>
+                  <span style={{ fontSize: 13, color: "#ff7700" }}>
+                    {"★".repeat(rev.rating)}{"☆".repeat(5 - rev.rating)}
+                  </span>
+                </div>
+                <p className="mb-0" style={{ fontSize: 14, color: "#424040" }}>{rev.comment}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ fontSize: 14, color: "#6c757d" }}>Henüz yorum yapılmamış.</p>
+        )}
+      </div>
     </>
   );
 }
