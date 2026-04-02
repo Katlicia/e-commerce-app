@@ -1,140 +1,151 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getUserAddresses,
-  addUserAddress,
-  editUserAddress,
-} from "../redux/userSlice";
-import { FiPlus, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { getUserAddresses, addUserAddress, editUserAddress } from "../redux/userSlice";
+import { FiPlus, FiEdit2 } from "react-icons/fi";
+
+const addressSchema = Yup.object({
+  fullName: Yup.string().required("Ad soyad zorunludur"),
+  phone: Yup.string()
+    .matches(/^[0-9]{10,11}$/, "Geçerli bir telefon numarası giriniz")
+    .required("Telefon zorunludur"),
+  city: Yup.string().required("Şehir zorunludur"),
+  district: Yup.string().required("İlçe zorunludur"),
+  address: Yup.string().required("Adres zorunludur"),
+});
+
+const emptyValues = {
+  fullName: "",
+  phone: "",
+  city: "",
+  district: "",
+  address: "",
+};
+
+function AddressForm({ initialValues, onSubmit, onCancel, loading }) {
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={addressSchema}
+      onSubmit={onSubmit}
+      enableReinitialize
+    >
+      {() => (
+        <Form className="border rounded-3 p-3 d-flex flex-column gap-2">
+          <div className="row g-2">
+            <div className="col-12 col-sm-6">
+              <Field name="fullName" className="form-control form-control-sm" placeholder="Ad Soyad" />
+              <ErrorMessage name="fullName" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+            </div>
+            <div className="col-12 col-sm-6">
+              <Field name="phone" className="form-control form-control-sm" placeholder="Telefon" />
+              <ErrorMessage name="phone" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+            </div>
+            <div className="col-12 col-sm-6">
+              <Field name="city" className="form-control form-control-sm" placeholder="Şehir" />
+              <ErrorMessage name="city" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+            </div>
+            <div className="col-12 col-sm-6">
+              <Field name="district" className="form-control form-control-sm" placeholder="İlçe" />
+              <ErrorMessage name="district" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+            </div>
+            <div className="col-12">
+              <Field name="address" as="textarea" rows={2} className="form-control form-control-sm" placeholder="Açık Adres" />
+              <ErrorMessage name="address" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+            </div>
+          </div>
+          <div className="d-flex gap-2 mt-1">
+            <button type="submit" className="btn orange-btn rounded-pill px-3" disabled={loading}>
+              {loading ? "..." : "Kaydet"}
+            </button>
+            <button type="button" className="btn btn-outline-secondary rounded-pill px-3" onClick={onCancel}>
+              İptal
+            </button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+}
 
 function ProfileAddressForm() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { addresses, loading } = useSelector((state) => state.user);
 
-  const [newAddress, setNewAddress] = useState("");
-  const [showInput, setShowInput] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
-  const [editValue, setEditValue] = useState("");
 
   useEffect(() => {
     if (user) dispatch(getUserAddresses());
   }, [user]);
 
-  const handleAdd = () => {
-    if (!newAddress.trim()) return;
-    dispatch(addUserAddress(newAddress));
-    setNewAddress("");
-    setShowInput(false);
+  const handleAdd = (values, { resetForm }) => {
+    dispatch(addUserAddress(values)).then(() => {
+      resetForm();
+      setShowAdd(false);
+    });
   };
 
-  const handleEditStart = (idx, addr) => {
-    setEditingIndex(idx);
-    setEditValue(addr);
-  };
-
-  const handleEditSave = (idx) => {
-    if (!editValue.trim()) return;
-    dispatch(editUserAddress({ index: idx, address: editValue }));
-    setEditingIndex(null);
-    setEditValue("");
-  };
-
-  const handleEditCancel = () => {
-    setEditingIndex(null);
-    setEditValue("");
+  const handleEdit = (values, { resetForm }) => {
+    dispatch(editUserAddress({ index: editingIndex, ...values })).then(() => {
+      resetForm();
+      setEditingIndex(null);
+    });
   };
 
   return (
-    <div>
-      <div className="d-flex flex-column gap-2 mb-3">
-        {addresses.length === 0 && !loading && (
-          <p className="text-muted" style={{ fontSize: "0.9rem" }}>
-            Kayıtlı adresiniz yok.
-          </p>
-        )}
-        {addresses.map((addr, idx) => (
-          <div
-            key={idx}
-            className="d-flex align-items-center justify-content-between border rounded-3 px-3 py-2 gap-2"
-          >
-            {editingIndex === idx ? (
-              <>
-                <input
-                  className="form-control form-control-sm"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleEditSave(idx);
-                    if (e.key === "Escape") handleEditCancel();
-                  }}
-                  autoFocus
-                />
-                <div className="d-flex gap-1">
-                  <button
-                    className="btn p-0 text-success"
-                    onClick={() => handleEditSave(idx)}
-                    disabled={loading}
-                  >
-                    <FiCheck />
-                  </button>
-                  <button
-                    className="btn p-0 text-muted"
-                    onClick={handleEditCancel}
-                  >
-                    <FiX />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <span style={{ fontSize: "0.9rem" }}>{addr}</span>
-                <div className="d-flex gap-2">
-                  <button
-                    className="btn p-0 text-muted"
-                    onClick={() => handleEditStart(idx, addr)}
-                  >
-                    <FiEdit2 />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
+    <div className="d-flex flex-column gap-2">
+      {addresses.length === 0 && !loading && (
+        <p className="text-muted" style={{ fontSize: "0.9rem" }}>
+          Kayıtlı adresiniz yok.
+        </p>
+      )}
 
-      {showInput ? (
-        <div className="d-flex gap-2">
-          <input
-            className="form-control"
-            placeholder="Yeni adres giriniz"
-            value={newAddress}
-            onChange={(e) => setNewAddress(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            autoFocus
-          />
-          <button
-            className="btn orange-btn rounded-pill px-3"
-            onClick={handleAdd}
-            disabled={loading}
-          >
-            {loading ? "..." : "Ekle"}
-          </button>
-          <button
-            className="btn btn-outline-secondary rounded-pill px-3"
-            onClick={() => {
-              setShowInput(false);
-              setNewAddress("");
-            }}
-          >
-            İptal
-          </button>
+      {addresses.map((addr, idx) => (
+        <div key={idx}>
+          {editingIndex === idx ? (
+            <AddressForm
+              initialValues={{
+                fullName: addr.fullName || "",
+                phone: addr.phone || "",
+                city: addr.city || "",
+                district: addr.district || "",
+                address: addr.address || "",
+                }}
+              onSubmit={handleEdit}
+              onCancel={() => setEditingIndex(null)}
+              loading={loading}
+            />
+          ) : (
+            <div className="d-flex align-items-start justify-content-between border rounded-3 px-3 py-2 gap-2">
+              <div style={{ fontSize: "0.9rem" }}>
+                <div className="fw-semibold">{addr.fullName}</div>
+                <div className="text-muted">{addr.city} / {addr.district}</div>
+                <div>{addr.address}</div>
+                <div className="text-muted">{addr.phone}</div>
+              </div>
+              <button className="btn p-0 text-muted flex-shrink-0" onClick={() => setEditingIndex(idx)}>
+                <FiEdit2 />
+              </button>
+            </div>
+          )}
         </div>
+      ))}
+
+      {showAdd ? (
+        <AddressForm
+          initialValues={emptyValues}
+          onSubmit={handleAdd}
+          onCancel={() => setShowAdd(false)}
+          loading={loading}
+        />
       ) : (
         <button
-          className="btn rounded-pill d-flex align-items-center gap-2"
+          className="btn rounded-pill d-flex align-items-center gap-2 mt-1"
           style={{ borderColor: "#f83b0a", color: "#f83b0a" }}
-          onClick={() => setShowInput(true)}
+          onClick={() => setShowAdd(true)}
         >
           <FiPlus />
           <span>Yeni Adres Ekle</span>
