@@ -10,16 +10,29 @@ import {
 } from "../redux/userSlice";
 import CheckoutComponent from "../components/CheckoutComponent";
 import CartSummary from "../components/CartSummary";
-import { FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { FiEdit2 } from "react-icons/fi";
 import CardOutlineLogo from "../assets/Checkout/card-outline.svg";
 import CardsLogo from "../assets/Checkout/cards.svg";
 import HepsipayLogo from "../assets/Checkout/hepsipay.svg";
 import TransferLogo from "../assets/Checkout/transfer.svg";
 import coinsLogo from "../assets/Checkout/coins.png";
 import "../styles/CheckoutPage.css";
-import { useFormik } from "formik";
+import { useFormik, Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { createOrder, resetOrderState } from "../redux/orderSlice";
 import OrderModal from "../components/OrderModal";
+
+const addressSchema = Yup.object({
+  fullName: Yup.string().required("Ad soyad zorunludur"),
+  phone: Yup.string()
+    .matches(/^[0-9]{10,11}$/, "Geçerli bir telefon numarası giriniz")
+    .required("Telefon zorunludur"),
+  city: Yup.string().required("Şehir zorunludur"),
+  district: Yup.string().required("İlçe zorunludur"),
+  address: Yup.string().required("Adres zorunludur"),
+});
+
+const emptyAddress = { fullName: "", phone: "", city: "", district: "", address: "" };
 
 const KARGO_OPTIONS = [
   { id: "mng", label: "Mng Kargo", price: 74.99 },
@@ -29,6 +42,10 @@ const KARGO_OPTIONS = [
 ];
 
 function CheckoutPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
@@ -45,11 +62,11 @@ function CheckoutPage() {
   const [selectedAddressIdx, setSelectedAddressIdx] = useState(0);
   const [selectedKargo, setSelectedKargo] = useState("yurtici");
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [newAddress, setNewAddress] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("kredi");
   const [editingIndex, setEditingIndex] = useState(null);
-  const [addressValue, setAddressValue] = useState("");
   const [selectedInstallment, setSelectedInstallment] = useState(0);
+  const [sameAsBilling, setSameAsBilling] = useState(true);
+  const [selectedBillingIdx, setSelectedBillingIdx] = useState(0);
   const [localAddresses, setLocalAddresses] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalStatus, setModalStatus] = useState(null);
@@ -117,6 +134,7 @@ function CheckoutPage() {
           items,
           totalAmount,
           address: addresses[selectedAddressIdx],
+          ...(!sameAsBilling && { billingAddress: addresses[selectedBillingIdx] }),
           ...(!user && { guestEmail: values.email }),
         }),
       );
@@ -141,40 +159,26 @@ function CheckoutPage() {
     }
   }, [orderSuccess, orderError]);
 
-  const handleEditStart = (idx, addr) => {
-    setEditingIndex(idx);
-    setAddressValue(addr);
-  };
-
-  const handleEditSave = (idx) => {
-    if (!addressValue.trim()) return;
+  const handleAddAddress = (values, { resetForm }) => {
     if (user) {
-      dispatch(editUserAddress({ index: idx, address: addressValue }));
-    } else {
-      setLocalAddresses((prev) =>
-        prev.map((a, i) => (i === idx ? addressValue : a)),
-      );
-    }
-    setEditingIndex(null);
-    setAddressValue("");
-  };
-
-  const handleEditCancel = () => {
-    setEditingIndex(null);
-    setAddressValue("");
-  };
-
-  const handleAddAddress = () => {
-    if (!newAddress.trim()) return;
-    if (user) {
-      dispatch(addUserAddress(newAddress)).then(() => {
+      dispatch(addUserAddress(values)).then(() => {
         dispatch(getUserAddresses());
       });
     } else {
-      setLocalAddresses((prev) => [...prev, newAddress]);
+      setLocalAddresses((prev) => [...prev, values]);
     }
-    setNewAddress("");
+    resetForm();
     setShowAddressForm(false);
+  };
+
+  const handleEditSave = (idx, values, { resetForm }) => {
+    if (user) {
+      dispatch(editUserAddress({ index: idx, ...values }));
+    } else {
+      setLocalAddresses((prev) => prev.map((a, i) => (i === idx ? values : a)));
+    }
+    resetForm();
+    setEditingIndex(null);
   };
 
   const handleModalClose = () => {
@@ -208,7 +212,11 @@ function CheckoutPage() {
                   Çıkış Yap
                 </span>
               ) : (
-                <Link className="text-selected" to="/login" state={{ from: "/checkout" }}>
+                <Link
+                  className="text-selected"
+                  to="/login"
+                  state={{ from: "/checkout" }}
+                >
                   Giriş Yap
                 </Link>
               )}
@@ -236,28 +244,48 @@ function CheckoutPage() {
               <span
                 className="text-selected"
                 role="button"
-                onClick={() => setShowAddressForm((v) => !v)}
+                onClick={() => { setShowAddressForm((v) => !v); setEditingIndex(null); }}
               >
                 {showAddressForm ? "İptal" : "Adres Ekle"}
               </span>
             </div>
 
             {showAddressForm && (
-              <div className="border rounded-3 p-3 mb-3 d-flex flex-column gap-2">
-                <input
-                  className="form-control"
-                  placeholder="Adres giriniz"
-                  value={newAddress}
-                  onChange={(e) => setNewAddress(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn orange-btn rounded-pill"
-                  onClick={handleAddAddress}
-                >
-                  Kaydet
-                </button>
-              </div>
+              <Formik
+                initialValues={emptyAddress}
+                validationSchema={addressSchema}
+                onSubmit={handleAddAddress}
+              >
+                {({ isSubmitting }) => (
+                  <Form className="border rounded-3 p-3 mb-3 d-flex flex-column gap-2">
+                    <div className="row g-2">
+                      <div className="col-12 col-sm-6">
+                        <Field name="fullName" className="form-control form-control-sm" placeholder="Ad Soyad" />
+                        <ErrorMessage name="fullName" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                      </div>
+                      <div className="col-12 col-sm-6">
+                        <Field name="phone" className="form-control form-control-sm" placeholder="Telefon" />
+                        <ErrorMessage name="phone" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                      </div>
+                      <div className="col-12 col-sm-6">
+                        <Field name="city" className="form-control form-control-sm" placeholder="Şehir" />
+                        <ErrorMessage name="city" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                      </div>
+                      <div className="col-12 col-sm-6">
+                        <Field name="district" className="form-control form-control-sm" placeholder="İlçe" />
+                        <ErrorMessage name="district" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                      </div>
+                      <div className="col-12">
+                        <Field name="address" as="textarea" rows={2} className="form-control form-control-sm" placeholder="Açık Adres" />
+                        <ErrorMessage name="address" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                      </div>
+                    </div>
+                    <button type="submit" className="btn orange-btn rounded-pill" disabled={isSubmitting}>
+                      Kaydet
+                    </button>
+                  </Form>
+                )}
+              </Formik>
             )}
 
             {addressError && (
@@ -272,70 +300,118 @@ function CheckoutPage() {
                 </p>
               ) : (
                 addresses.map((addr, idx) => (
-                  <div
-                    key={idx}
-                    className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-center justify-content-between"
-                    onClick={() =>
-                      editingIndex !== idx && setSelectedAddressIdx(idx)
-                    }
-                  >
+                  <div key={idx}>
                     {editingIndex === idx ? (
-                      <>
-                        <input
-                          className="form-control form-control-sm me-2"
-                          value={addressValue}
-                          onChange={(e) => setAddressValue(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleEditSave(idx);
-                            if (e.key === "Escape") handleEditCancel();
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                          autoFocus
-                        />
-                        <div
-                          className="d-flex gap-1"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            className="btn p-0 text-success"
-                            onClick={() => handleEditSave(idx)}
-                          >
-                            <FiCheck />
-                          </button>
-                          <button
-                            type="button"
-                            className="btn p-0 text-muted"
-                            onClick={handleEditCancel}
-                          >
-                            <FiX />
-                          </button>
-                        </div>
-                      </>
+                      <Formik
+                        initialValues={{
+                          fullName: addr.fullName || "",
+                          phone: addr.phone || "",
+                          city: addr.city || "",
+                          district: addr.district || "",
+                          address: addr.address || "",
+                        }}
+                        validationSchema={addressSchema}
+                        onSubmit={(values, helpers) => handleEditSave(idx, values, helpers)}
+                        enableReinitialize
+                      >
+                        {() => (
+                          <Form className="border rounded-3 p-3 d-flex flex-column gap-2">
+                            <div className="row g-2">
+                              <div className="col-12 col-sm-6">
+                                <Field name="fullName" className="form-control form-control-sm" placeholder="Ad Soyad" />
+                                <ErrorMessage name="fullName" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                              </div>
+                              <div className="col-12 col-sm-6">
+                                <Field name="phone" className="form-control form-control-sm" placeholder="Telefon" />
+                                <ErrorMessage name="phone" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                              </div>
+                              <div className="col-12 col-sm-6">
+                                <Field name="city" className="form-control form-control-sm" placeholder="Şehir" />
+                                <ErrorMessage name="city" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                              </div>
+                              <div className="col-12 col-sm-6">
+                                <Field name="district" className="form-control form-control-sm" placeholder="İlçe" />
+                                <ErrorMessage name="district" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                              </div>
+                              <div className="col-12">
+                                <Field name="address" as="textarea" rows={2} className="form-control form-control-sm" placeholder="Açık Adres" />
+                                <ErrorMessage name="address" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                              </div>
+                            </div>
+                            <div className="d-flex gap-2">
+                              <button type="submit" className="btn orange-btn rounded-pill px-3">Kaydet</button>
+                              <button type="button" className="btn btn-outline-secondary rounded-pill px-3" onClick={() => setEditingIndex(null)}>İptal</button>
+                            </div>
+                          </Form>
+                        )}
+                      </Formik>
                     ) : (
-                      <>
-                        <div className="d-flex align-items-center gap-3">
-                          <span
-                            className={`checkout-radio-dot${selectedAddressIdx === idx ? " active" : ""}`}
-                          />
-                          <p className="checkout-address-text mb-0 fw-semibold">
-                            {addr}
-                          </p>
+                      <div
+                        className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-start justify-content-between"
+                        onClick={() => setSelectedAddressIdx(idx)}
+                      >
+                        <div className="d-flex align-items-start gap-3">
+                          <span className={`checkout-radio-dot mt-1${selectedAddressIdx === idx ? " active" : ""}`} />
+                          <div style={{ fontSize: "0.875rem" }}>
+                            <p className="checkout-address-text mb-0 fw-semibold">{addr.fullName}</p>
+                            <p className="checkout-address-text mb-0 text-muted">{addr.city} / {addr.district}</p>
+                            <p className="checkout-address-text mb-0">{addr.address}</p>
+                            <p className="checkout-address-text mb-0 text-muted">{addr.phone}</p>
+                          </div>
                         </div>
                         <button
                           type="button"
-                          className="btn p-0 text-muted"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditStart(idx, addr);
-                          }}
+                          className="btn p-0 text-muted flex-shrink-0"
+                          onClick={(e) => { e.stopPropagation(); setEditingIndex(idx); }}
                         >
                           <FiEdit2 size={16} />
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 ))
+              )}
+            </div>
+
+            <h5 className="fw-bold mb-3">FATURA ADRESİ</h5>
+            <div className="d-flex flex-column gap-2 mb-4">
+              <div
+                className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-center gap-3"
+                onClick={() => setSameAsBilling(true)}
+                role="button"
+              >
+                <span className={`checkout-radio-dot${sameAsBilling ? " active" : ""}`} />
+                <span style={{ fontSize: "0.875rem" }}>Teslimat adresiyle aynı</span>
+              </div>
+              <div
+                className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-center gap-3"
+                onClick={() => setSameAsBilling(false)}
+                role="button"
+              >
+                <span className={`checkout-radio-dot${!sameAsBilling ? " active" : ""}`} />
+                <span style={{ fontSize: "0.875rem" }}>Farklı fatura adresi kullan</span>
+              </div>
+              {!sameAsBilling && (
+                addresses.length === 0 ? (
+                  <p className="checkout-hint text-muted">Kayıtlı adresiniz yok.</p>
+                ) : (
+                  addresses.map((addr, idx) => (
+                    <div
+                      key={idx}
+                      className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-start gap-3"
+                      onClick={() => setSelectedBillingIdx(idx)}
+                      role="button"
+                    >
+                      <span className={`checkout-radio-dot mt-1${selectedBillingIdx === idx ? " active" : ""}`} />
+                      <div style={{ fontSize: "0.875rem" }}>
+                        <p className="mb-0 fw-semibold">{addr.fullName}</p>
+                        <p className="mb-0 text-muted">{addr.city} / {addr.district}</p>
+                        <p className="mb-0">{addr.address}</p>
+                        <p className="mb-0 text-muted">{addr.phone}</p>
+                      </div>
+                    </div>
+                  ))
+                )
               )}
             </div>
 
