@@ -15,6 +15,18 @@ export const createOrder = createAsyncThunk(
   }
 );
 
+export const returnOrder = createAsyncThunk(
+  "order/returnOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(`/orders/${orderId}/return`);
+      return data.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Sipariş iade edilemedi.");
+    }
+  }
+);
+
 export const cancelOrder = createAsyncThunk(
   "order/cancelOrder",
   async (orderId, { rejectWithValue }) => {
@@ -72,6 +84,13 @@ const orderSlice = createSlice({
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(returnOrder.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(returnOrder.rejected, (state, action) => {
         state.error = action.payload;
       })
       .addCase(cancelOrder.fulfilled, (state, action) => {
