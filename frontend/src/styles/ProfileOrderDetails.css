@@ -8,8 +8,8 @@
 }
 
 .buttons:hover {
-  color: white;
-  background-color: #f83b0a;
+  border-color: #f83b0a;
+  color: #f83b0a;
 }
 
 .order-info-card {
