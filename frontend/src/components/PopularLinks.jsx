@@ -53,7 +53,6 @@ function PopularLinks() {
               {categories.map((cat) => (
                 <div key={cat._id} className="col">
                   <a
-                    href={`/kategori/${cat.slug}`}
                     className="text-muted text-decoration-none popular-link"
                     style={{ fontSize: "13px" }}
                   >
