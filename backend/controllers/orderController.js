@@ -3,13 +3,13 @@ const User = require("../models/User");
 
 exports.createOrder = async (req, res) => {
   try {
-    const { items, totalAmount, address, guestEmail } = req.body;
+    const { items, totalAmount, address, billingAddress, guestEmail } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "Sipariş öğeleri boş olamaz." });
     }
-    if (!address) {
-      return res.status(400).json({ message: "Teslimat adresi zorunludur." });
+    if (!address || !address.fullName || !address.phone || !address.city || !address.district || !address.address) {
+      return res.status(400).json({ message: "Teslimat adresi eksik veya hatalı." });
     }
     if (!req.user && !guestEmail) {
       return res.status(400).json({ message: "Misafir siparişi için mail adresi zorunludur." });
@@ -34,6 +34,7 @@ exports.createOrder = async (req, res) => {
       items,
       totalAmount,
       address,
+      ...(billingAddress && { billingAddress }),
     });
 
     if (req.user) {
@@ -59,6 +60,22 @@ exports.cancelOrder = async (req, res) => {
     res.status(200).json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: "Bir hata oluştu." });
+  }
+};
+
+exports.returnOrder = async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+    if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
+    if (order.status !== "Teslim Edildi") {
+      return res.status(400).json({ message: "Yalnızca teslim edilen siparişler iade edilebilir." });
+    }
+    order.status = "İade Edildi";
+    await order.save();
+    await order.populate("items.product", "name images price discountedPrice");
+    res.status(200).json({ success: true, order });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
