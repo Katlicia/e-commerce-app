@@ -1,0 +1,24 @@
+.buttons {
+  border-color: #f83b0a;
+  color: #f83b0a;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  padding: 15px 20px;
+  white-space: nowrap;
+}
+
+.buttons:hover {
+  color: white;
+  background-color: #f83b0a;
+}
+
+.order-info-card {
+  border: 1px solid #e7e7e7;
+  border-radius: 0.375rem;
+  cursor: default;
+}
+
+.order-info-card:hover {
+  transform: none;
+  border-color: rgba(0, 0, 0, 0.175) !important;
+}
