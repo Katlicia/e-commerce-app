@@ -27,54 +27,39 @@ function CartSummary() {
 
   return (
     <div>
-      <div
-        className="d-flex justify-content-between mb-2"
-        style={{ fontSize: "0.875rem" }}
-      >
+      <div className="d-flex justify-content-between mb-3">
         <span className="text-muted">Sipariş Tutarı</span>
-        <span>{totalAmount.toFixed(2)}₺</span>
+        <span className="fw-semibold">{totalAmount.toFixed(2)}₺</span>
       </div>
-      <div
-        className="d-flex justify-content-between mb-2"
-        style={{ fontSize: "0.875rem" }}
-      >
+      <div className="d-flex justify-content-between mb-3">
         <span className="text-muted">KDV (%1)</span>
-        <span>{kdv1.toFixed(2)}₺</span>
+        <span className="fw-semibold">{kdv1.toFixed(2)}₺</span>
       </div>
-      <div
-        className="d-flex justify-content-between mb-2"
-        style={{ fontSize: "0.875rem" }}
-      >
+      <div className="d-flex justify-content-between mb-3">
         <span className="text-muted">KDV (%20)</span>
-        <span>{kdv20.toFixed(2)}₺</span>
+        <span className="fw-semibold">{kdv20.toFixed(2)}₺</span>
       </div>
-      <div
-        className="d-flex justify-content-between mb-2"
-        style={{ fontSize: "0.875rem" }}
-      >
+      <div className="d-flex justify-content-between mb-3">
         <span className="text-muted">Kargo Bedeli</span>
-        <span className={shipping === 0 ? "text-success" : ""}>
+        <span className={`fw-semibold ${shipping === 0 ? "text-success" : ""}`}>
           {shipping === 0 ? "Ücretsiz" : `${shipping.toFixed(2)}₺`}
         </span>
       </div>
 
       {totalDiscount > 0 && (
-        <div
-          className="d-flex justify-content-between mb-3"
-          style={{ fontSize: "0.875rem" }}
-        >
-          <div className="d-flex gap-1">
+        <div className="d-flex justify-content-between mb-3">
+          <div className="d-flex gap-1 align-items-center">
             <span className="text-muted">İndirimler</span>
             <img src={smileEmoji} alt="Smile Emoji" />
           </div>
-          <span className="text-success">-{totalDiscount.toFixed(2)}₺</span>
+          <span className="fw-semibold text-success">-{totalDiscount.toFixed(2)}₺</span>
         </div>
       )}
-      <hr className="my-2" />
+      <hr className="my-3" />
 
       <div className="d-flex justify-content-between mb-3">
-        <span className="fw-bold">TOPLAM</span>
-        <span className="fw-bold text-selected" style={{ fontSize: "1.1rem" }}>
+        <span className="fw-bold fs-6">TOPLAM</span>
+        <span className="fw-bold text-selected fs-5">
           {total.toFixed(2)}₺
         </span>
       </div>
