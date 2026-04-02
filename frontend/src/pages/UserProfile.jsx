@@ -26,6 +26,10 @@ const CONTENT_TITLES = {
 };
 
 function UserProfile() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const dispatch = useDispatch();
   const { orders, loading: ordersLoading } = useSelector(
     (state) => state.order,
@@ -34,6 +38,12 @@ function UserProfile() {
   const [activeTab, setActiveTab] = useState("siparisler");
   const [openDropdowns, setOpenDropdowns] = useState({});
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  const filteredOrders = orders.filter((o) => {
+    if (activeTab === "iptallerim") return o.status === "İptal Edildi";
+    if (activeTab === "iadelerim") return o.status === "İade Edildi";
+    return o.status !== "İptal Edildi" && o.status !== "İade Edildi";
+  });
 
   useEffect(() => {
     dispatch(getUserOrders());
@@ -67,7 +77,6 @@ function UserProfile() {
         </div>
 
         <div className="row g-4 align-items-start">
-          {/* Sidebar */}
           <div className="col-12 col-lg-3">
             <div className="profile-sidebar">
               <div className="d-flex flex-column px-4">
@@ -77,7 +86,6 @@ function UserProfile() {
                   </span>
                 </div>
 
-                {/* Hesap Yönetimi */}
                 <div className="dot-border">
                   <div
                     className="d-flex align-items-center gap-2"
@@ -157,7 +165,6 @@ function UserProfile() {
             </div>
           </div>
 
-          {/* Content */}
           <div className="col-12 col-lg-9">
             {!(activeNav === "siparisler" && selectedOrder) && (
               <h5 className="fw-bold mb-3">{CONTENT_TITLES[activeNav]}</h5>
@@ -197,7 +204,7 @@ function UserProfile() {
                 ) : orders.length === 0 ? (
                   <p className="text-muted">Henüz siparişiniz yok.</p>
                 ) : (
-                  orders.map((order) => (
+                  filteredOrders.map((order) => (
                     <ProfileOrderCard
                       key={order._id}
                       order={order}
