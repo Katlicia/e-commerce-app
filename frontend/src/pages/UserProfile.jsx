@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import HeaderLinks from "../components/HeaderLinks";
 import { FiChevronDown, FiUser } from "react-icons/fi";
@@ -7,36 +8,9 @@ import ProfileOrderCard from "../components/ProfileOrderCard";
 import ProfileInfoForm from "../components/ProfileInfoForm";
 import ProfileAddressForm from "../components/ProfileAddressForm";
 import ProfilePasswordForm from "../components/ProfilePasswordForm";
-
-const MOCK_ORDERS = [
-  {
-    _id: "1",
-    date: "09 Eylül 2024 Cuma 15:00",
-    orderNo: "#456456",
-    status: "Teslim Edildi",
-    total: 345.65,
-    images: [],
-    extraCount: 5,
-  },
-  {
-    _id: "2",
-    date: "09 Eylül 2024 Cuma 15:00",
-    orderNo: "#456456",
-    status: "Hazırlanıyor",
-    total: 345.65,
-    images: [],
-    extraCount: 0,
-  },
-  {
-    _id: "3",
-    date: "09 Eylül 2024 Cuma 15:00",
-    orderNo: "#456456",
-    status: "Teslim Edildi",
-    total: 345.65,
-    images: [],
-    extraCount: 0,
-  },
-];
+import { getUserOrders } from "../redux/orderSlice";
+import ProfileOrderDetails from "../components/ProfileOrderDetails";
+import arrowIcon from "../assets/Profile/arrow.svg";
 
 const CONTENT_TITLES = {
   siparisler: "Siparişlerim",
@@ -52,9 +26,18 @@ const CONTENT_TITLES = {
 };
 
 function UserProfile() {
+  const dispatch = useDispatch();
+  const { orders, loading: ordersLoading } = useSelector(
+    (state) => state.order,
+  );
   const [activeNav, setActiveNav] = useState("siparisler");
   const [activeTab, setActiveTab] = useState("siparisler");
   const [openDropdowns, setOpenDropdowns] = useState({});
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    dispatch(getUserOrders());
+  }, []);
 
   const toggleDropdown = (id, e) => {
     e.stopPropagation();
@@ -176,28 +159,52 @@ function UserProfile() {
 
           {/* Content */}
           <div className="col-12 col-lg-9">
-            <h5 className="fw-bold mb-3">{CONTENT_TITLES[activeNav]}</h5>
+            {!(activeNav === "siparisler" && selectedOrder) && (
+              <h5 className="fw-bold mb-3">{CONTENT_TITLES[activeNav]}</h5>
+            )}
 
             {activeNav === "siparisler" && (
               <>
-                <div className="d-flex border-bottom mb-4">
-                  {["siparisler", "iptallerim", "iadelerim"].map((tab) => (
-                    <button
-                      key={tab}
-                      className={`profile-tab${activeTab === tab ? " active" : ""}`}
-                      onClick={() => setActiveTab(tab)}
-                    >
-                      {tab === "siparisler"
-                        ? "Siparişler"
-                        : tab === "iptallerim"
-                          ? "İptallerim"
-                          : "İadelerim"}
-                    </button>
-                  ))}
-                </div>
-                {MOCK_ORDERS.map((order) => (
-                  <ProfileOrderCard key={order._id} order={order} />
-                ))}
+                {selectedOrder ? (
+                  <button
+                    className="btn p-0 mb-3 d-flex align-items-center gap-1"
+                    onClick={() => setSelectedOrder(null)}
+                  >
+                    <img src={arrowIcon} alt="Geri" />
+                    Siparişlerime Geri Dön
+                  </button>
+                ) : (
+                  <div className="d-flex border-bottom mb-4">
+                    {["siparisler", "iptallerim", "iadelerim"].map((tab) => (
+                      <button
+                        key={tab}
+                        className={`profile-tab${activeTab === tab ? " active" : ""}`}
+                        onClick={() => setActiveTab(tab)}
+                      >
+                        {tab === "siparisler"
+                          ? "Siparişler"
+                          : tab === "iptallerim"
+                            ? "İptallerim"
+                            : "İadelerim"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedOrder ? (
+                  <ProfileOrderDetails order={selectedOrder} />
+                ) : ordersLoading ? (
+                  <p className="text-muted">Yükleniyor...</p>
+                ) : orders.length === 0 ? (
+                  <p className="text-muted">Henüz siparişiniz yok.</p>
+                ) : (
+                  orders.map((order) => (
+                    <ProfileOrderCard
+                      key={order._id}
+                      order={order}
+                      onDetailClick={() => setSelectedOrder(order)}
+                    />
+                  ))
+                )}
               </>
             )}
 
