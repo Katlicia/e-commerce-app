@@ -24,7 +24,15 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    addresses: [{ type: String }],
+    addresses: [
+      {
+        fullName: { type: String, required: true },
+        phone: { type: String, required: true },
+        city: { type: String, required: true },
+        district: { type: String, required: true },
+        address: { type: String, required: true },
+      },
+    ],
     resetPasswordToken: {
       type: String,
     },
