@@ -70,8 +70,8 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const product = action.payload;
-      const id = product._id || product.id;
+      const product = { ...action.payload, _id: action.payload._id || action.payload.id };
+      const id = product._id;
       const existing = state.cart.find((item) => (item._id || item.id) === id);
       if (existing) {
         existing.quantity += 1;
@@ -113,7 +113,14 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     const applyCart = (state, action) => {
-      state.cart = action.payload;
+      const seen = new Set();
+      state.cart = action.payload
+        .map((item) => ({ ...item, _id: item._id || item.id }))
+        .filter((item) => {
+          if (seen.has(item._id)) return false;
+          seen.add(item._id);
+          return true;
+        });
       state.totalAmount = calcTotal(state.cart);
       localStorage.setItem("cart", JSON.stringify(state.cart));
     };
