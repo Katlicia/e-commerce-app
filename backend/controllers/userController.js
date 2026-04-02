@@ -46,9 +46,13 @@ exports.deleteUser = async (req, res) => {
 
 exports.addUserAddresses = async (req, res) => {
   try {
+    const { fullName, phone, city, district, address } = req.body;
+    if (!fullName || !phone || !city || !district || !address) {
+      return res.status(400).json({ message: "Zorunlu adres alanları eksik." });
+    }
     const updated = await User.findByIdAndUpdate(
       req.user._id,
-      { $push: { addresses: req.body.address } },
+      { $push: { addresses: { fullName, phone, city, district, address } } },
       { new: true },
     );
     res.status(201).json(updated.addresses);
@@ -91,14 +95,14 @@ exports.changePassword = async (req, res) => {
 
 exports.updateUserAddress = async (req, res) => {
   try {
-    const { index, address } = req.body;
-    if (index === undefined || !address) {
-      return res.status(400).json({ message: "Index ve address gerekli." });
+    const { index, fullName, phone, city, district, address, billingAddress } = req.body;
+    if (index === undefined || !fullName || !phone || !city || !district || !address) {
+      return res.status(400).json({ message: "Zorunlu adres alanları eksik." });
     }
     if (index < 0 || index >= req.user.addresses.length) {
       return res.status(400).json({ message: "Geçersiz adres index." });
     }
-    req.user.addresses[index] = address;
+    req.user.addresses[index] = { fullName, phone, city, district, address, billingAddress };
     await req.user.save();
     res.status(200).json(req.user.addresses);
   } catch (err) {
