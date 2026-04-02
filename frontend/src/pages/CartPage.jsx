@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -29,6 +29,10 @@ function CartPage() {
 
   const { cart, totalAmount } = useSelector((state) => state.cart);
   const [coupon, setCoupon] = useState("");
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <>
@@ -249,64 +253,6 @@ function CartPage() {
 
                 <h6 className="fw-bold mb-3">Sipariş Özeti</h6>
                 <CartSummary />
-                {/* <div
-                  className="d-flex justify-content-between mb-2"
-                  style={{ fontSize: "0.875rem" }}
-                >
-                  <span className="text-muted">Sipariş Tutarı</span>
-                  <span>{totalAmount.toFixed(2)}₺</span>
-                </div>
-                <div
-                  className="d-flex justify-content-between mb-2"
-                  style={{ fontSize: "0.875rem" }}
-                >
-                  <span className="text-muted">KDV (%1)</span>
-                  <span>{kdv1.toFixed(2)}₺</span>
-                </div>
-                <div
-                  className="d-flex justify-content-between mb-2"
-                  style={{ fontSize: "0.875rem" }}
-                >
-                  <span className="text-muted">KDV (%20)</span>
-                  <span>{kdv20.toFixed(2)}₺</span>
-                </div>
-                <div
-                  className="d-flex justify-content-between mb-2"
-                  style={{ fontSize: "0.875rem" }}
-                >
-                  <span className="text-muted">Kargo Bedeli</span>
-                  <span className={shipping === 0 ? "text-success" : ""}>
-                    {shipping === 0 ? "Ücretsiz" : `${shipping.toFixed(2)}₺`}
-                  </span>
-                </div>
-
-                {totalDiscount > 0 && (
-                  <div
-                    className="d-flex justify-content-between mb-3"
-                    style={{ fontSize: "0.875rem" }}
-                  >
-                    <div className="d-flex gap-1">
-                      <span className="text-muted">İndirimler</span>
-                      <img src={smileEmoji} alt="Smile Emoji" />
-                    </div>
-                    <span className="text-success">
-                      -{totalDiscount.toFixed(2)}₺
-                    </span>
-                  </div>
-                )} */}
-
-                {/* <hr className="my-2" />
-
-                <div className="d-flex justify-content-between mb-3">
-                  <span className="fw-bold">TOPLAM</span>
-                  <span
-                    className="fw-bold text-selected"
-                    style={{ fontSize: "1.1rem" }}
-                  >
-                    {total.toFixed(2)}₺
-                  </span>
-                </div> */}
-
                 <div className="d-flex align-items-center gap-2 mb-3">
                   <input
                     className="form-control rounded-pill py-3 ps-4 text-muted"
