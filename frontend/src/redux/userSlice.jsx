@@ -17,11 +17,9 @@ export const getUserAddresses = createAsyncThunk(
 
 export const addUserAddress = createAsyncThunk(
   "user/addAddress",
-  async (address, { rejectWithValue }) => {
+  async (addressData, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.post("/users/me/addresses", {
-        address,
-      });
+      const { data } = await axiosInstance.post("/users/me/addresses", addressData);
       return data;
     } catch (err) {
       return rejectWithValue(
@@ -33,9 +31,9 @@ export const addUserAddress = createAsyncThunk(
 
 export const editUserAddress = createAsyncThunk(
   "user/editAddress",
-  async ({ index, address }, { rejectWithValue }) => {
+  async ({ index, ...addressData }, { rejectWithValue }) => {
     try {
-      const { data } = await axiosInstance.put("/users/me/addresses", { index, address });
+      const { data } = await axiosInstance.put("/users/me/addresses", { index, ...addressData });
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Adres güncellenemedi.");
