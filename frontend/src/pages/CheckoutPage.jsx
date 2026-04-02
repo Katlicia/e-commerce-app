@@ -18,8 +18,8 @@ import TransferLogo from "../assets/Checkout/transfer.svg";
 import coinsLogo from "../assets/Checkout/coins.png";
 import "../styles/CheckoutPage.css";
 import { useFormik } from "formik";
-import { createOrder } from "../redux/orderSlice";
-
+import { createOrder, resetOrderState } from "../redux/orderSlice";
+import OrderModal from "../components/OrderModal";
 
 const KARGO_OPTIONS = [
   { id: "mng", label: "Mng Kargo", price: 74.99 },
@@ -35,7 +35,11 @@ function CheckoutPage() {
   const { addresses: apiAddresses } = useSelector((state) => state.user);
   const { totalAmount } = useSelector((state) => state.cart);
   const { cart } = useSelector((state) => state.cart);
-  const { loading: orderLoading, success: orderSuccess, error: orderError } = useSelector((state) => state.order);
+  const {
+    loading: orderLoading,
+    success: orderSuccess,
+    error: orderError,
+  } = useSelector((state) => state.order);
 
   const [addressError, setAddressError] = useState("");
   const [selectedAddressIdx, setSelectedAddressIdx] = useState(0);
@@ -47,6 +51,8 @@ function CheckoutPage() {
   const [addressValue, setAddressValue] = useState("");
   const [selectedInstallment, setSelectedInstallment] = useState(0);
   const [localAddresses, setLocalAddresses] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalStatus, setModalStatus] = useState(null);
 
   const addresses = user ? apiAddresses : localAddresses;
 
@@ -77,8 +83,12 @@ function CheckoutPage() {
         if (!values.cardHolder) {
           errors.cardHolder = "Kart sahibi adı zorunludur";
         }
-        if (!values.expirationDate || !/^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(values.expirationDate)) {
-          errors.expirationDate = "Son kullanma tarihi MM/YY formatında olmalıdır";
+        if (
+          !values.expirationDate ||
+          !/^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(values.expirationDate)
+        ) {
+          errors.expirationDate =
+            "Son kullanma tarihi MM/YY formatında olmalıdır";
         }
         if (!values.cvv || !/^\d{3}$/.test(values.cvv)) {
           errors.cvv = "CVV 3 haneli olmalıdır";
@@ -107,7 +117,8 @@ function CheckoutPage() {
           items,
           totalAmount,
           address: addresses[selectedAddressIdx],
-        })
+          ...(!user && { guestEmail: values.email }),
+        }),
       );
     },
   });
@@ -121,10 +132,12 @@ function CheckoutPage() {
   useEffect(() => {
     if (orderSuccess) {
       dispatch(clearCartLocal());
-      navigate("/profile");
+      setModalStatus("success");
+      setShowModal(true);
     }
     if (orderError) {
-      alert("Sipariş oluşturulamadı: " + orderError);
+      setModalStatus("error");
+      setShowModal(true);
     }
   }, [orderSuccess, orderError]);
 
@@ -164,8 +177,22 @@ function CheckoutPage() {
     setShowAddressForm(false);
   };
 
+  const handleModalClose = () => {
+    setShowModal(false);
+    setModalStatus(null);
+    dispatch(resetOrderState());
+    formik.resetForm();
+    if (modalStatus === "success") navigate(user ? "/profile" : "/");
+    if (modalStatus === "error") navigate("/cart");
+  };
+
   return (
     <div>
+      <OrderModal
+        show={showModal}
+        status={modalStatus}
+        onClose={handleModalClose}
+      />
       <CheckoutComponent />
       <div className="container">
         <div className="row mt-5">
@@ -181,7 +208,7 @@ function CheckoutPage() {
                   Çıkış Yap
                 </span>
               ) : (
-                <Link className="text-selected" to="/login">
+                <Link className="text-selected" to="/login" state={{ from: "/checkout" }}>
                   Giriş Yap
                 </Link>
               )}
