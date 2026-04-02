@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, forgetPassword } from "../redux/authSlice";
-import { fetchCart } from "../redux/cartSlice";
+import { mergeCartOnLogin } from "../redux/cartSlice";
 import { fetchFavourites } from "../redux/favouriteSlice";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
+  const location = useLocation();
+  const from = location.state?.from || "/";
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [resetSent, setResetSent] = useState(false);
@@ -22,9 +24,9 @@ function LoginPage() {
     e.preventDefault();
     const result = await dispatch(loginUser(formData));
     if (result.meta.requestStatus === "fulfilled") {
-      dispatch(fetchCart());
+      dispatch(mergeCartOnLogin());
       dispatch(fetchFavourites());
-      navigate("/");
+      navigate(from);
     }
   }
 
