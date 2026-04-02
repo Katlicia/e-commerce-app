@@ -31,6 +31,18 @@ exports.authenticationMiddle = async (req, res, next) => {
   next();
 };
 
+exports.optionalAuth = async (req, res, next) => {
+  const { token } = req.cookies;
+  if (!token) return next();
+  try {
+    const decodedData = jwt.verify(token, process.env.JWT_KEY);
+    req.user = await User.findById(decodedData.id);
+  } catch {
+    // geçersiz token → misafir olarak devam
+  }
+  next();
+};
+
 exports.isAdmin = (req, res, next) => {
   if (!req.user || !req.user.isAdmin) {
     return res.status(403).json({ message: "Permission not granted." });
