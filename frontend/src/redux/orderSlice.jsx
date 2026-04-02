@@ -15,6 +15,18 @@ export const createOrder = createAsyncThunk(
   }
 );
 
+export const cancelOrder = createAsyncThunk(
+  "order/cancelOrder",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(`/orders/${orderId}/cancel`);
+      return data.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Sipariş iptal edilemedi.");
+    }
+  }
+);
+
 export const getUserOrders = createAsyncThunk(
   "order/getUserOrders",
   async (_, { rejectWithValue }) => {
@@ -33,6 +45,7 @@ const orderSlice = createSlice({
   name: "order",
   initialState: {
     orders: [],
+    currentOrder: null,
     loading: false,
     error: null,
     success: false,
@@ -54,10 +67,18 @@ const orderSlice = createSlice({
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
+        state.currentOrder = action.payload;
         state.orders.unshift(action.payload);
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(cancelOrder.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(cancelOrder.rejected, (state, action) => {
         state.error = action.payload;
       })
       .addCase(getUserOrders.pending, (state) => {
