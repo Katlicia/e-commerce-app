@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
 import { getProductDetail, createReview } from "../redux/productSlice";
-import { addToCartWithSync } from "../redux/cartSlice";
+import {
+  addToCartWithSync,
+  decreaseCartWithSync,
+  removeFromCartWithSync,
+} from "../redux/cartSlice";
+import { FaTrash } from "react-icons/fa6";
 import {
   addToFavouritesWithSync,
   removeFromFavouritesWithSync,
@@ -49,6 +54,7 @@ function ProductDetails() {
   const dispatch = useDispatch();
   const { product } = useSelector((state) => state.product);
   const { favourites } = useSelector((state) => state.favourite);
+  const { cart } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
 
   const [reviewRating, setReviewRating] = useState(5);
@@ -74,6 +80,7 @@ function ProductDetails() {
   if (!product || !product._id) return null;
 
   const productId = product._id;
+  const cartItem = cart.find((item) => (item._id || item.id) === productId);
   const images = product.images || [];
   const currentImg = images[activeImg]?.url || "";
   const isFavourite = favourites.some((f) => (f._id || f.id) === productId);
@@ -262,27 +269,40 @@ function ProductDetails() {
               )}
 
               <div className="d-flex gap-3 align-items-center">
-                <div className="pd-qty-control rounded-pill">
-                  <button
-                    className="pd-qty-btn"
-                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  >
-                    −
-                  </button>
-                  <span className="pd-qty-num">{quantity}</span>
-                  <button
-                    className="pd-qty-btn"
-                    onClick={() => setQuantity((q) => q + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-                <button
-                  className="pd-add-btn rounded-pill"
-                  onClick={handleAddToCart}
-                >
-                  SEPETE EKLE
-                </button>
+                {cartItem ? (
+                  <div className="d-flex align-items-center justify-content-between pd-add-btn rounded-pill px-2" style={{ minWidth: 140 }}>
+                    <button
+                      className="btn p-0 px-2 h-100"
+                      style={{ color: "inherit" }}
+                      onClick={() =>
+                        cartItem.quantity === 1
+                          ? dispatch(removeFromCartWithSync(productId))
+                          : dispatch(decreaseCartWithSync(productId))
+                      }
+                    >
+                      {cartItem.quantity === 1 ? <FaTrash size={14} /> : <span style={{ fontSize: 20 }}>−</span>}
+                    </button>
+                    <span className="fw-semibold">{cartItem.quantity}</span>
+                    <button
+                      className="btn p-0 px-2 h-100"
+                      style={{ color: "inherit", fontSize: 20 }}
+                      onClick={() => dispatch(addToCartWithSync(product))}
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="pd-qty-control rounded-pill">
+                      <button className="pd-qty-btn" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>−</button>
+                      <span className="pd-qty-num">{quantity}</span>
+                      <button className="pd-qty-btn" onClick={() => setQuantity((q) => q + 1)}>+</button>
+                    </div>
+                    <button className="pd-add-btn rounded-pill" onClick={handleAddToCart}>
+                      SEPETE EKLE
+                    </button>
+                  </>
+                )}
               </div>
 
               <div className="pd-actions">
