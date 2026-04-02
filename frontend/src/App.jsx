@@ -44,7 +44,7 @@ function App() {
         <Route path="/favourites" element={<FavouritesPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/reset/:token" element={<ResetPasswordPage />} />
-        <Route path="/:id" element={<ProductDetails />} />
+<Route path="/:id" element={<ProductDetails />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
