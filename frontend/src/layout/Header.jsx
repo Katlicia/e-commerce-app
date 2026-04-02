@@ -36,7 +36,7 @@ function Header() {
       <div className="container">
         <div className="header-main d-flex align-items-center gap-3 gap-lg-4 py-3 flex-wrap flex-lg-nowrap">
           <Link to="/" className="logo-width">
-            <img src={logo} onClick={window.scrollTo(0, 0)} />
+            <img src={logo} onClick={() => window.scrollTo(0, 0)} />
           </Link>
           <form
             className="header-search flex-grow-1 w-100 w-lg-auto"
