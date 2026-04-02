@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { cancelOrder } from "../redux/orderSlice";
-import { addToCartWithSync } from "../redux/cartSlice";
+import { cancelOrder, returnOrder } from "../redux/orderSlice";
+import { addToCartWithSync, syncClearCart } from "../redux/cartSlice";
 import {
   FiChevronDown,
   FiChevronUp,
@@ -16,7 +16,8 @@ function ProfileOrderCard({ order, onDetailClick }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const handleReorder = () => {
+  const handleReorder = async () => {
+    await dispatch(syncClearCart());
     order.items.forEach(({ product, quantity }) => {
       for (let i = 0; i < quantity; i++) {
         dispatch(addToCartWithSync(product));
@@ -87,20 +88,20 @@ function ProfileOrderCard({ order, onDetailClick }) {
                 <FiRefreshCw size={14} />
                 Siparişi Tekrarla
               </button>
-              <button
-                className="btn rounded-pill d-flex align-items-center gap-2"
-                style={{
-                  fontSize: "0.82rem",
-                  backgroundColor:
-                    order.status === "Hazırlanıyor" ? "#ff7700" : "#ccc",
-                  color: "white",
-                }}
-                disabled={order.status !== "Hazırlanıyor"}
-                onClick={() => dispatch(cancelOrder(order._id))}
-              >
-                <FiXCircle size={16} />
-                Siparişi İptal Et
-              </button>
+              {(order.status === "Hazırlanıyor" || order.status === "Teslim Edildi") && (
+                <button
+                  className="btn rounded-pill d-flex align-items-center gap-2"
+                  style={{ fontSize: "0.82rem", backgroundColor: "#ff7700", color: "white" }}
+                  onClick={() =>
+                    order.status === "Hazırlanıyor"
+                      ? dispatch(cancelOrder(order._id))
+                      : dispatch(returnOrder(order._id))
+                  }
+                >
+                  <FiXCircle size={16} />
+                  {order.status === "Hazırlanıyor" ? "Siparişi İptal Et" : "Siparişi İade Et"}
+                </button>
+              )}
               <div
                 className="d-flex flex-column align-items-center text-muted"
                 role="button"
