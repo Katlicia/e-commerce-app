@@ -7,6 +7,10 @@ import paymentIcon from "../assets/Profile/payment.svg";
 import readyIcon from "../assets/Profile/ready.svg";
 import cargoIcon from "../assets/Profile/cargo.svg";
 import checkIcon from "../assets/Profile/check.svg";
+import { addToCartWithSync, syncClearCart } from "../redux/cartSlice";
+import { cancelOrder, returnOrder } from "../redux/orderSlice";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const STEPS = [
   { label: "Sipariş Alındı", icon: orderIcon },
@@ -21,24 +25,52 @@ const STATUS_INDEX = {
   "Kargoya Verildi": 3,
   "Teslim Edildi": 4,
   "İptal Edildi": -1,
+  "İade Edildi": 4,
 };
 
 function ProfileOrderDetails({ order }) {
   const currentIndex = STATUS_INDEX[order.status] ?? 2;
   const isActive = (i) => currentIndex !== -1 && i <= currentIndex;
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleReorder = async () => {
+    await dispatch(syncClearCart());
+    order.items.forEach(({ product, quantity }) => {
+      for (let i = 0; i < quantity; i++) {
+        dispatch(addToCartWithSync(product));
+      }
+    });
+    navigate("/checkout");
+  };
+
   return (
     <div className="container">
       <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
         <h4 className="fw-bold mb-0">{order.orderNo} nolu siparişiniz</h4>
         <div className="d-flex gap-2">
-          <button className="btn buttons flex-grow-1">
+          <button className="btn buttons flex-grow-1" onClick={handleReorder}>
             <div className="d-flex justify-content-center align-items-center gap-2">
               <img src={restockIcon} width={20} alt="Restock" />
               Siparişi Tekrarla
             </div>
           </button>
-          <button className="btn buttons flex-grow-1">Siparişi İptal Et</button>
+          {(order.status === "Hazırlanıyor" ||
+            order.status === "Teslim Edildi") && (
+            <button
+              className="btn buttons flex-grow-1"
+              onClick={() =>
+                order.status === "Hazırlanıyor"
+                  ? dispatch(cancelOrder(order._id))
+                  : dispatch(returnOrder(order._id))
+              }
+            >
+              {order.status === "Hazırlanıyor"
+                ? "Siparişi İptal Et"
+                : "Siparişi İade Et"}
+            </button>
+          )}
         </div>
       </div>
       <div className="mb-4 mt-2" style={{ overflowX: "auto" }}>
@@ -52,7 +84,10 @@ function ProfileOrderDetails({ order }) {
               className="d-flex align-items-center"
               style={{ flex: i < STEPS.length - 1 ? 1 : "none" }}
             >
-              <div className="d-flex flex-column align-items-center gap-1">
+              <div
+                className="d-flex flex-column align-items-center gap-1"
+                style={{ overflowX: "hidden" }}
+              >
                 <div
                   className="rounded-circle d-flex align-items-center justify-content-center"
                   style={{
