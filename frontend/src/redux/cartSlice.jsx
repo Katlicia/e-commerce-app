@@ -155,6 +155,22 @@ export const removeFromCartWithSync = (id) => (dispatch, getState) => {
   }
 };
 
+export const mergeCartOnLogin = () => async (dispatch, getState) => {
+  const localCart = getState().cart.cart;
+  await dispatch(fetchCart());
+  const backendCart = getState().cart.cart;
+
+  for (const localItem of localCart) {
+    const id = localItem._id || localItem.id;
+    const inBackend = backendCart.find((i) => (i._id || i.id) === id);
+    if (inBackend) {
+      await dispatch(syncUpdateCart({ productId: id, quantity: inBackend.quantity + localItem.quantity }));
+    } else {
+      await dispatch(syncAddToCart({ productId: id, quantity: localItem.quantity }));
+    }
+  }
+};
+
 export const decreaseCartWithSync = (id) => (dispatch, getState) => {
   const currentQty =
     getState().cart.cart.find((item) => (item._id || item.id) === id)?.quantity ?? 0;
