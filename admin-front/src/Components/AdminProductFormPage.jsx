@@ -8,6 +8,7 @@ import {
   adminCreateProduct,
   adminUpdateProduct,
 } from "../redux/adminSlice";
+import { addNotification } from "../redux/notificationSlice";
 import "../styles/AdminPage.css";
 
 const BADGES = [
@@ -119,10 +120,23 @@ function AdminProductFormPage() {
         payload = { ...basePayload, images: base64New };
       }
 
-      if (isEdit) {
-        await dispatch(adminUpdateProduct({ id, productData: payload }));
-      } else {
-        await dispatch(adminCreateProduct(payload));
+      try {
+        if (isEdit) {
+          await dispatch(
+            adminUpdateProduct({ id, productData: payload }),
+          ).unwrap();
+          dispatch(addNotification({ message: "Ürün güncellendi." }));
+        } else {
+          await dispatch(adminCreateProduct(payload)).unwrap();
+          dispatch(addNotification({ message: "Ürün eklendi." }));
+        }
+      } catch {
+        dispatch(
+          addNotification({
+            message: isEdit ? "Ürün güncellenemedi." : "Ürün eklenemedi.",
+            type: "error",
+          }),
+        );
       }
 
       setSubmitting(false);
