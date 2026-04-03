@@ -41,7 +41,7 @@ function DealOfDay() {
 
   useEffect(() => {
     dispatch(getProducts({ limit: 8 })).then((res) => {
-      if (res.payload) setGridProducts(res.payload);
+      if (res.payload?.products) setGridProducts(res.payload.products);
     });
   }, []);
 
