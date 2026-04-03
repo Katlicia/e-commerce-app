@@ -96,7 +96,7 @@ exports.cancelOrder = async (req, res) => {
     }
     order.status = "İptal Edildi";
     await order.save();
-    await order.populate("items.product", "name images price discountedPrice");
+    await order.populate("items.product", "name images price discountedPrice stock");
     res.status(200).json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: "Bir hata oluştu." });
@@ -119,7 +119,7 @@ exports.returnOrder = async (req, res) => {
     }
     order.status = "İade Edildi";
     await order.save();
-    await order.populate("items.product", "name images price discountedPrice");
+    await order.populate("items.product", "name images price discountedPrice stock");
     res.status(200).json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -158,7 +158,7 @@ exports.adminUpdateOrderStatus = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })
-      .populate("items.product", "name images price discountedPrice")
+      .populate("items.product", "name images price discountedPrice stock")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, orders });
