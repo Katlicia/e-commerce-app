@@ -20,6 +20,7 @@ import "../styles/CheckoutPage.css";
 import { useFormik, Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { createOrder, resetOrderState } from "../redux/orderSlice";
+import { getCargos } from "../redux/cargoSlice";
 import OrderModal from "../components/OrderModal";
 
 const addressSchema = Yup.object({
@@ -34,12 +35,6 @@ const addressSchema = Yup.object({
 
 const emptyAddress = { fullName: "", phone: "", city: "", district: "", address: "" };
 
-const KARGO_OPTIONS = [
-  { id: "mng", label: "Mng Kargo", price: 74.99 },
-  { id: "yurtici", label: "Yurtiçi Kargo", price: 74.99 },
-  { id: "sendeo", label: "Sendeo", price: 74.99 },
-  { id: "hepsijet", label: "HepsiJet", price: 74.99 },
-];
 
 function CheckoutPage() {
   useEffect(() => {
@@ -57,10 +52,12 @@ function CheckoutPage() {
     success: orderSuccess,
     error: orderError,
   } = useSelector((state) => state.order);
+  const { cargos } = useSelector((state) => state.cargo);
+  const { freeShippingThreshold } = useSelector((state) => state.taxSettings);
 
   const [addressError, setAddressError] = useState("");
   const [selectedAddressIdx, setSelectedAddressIdx] = useState(0);
-  const [selectedKargo, setSelectedKargo] = useState("yurtici");
+  const [selectedKargo, setSelectedKargo] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState("kredi");
   const [editingIndex, setEditingIndex] = useState(null);
@@ -129,11 +126,17 @@ function CheckoutPage() {
         quantity: item.quantity,
       }));
 
+      const selectedCargoData = cargos.find((c) => c._id === selectedKargo);
+      const effectiveCargoPrice =
+        totalAmount >= freeShippingThreshold ? 0 : selectedCargoData?.cargoPrice;
+
       dispatch(
         createOrder({
           items,
           totalAmount,
           address: addresses[selectedAddressIdx],
+          cargoCompany: selectedCargoData?.companyName,
+          cargoPrice: effectiveCargoPrice,
           ...(!sameAsBilling && { billingAddress: addresses[selectedBillingIdx] }),
           ...(!user && { guestEmail: values.email }),
         }),
@@ -146,6 +149,16 @@ function CheckoutPage() {
       dispatch(getUserAddresses());
     }
   }, [user]);
+
+  useEffect(() => {
+    dispatch(getCargos());
+  }, []);
+
+  useEffect(() => {
+    if (cargos.length > 0 && selectedKargo === null) {
+      setSelectedKargo(cargos[0]._id);
+    }
+  }, [cargos]);
 
   useEffect(() => {
     if (orderSuccess) {
@@ -417,21 +430,21 @@ function CheckoutPage() {
 
             <h5 className="fw-bold mb-3">KARGO</h5>
             <div className="d-flex flex-wrap gap-2 mb-4">
-              {KARGO_OPTIONS.map((k) => (
+              {cargos.map((k) => (
                 <div
-                  key={k.id}
+                  key={k._id}
                   className="checkout-kargo-item border rounded-3 px-3 py-2 d-flex align-items-center gap-2"
-                  onClick={() => setSelectedKargo(k.id)}
+                  onClick={() => setSelectedKargo(k._id)}
                 >
                   <span
-                    className={`checkout-radio-dot${selectedKargo === k.id ? " active" : ""}`}
+                    className={`checkout-radio-dot${selectedKargo === k._id ? " active" : ""}`}
                   />
                   <div>
                     <p className="checkout-kargo-label mb-0 fw-semibold">
-                      {k.label}
+                      {k.companyName}
                     </p>
                     <p className="checkout-kargo-price mb-0 text-muted">
-                      {k.price.toFixed(2)}₺
+                      {Number(k.cargoPrice).toFixed(2)}₺
                     </p>
                   </div>
                 </div>
@@ -713,7 +726,9 @@ function CheckoutPage() {
               )}
             </div>
             <hr />
-            <CartSummary />
+            <CartSummary
+              cargoPrice={cargos.find((c) => c._id === selectedKargo)?.cargoPrice}
+            />
           </div>
         </div>
       </div>
