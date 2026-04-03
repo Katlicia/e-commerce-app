@@ -5,8 +5,7 @@ import "../styles/Chances.css";
 import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
 import BannerCard from "./BannerCard";
 import Loading from "./Loading";
-
-const BASE_URL = "http://localhost:5000";
+import axiosInstance from "../utils/axiosInstance";
 
 const TARGET = new Date(
   Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000,
@@ -38,12 +37,9 @@ function ProductList({ title, settings = {} }) {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const url = badge
-          ? `${BASE_URL}/products/badge/${badge}`
-          : `${BASE_URL}/products`;
-        const res = await fetch(url);
-        const data = await res.json();
-        setProducts(Array.isArray(data) ? data : []);
+        const url = badge ? `/products/badge/${badge}` : `/products`;
+        const res = await axiosInstance.get(url);
+        setProducts(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("ProductList fetch error:", err);
       } finally {

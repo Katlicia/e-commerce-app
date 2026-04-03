@@ -6,8 +6,8 @@ import "../styles/CategoryRow.css";
 import okulBanner from "../assets/Banners/okul.png";
 import arabaBanner from "../assets/Banners/araba.png";
 import Loading from "./Loading";
-
-const BASE_URL = "http://localhost:5000";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axiosInstance";
 
 function CategorySection({ title, image, categorySlug }) {
   const rowRef = useRef(null);
@@ -20,13 +20,11 @@ function CategorySection({ title, image, categorySlug }) {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const catRes = await fetch(`${BASE_URL}/categories/${categorySlug}`);
-        const category = await catRes.json();
-        const prodRes = await fetch(
-          `${BASE_URL}/products?category=${category._id}`,
-        );
-        const data = await prodRes.json();
-        setProducts(Array.isArray(data) ? data : []);
+        const catRes = await axiosInstance.get(`/categories/${categorySlug}`);
+        const category = catRes.data;
+        const prodRes = await axiosInstance.get(`/products?category=${category._id}`);
+        const data = prodRes.data;
+        setProducts(Array.isArray(data) ? data : Array.isArray(data.products) ? data.products : []);
       } catch (err) {
         console.error("CategorySection fetch error:", err);
       } finally {
@@ -66,22 +64,28 @@ function CategorySection({ title, image, categorySlug }) {
 }
 
 function CategoryRow({ left, right }) {
+  const navigate = useNavigate();
+
   return (
     <div className="container my-4">
       <div className="row g-4">
         <div className="col-12 col-lg-6">
-          <CategorySection
-            title={left.title}
-            image={okulBanner}
-            categorySlug={left.slug}
-          />
+          <div onClick={() => navigate(`/products?category=${left.slug}`)}>
+            <CategorySection
+              title={left.title}
+              image={okulBanner}
+              categorySlug={left.slug}
+            />
+          </div>
         </div>
         <div className="col-12 col-lg-6">
-          <CategorySection
-            title={right.title}
-            image={arabaBanner}
-            categorySlug={right.slug}
-          />
+          <div onClick={() => navigate(`/products?category=${right.slug}`)}>
+            <CategorySection
+              title={right.title}
+              image={arabaBanner}
+              categorySlug={right.slug}
+            />
+          </div>
         </div>
       </div>
     </div>

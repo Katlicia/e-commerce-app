@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-
-const BASE_URL = "http://localhost:5000";
+import axiosInstance from "../utils/axiosInstance.js";
 
 const initialState = {
   products: [],
@@ -19,27 +18,20 @@ export const getProducts = createAsyncThunk("products", async (params = {}) => {
   if (params.minPrice !== undefined && params.minPrice !== "") query.set("minPrice", params.minPrice);
   if (params.maxPrice !== undefined && params.maxPrice !== "") query.set("maxPrice", params.maxPrice);
   if (params.sort) query.set("sort", params.sort);
-  const response = await fetch(`${BASE_URL}/products?${query.toString()}`);
-  return await response.json();
+  const response = await axiosInstance.get(`/products?${query.toString()}`);
+  return response.data;
 });
 
 export const getProductDetail = createAsyncThunk("product", async (id) => {
-  const response = await fetch(`${BASE_URL}/products/${id}`);
-  return await response.json();
+  const response = await axiosInstance.get(`/products/${id}`);
+  return response.data;
 });
 
 export const createReview = createAsyncThunk(
   "product/createReview",
-  async ({ productId, comment, rating }, { rejectWithValue }) => {
-    const response = await fetch(`${BASE_URL}/products/newReview`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ productId, comment, rating }),
-    });
-    const data = await response.json();
-    if (!response.ok) return rejectWithValue(data.message);
-    return data;
+  async ({ productId, comment, rating }) => {
+    const response = await axiosInstance.post(`/products/newReview`, { productId, comment, rating });
+    return response.data;
   }
 );
 

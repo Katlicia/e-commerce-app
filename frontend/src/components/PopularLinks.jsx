@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import "../styles/PopularLinks.css";
 
 const popularSearches = [
@@ -30,8 +30,8 @@ function PopularLinks() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/categories")
+    axiosInstance
+      .get("/categories")
       .then((res) => setCategories(flatten(res.data).slice(0, 27)))
       .catch((err) => console.error(err));
   }, []);
