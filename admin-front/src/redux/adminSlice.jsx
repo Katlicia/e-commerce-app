@@ -4,6 +4,9 @@ import axiosInstance from "../utils/axiosInstance";
 const initialState = {
   products: [],
   categories: [],
+  cargos: [],
+  orders: [],
+  taxSettings: null,
   loading: false,
   error: null,
 };
@@ -66,7 +69,7 @@ export const adminCreateCategory = createAsyncThunk(
 
 export const adminUpdateCategory = createAsyncThunk(
   "admin/updateCategory",
-  async ({ id, categoryData }, { dispatch }) => {
+  async ({ id, categoryData }) => {
     await axiosInstance.put(`/categories/${id}`, categoryData);
     const { data } = await axiosInstance.get("/categories");
     return flattenTree(data);
@@ -78,6 +81,64 @@ export const adminDeleteCategory = createAsyncThunk(
   async (id) => {
     await axiosInstance.delete(`/categories/${id}`);
     return id;
+  },
+);
+
+export const adminGetCargo = createAsyncThunk("admin/getCargo", async () => {
+  const { data } = await axiosInstance.get("/cargo");
+  return data;
+});
+
+export const adminCreateCargo = createAsyncThunk(
+  "admin/createCargo",
+  async (cargoData) => {
+    const { data } = await axiosInstance.post("/cargo", cargoData);
+    return data;
+  },
+);
+
+export const adminUpdateCargo = createAsyncThunk(
+  "admin/updateCargo",
+  async ({ id, cargoData }) => {
+    const { data } = await axiosInstance.put(`/cargo/${id}`, cargoData);
+    return data;
+  },
+);
+
+export const adminDeleteCargo = createAsyncThunk(
+  "admin/deleteCargo",
+  async (id) => {
+    await axiosInstance.delete(`/cargo/${id}`);
+    return id;
+  },
+);
+
+export const adminGetOrders = createAsyncThunk("admin/getOrders", async () => {
+  const { data } = await axiosInstance.get("/admin/orders");
+  return data.orders;
+});
+
+export const adminUpdateOrderStatus = createAsyncThunk(
+  "admin/updateOrderStatus",
+  async ({ id, status }) => {
+    const { data } = await axiosInstance.put(`/admin/orders/${id}/status`, { status });
+    return data.order;
+  },
+);
+
+export const adminGetTaxSettings = createAsyncThunk(
+  "admin/getTaxSettings",
+  async () => {
+    const { data } = await axiosInstance.get("/tax-settings");
+    return data;
+  },
+);
+
+export const adminUpdateTaxSettings = createAsyncThunk(
+  "admin/updateTaxSettings",
+  async (settingsData) => {
+    const { data } = await axiosInstance.put("/tax-settings", settingsData);
+    return data;
   },
 );
 
@@ -124,6 +185,50 @@ const adminSlice = createSlice({
         state.categories = state.categories.filter(
           (c) => c._id !== action.payload && c.parent !== action.payload,
         );
+      })
+      .addCase(adminGetCargo.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(adminGetCargo.fulfilled, (state, action) => {
+        state.loading = false;
+        state.cargos = action.payload;
+      })
+      .addCase(adminGetCargo.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(adminCreateCargo.fulfilled, (state, action) => {
+        state.cargos.push(action.payload);
+      })
+      .addCase(adminUpdateCargo.fulfilled, (state, action) => {
+        const idx = state.cargos.findIndex((c) => c._id === action.payload._id);
+        if (idx !== -1) state.cargos[idx] = action.payload;
+      })
+      .addCase(adminDeleteCargo.fulfilled, (state, action) => {
+        state.cargos = state.cargos.filter((c) => c._id !== action.payload);
+      })
+      .addCase(adminGetOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(adminGetOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload;
+      })
+      .addCase(adminGetOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
+      .addCase(adminUpdateOrderStatus.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(adminGetTaxSettings.fulfilled, (state, action) => {
+        state.taxSettings = action.payload;
+      })
+      .addCase(adminUpdateTaxSettings.fulfilled, (state, action) => {
+        state.taxSettings = action.payload;
       });
   },
 });
