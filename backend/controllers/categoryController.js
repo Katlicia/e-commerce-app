@@ -78,7 +78,7 @@ exports.updateCategory = async (req, res) => {
   if (parentId !== undefined) updateData.parent = parentId;
 
   const category = await Category.findByIdAndUpdate(req.params.id, updateData, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
   if (!category)
@@ -105,7 +105,11 @@ exports.updateCategory = async (req, res) => {
           { runValidators: true },
         );
       } else {
-        await Category.create({ name: sub.name, slug: sub.slug, parent: category._id });
+        await Category.create({
+          name: sub.name,
+          slug: sub.slug,
+          parent: category._id,
+        });
       }
     }
   }
