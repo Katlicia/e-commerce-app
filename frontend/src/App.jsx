@@ -1,6 +1,8 @@
 import "bootstrap/dist/css/bootstrap.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getTaxSettings } from "./redux/taxSettingsSlice";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
@@ -18,7 +20,12 @@ import UserProfile from "./pages/UserProfile.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
 
 function App() {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(getTaxSettings());
+  }, []);
 
   return (
     <BrowserRouter>
