@@ -39,7 +39,9 @@ function ProductList({ title, settings = {} }) {
       try {
         const url = badge ? `/products/badge/${badge}` : `/products`;
         const res = await axiosInstance.get(url);
-        setProducts(Array.isArray(res.data) ? res.data : []);
+        setProducts(
+          Array.isArray(res.data) ? res.data : res.data.products || [],
+        );
       } catch (err) {
         console.error("ProductList fetch error:", err);
       } finally {
