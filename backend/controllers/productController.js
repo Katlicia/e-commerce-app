@@ -8,7 +8,9 @@ async function getAllDescendantIds(categoryId) {
   const queue = [categoryId];
   while (queue.length) {
     const current = queue.shift();
-    const children = await Category.find({ parent: current }).select("_id").lean();
+    const children = await Category.find({ parent: current })
+      .select("_id")
+      .lean();
     for (const child of children) {
       ids.push(child._id.toString());
       queue.push(child._id.toString());
@@ -23,23 +25,39 @@ exports.getProducts = async (req, res) => {
     const queryCopy = { ...req.query };
 
     const priceFilter = {};
-    if (queryCopy.minPrice) { priceFilter.$gte = Number(queryCopy.minPrice); delete queryCopy.minPrice; }
-    if (queryCopy.maxPrice) { priceFilter.$lte = Number(queryCopy.maxPrice); delete queryCopy.maxPrice; }
+    if (queryCopy.minPrice) {
+      priceFilter.$gte = Number(queryCopy.minPrice);
+      delete queryCopy.minPrice;
+    }
+    if (queryCopy.maxPrice) {
+      priceFilter.$lte = Number(queryCopy.maxPrice);
+      delete queryCopy.maxPrice;
+    }
 
-    let baseQuery = Product.find(Object.keys(priceFilter).length ? { price: priceFilter } : {});
+    let baseQuery = Product.find(
+      Object.keys(priceFilter).length ? { price: priceFilter } : {},
+    );
 
     if (queryCopy.category) {
-      const catIds = queryCopy.category.split(",").map((id) => id.trim()).filter(Boolean);
+      const catIds = queryCopy.category
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
       const allCatIds = [];
       for (const catId of catIds) {
         allCatIds.push(...(await getAllDescendantIds(catId)));
       }
-      baseQuery = baseQuery.find({ category: { $in: [...new Set(allCatIds)] } });
+      baseQuery = baseQuery.find({
+        category: { $in: [...new Set(allCatIds)] },
+      });
       delete queryCopy.category;
     }
 
     if (queryCopy.brand) {
-      const brandList = queryCopy.brand.split(",").map((b) => b.trim()).filter(Boolean);
+      const brandList = queryCopy.brand
+        .split(",")
+        .map((b) => b.trim())
+        .filter(Boolean);
       baseQuery = baseQuery.find({ brand: { $in: brandList } });
       delete queryCopy.brand;
     }
@@ -68,7 +86,10 @@ exports.getBrands = async (req, res) => {
   try {
     const filter = {};
     if (req.query.category) {
-      const catIds = req.query.category.split(",").map((id) => id.trim()).filter(Boolean);
+      const catIds = req.query.category
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
       const allCatIds = [];
       for (const catId of catIds) {
         allCatIds.push(...(await getAllDescendantIds(catId)));
@@ -143,28 +164,64 @@ exports.deleteProduct = async (req, res) => {
 };
 
 exports.updateProduct = async (req, res) => {
-  const rawImages = req.body.images;
-  delete req.body.images;
+  const keepImages = req.body.keepImages || [];
+  const rawNewImages = req.body.newImages || [];
+  delete req.body.keepImages;
+  delete req.body.newImages;
 
-  if (rawImages) {
-    const images = Array.isArray(rawImages) ? rawImages : [rawImages];
-    const current = await Product.findById(req.params.id);
-    if (current) {
-      for (const img of current.images) {
+  // Remove deleted images from cloudinary
+  const current = await Product.findById(req.params.id);
+  if (current) {
+    const keepIds = new Set(keepImages.map((img) => img.public_id));
+    for (const img of current.images) {
+      if (!keepIds.has(img.public_id)) {
         await cloudinary.uploader.destroy(img.public_id);
       }
     }
-    const allImage = [];
-    for (const img of images) {
-      const result = await cloudinary.uploader.upload(img, {
-        folder: "products",
-      });
-      allImage.push({ public_id: result.public_id, url: result.secure_url });
-    }
-    req.body.images = allImage;
   }
 
-  await Product.findByIdAndUpdate(req.params.id, req.body, {
+  // Upload new images
+  const uploadedNew = [];
+  for (const img of rawNewImages) {
+    const result = await cloudinary.uploader.upload(img, {
+      folder: "products",
+    });
+    uploadedNew.push({ public_id: result.public_id, url: result.secure_url });
+  }
+
+  req.body.images = [...keepImages, ...uploadedNew];
+
+  const updateFields = { ...req.body };
+  let unsetFields = {};
+
+  if ("badge" in updateFields && !updateFields.badge) {
+    delete updateFields.badge;
+    unsetFields.badge = 1;
+  }
+
+  const price = Number(updateFields.price);
+  const discountPercent = Number(updateFields.discountPercent);
+
+  if (price && discountPercent) {
+    updateFields.discountedPrice = +(
+      price *
+      (1 - discountPercent / 100)
+    ).toFixed(2);
+  } else {
+    delete updateFields.discountedPrice;
+    unsetFields.discountedPrice = 1;
+  }
+
+  if (!discountPercent) {
+    delete updateFields.discountPercent;
+    unsetFields.discountPercent = 1;
+  }
+
+  const updateQuery = Object.keys(unsetFields).length
+    ? { $set: updateFields, $unset: unsetFields }
+    : updateFields;
+
+  await Product.findByIdAndUpdate(req.params.id, updateQuery, {
     returnDocument: "after",
     runValidators: true,
   });
