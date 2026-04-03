@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-const BASE_URL = "http://localhost:5000";
+import axiosInstance from "../utils/axiosInstance.js";
 
 const initialState = {
   products: [],
@@ -11,16 +11,32 @@ const initialState = {
 export const getProducts = createAsyncThunk("products", async (params = {}) => {
   const query = new URLSearchParams();
   if (params.keyword) query.set("keyword", params.keyword);
-  if (params.brand) query.set("brand", params.brand);
-  if (params.category) query.set("category", params.category);
+  if (params.brand)
+    query.set(
+      "brand",
+      Array.isArray(params.brand) ? params.brand.join(",") : params.brand,
+    );
+  if (params.category)
+    query.set(
+      "category",
+      Array.isArray(params.category)
+        ? params.category.join(",")
+        : params.category,
+    );
   if (params.limit) query.set("limit", params.limit);
-  const response = await fetch(`${BASE_URL}/products?${query.toString()}`);
-  return await response.json();
+  if (params.page) query.set("page", params.page);
+  if (params.minPrice !== undefined && params.minPrice !== "")
+    query.set("minPrice", params.minPrice);
+  if (params.maxPrice !== undefined && params.maxPrice !== "")
+    query.set("maxPrice", params.maxPrice);
+  if (params.sort) query.set("sort", params.sort);
+  const response = await axiosInstance.get(`/products?${query.toString()}`);
+  return response.data;
 });
 
 export const getProductDetail = createAsyncThunk("product", async (id) => {
-  const response = await fetch(`${BASE_URL}/products/${id}`);
-  return await response.json();
+  const response = await axiosInstance.get(`/products/${id}`);
+  return response.data;
 });
 
 export const productSlice = createSlice({
