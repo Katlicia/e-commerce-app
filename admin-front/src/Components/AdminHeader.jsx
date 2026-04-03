@@ -12,13 +12,13 @@ function Header() {
   return (
     <header className="site-header sticky-top">
       <div className="container">
-        <div className="header-main d-flex align-items-center gap-3 gap-lg-4 py-3 flex-wrap flex-lg-nowrap">
+        <div className="header-main d-flex align-items-center justify-content-between">
           <h1>
             <Link to="/" style={{ textDecoration: "none" }} className="logo">
-              <span>Panel</span>
+              <span className="orange-text">Listensi Panel</span>
             </Link>
           </h1>
-          <div className="header-actions ms-lg-auto">
+          <div className="header-actions">
             {user ? (
               <div className="dropdown">
                 <div
