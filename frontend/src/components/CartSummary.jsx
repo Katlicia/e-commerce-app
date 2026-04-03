@@ -1,13 +1,11 @@
 import { useSelector } from "react-redux";
 import smileEmoji from "../assets/Emoji/smile.svg";
 
-const KDV1_RATE = 0.01;
-const KDV20_RATE = 0.2;
-const FREE_SHIPPING_THRESHOLD = 500;
-const SHIPPING_COST = 49.9;
-
-function CartSummary() {
+function CartSummary({ cargoPrice } = {}) {
   const { cart, totalAmount } = useSelector((state) => state.cart);
+  const { freeShippingThreshold, kdv1Rate, kdv20Rate } = useSelector(
+    (state) => state.taxSettings,
+  );
 
   const totalDiscount = +cart
     .filter((item) => item.discountedPrice)
@@ -20,10 +18,15 @@ function CartSummary() {
     )
     .toFixed(2);
 
-  const kdv1 = +(totalAmount * KDV1_RATE).toFixed(2);
-  const kdv20 = +(totalAmount * KDV20_RATE).toFixed(2);
-  const shipping = totalAmount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
-  const total = +totalAmount.toFixed(2);
+  const kdv1 = +(totalAmount * kdv1Rate).toFixed(2);
+  const kdv20 = +(totalAmount * kdv20Rate).toFixed(2);
+  const shipping =
+    totalAmount >= freeShippingThreshold
+      ? 0
+      : cargoPrice !== undefined
+        ? cargoPrice
+        : undefined;
+  const total = +(totalAmount + (shipping ?? 0)).toFixed(2);
 
   return (
     <div>
@@ -48,6 +51,8 @@ function CartSummary() {
         <span className="text-muted">Kargo Bedeli</span>
         {shipping === 0 ? (
           <span className="fw-semibold text-success">Ücretsiz</span>
+        ) : cargoPrice !== undefined ? (
+          <span className="fw-semibold">{Number(shipping).toFixed(2)}₺</span>
         ) : (
           <span
             className="text-muted text-end"
