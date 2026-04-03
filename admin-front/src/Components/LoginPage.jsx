@@ -51,7 +51,7 @@ function LoginPage() {
         </div>
         <button
           type="submit"
-          className="btn w-100 card-button btn-primary mt-4"
+          className="btn w-100 card-button orange-btn mt-4"
           disabled={loading}
         >
           {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
