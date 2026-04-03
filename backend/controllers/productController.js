@@ -1,21 +1,85 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
 const ProductFilter = require("../utils/productFilter");
 const cloudinary = require("cloudinary").v2;
 
-exports.getProducts = async (req, res) => {
-  const resultPerPage = req.query.limit ? parseInt(req.query.limit) : 10;
-  const productFilter = new ProductFilter(Product.find(), req.query)
-    .search()
-    .filter()
-    .pagination(resultPerPage);
-  const products = await productFilter.query;
+async function getAllDescendantIds(categoryId) {
+  const ids = [categoryId];
+  const queue = [categoryId];
+  while (queue.length) {
+    const current = queue.shift();
+    const children = await Category.find({ parent: current }).select("_id").lean();
+    for (const child of children) {
+      ids.push(child._id.toString());
+      queue.push(child._id.toString());
+    }
+  }
+  return ids;
+}
 
-  res.json(products);
+exports.getProducts = async (req, res) => {
+  try {
+    const resultPerPage = req.query.limit ? parseInt(req.query.limit) : 12;
+    const queryCopy = { ...req.query };
+
+    const priceFilter = {};
+    if (queryCopy.minPrice) { priceFilter.$gte = Number(queryCopy.minPrice); delete queryCopy.minPrice; }
+    if (queryCopy.maxPrice) { priceFilter.$lte = Number(queryCopy.maxPrice); delete queryCopy.maxPrice; }
+
+    let baseQuery = Product.find(Object.keys(priceFilter).length ? { price: priceFilter } : {});
+
+    if (queryCopy.category) {
+      const catIds = queryCopy.category.split(",").map((id) => id.trim()).filter(Boolean);
+      const allCatIds = [];
+      for (const catId of catIds) {
+        allCatIds.push(...(await getAllDescendantIds(catId)));
+      }
+      baseQuery = baseQuery.find({ category: { $in: [...new Set(allCatIds)] } });
+      delete queryCopy.category;
+    }
+
+    if (queryCopy.brand) {
+      const brandList = queryCopy.brand.split(",").map((b) => b.trim()).filter(Boolean);
+      baseQuery = baseQuery.find({ brand: { $in: brandList } });
+      delete queryCopy.brand;
+    }
+
+    const productFilter = new ProductFilter(baseQuery, queryCopy)
+      .search()
+      .filter()
+      .sort();
+
+    const total = await productFilter.query.clone().countDocuments();
+    productFilter.pagination(resultPerPage);
+    const products = await productFilter.query;
+
+    res.json({ products, total });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.adminProducts = async (req, res) => {
   const products = await Product.find();
   res.json(products);
+};
+
+exports.getBrands = async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.category) {
+      const catIds = req.query.category.split(",").map((id) => id.trim()).filter(Boolean);
+      const allCatIds = [];
+      for (const catId of catIds) {
+        allCatIds.push(...(await getAllDescendantIds(catId)));
+      }
+      filter.category = { $in: [...new Set(allCatIds)] };
+    }
+    const brands = await Product.distinct("brand", filter);
+    res.json(brands.filter(Boolean).sort());
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.getProductById = async (req, res) => {
