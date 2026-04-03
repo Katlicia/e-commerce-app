@@ -194,7 +194,7 @@
   }
 
   .header-actions {
-    width: 100%;
+    /* width: 100%; */
     justify-content: space-between;
   }
 
@@ -221,7 +221,7 @@
 
 @media (max-width: 912px) {
   .header-actions {
-    width: 100%;
+    /* width: 100%; */
     justify-content: space-between;
   }
 
