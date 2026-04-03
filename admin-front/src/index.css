@@ -1,5 +1,30 @@
+:root {
+  --dark-orange: #f83b0a;
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: "Inter", sans-serif !important;
+}
+
+.orange-text {
+  color: var(--dark-orange);
+}
+
+.orange-btn {
+  color: white;
+  background-color: var(--dark-orange);
+  border-color: var(--dark-orange);
+}
+
+.orange-btn:hover {
+  color: white;
+  background-color: #d33008;
+}
+
+.orange-btn:disabled {
+  color: white;
+  background-color: var(--dark-orange);
+  cursor: not-allowed;
 }
