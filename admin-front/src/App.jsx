@@ -6,6 +6,11 @@ import AdminHeader from "./Components/AdminHeader.jsx";
 import AdminProductFormPage from "./Components/AdminProductFormPage.jsx";
 import AdminProductsPage from "./Components/AdminProductsPage.jsx";
 import AdminCategoriesPage from "./Components/AdminCategoriesPage.jsx";
+import AdminCargoPage from "./Components/AdminCargoPage.jsx";
+import AdminTaxSettingsPage from "./Components/AdminTaxSettingsPage.jsx";
+import AdminOrdersPage from "./Components/AdminOrdersPage.jsx";
+import AdminOrderDetailPage from "./Components/AdminOrderDetailPage.jsx";
+import AdminToast from "./Components/AdminToast.jsx";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
@@ -13,6 +18,7 @@ function App() {
   return (
     <BrowserRouter>
       <AdminHeader />
+      <AdminToast />
       <Routes>
         <Route
           path="/"
@@ -43,6 +49,22 @@ function App() {
           element={
             user?.isAdmin ? <AdminCategoriesPage /> : <Navigate to="/" />
           }
+        />
+        <Route
+          path="/admin/cargo"
+          element={user?.isAdmin ? <AdminCargoPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/admin/tax-settings"
+          element={user?.isAdmin ? <AdminTaxSettingsPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/admin/orders"
+          element={user?.isAdmin ? <AdminOrdersPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/admin/orders/:id"
+          element={user?.isAdmin ? <AdminOrderDetailPage /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>
