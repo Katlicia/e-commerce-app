@@ -58,7 +58,7 @@ function ProfileOrderCard({ order, onDetailClick }) {
         <div>
           <p className="order-meta-label mb-0">Toplam Tutar</p>
           <p className="order-meta-value mb-0 orange-text">
-            {Number(order.totalAmount).toFixed(2)}₺
+            {(Number(order.totalAmount) + Number(order.cargoPrice || 0)).toFixed(2)}₺
           </p>
         </div>
         {open ? (
