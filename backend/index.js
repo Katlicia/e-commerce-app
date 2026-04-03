@@ -11,6 +11,8 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const favouriteRoutes = require("./routes/favouriteRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const cargoRoutes = require("./routes/cargoRoutes");
+const taxSettingsRoutes = require("./routes/taxSettingsRoutes");
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -40,6 +42,8 @@ app.use("/", categoryRoutes);
 app.use("/", cartRoutes);
 app.use("/", favouriteRoutes);
 app.use("/", orderRoutes);
+app.use("/", cargoRoutes);
+app.use("/", taxSettingsRoutes);
 
 app.get("/", (req, res) => {
   res.send("API working.");
