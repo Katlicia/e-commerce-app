@@ -45,7 +45,8 @@ function CategoryList() {
   useEffect(() => {
     const slugParam = searchParams.get("category");
     if (!slugParam) return;
-    axiosInstance.get(`/categories/${slugParam}`)
+    axiosInstance
+      .get(`/categories/${slugParam}`)
       .then((res) => {
         if (res.data._id) setSelectedCategories([res.data._id.toString()]);
       })
@@ -53,7 +54,8 @@ function CategoryList() {
   }, [searchParams]);
 
   useEffect(() => {
-    axiosInstance.get(`/categories`)
+    axiosInstance
+      .get(`/categories`)
       .then((res) => setCategories(Array.isArray(res.data) ? res.data : []))
       .catch(() => {});
   }, []);
@@ -62,7 +64,8 @@ function CategoryList() {
     const query = new URLSearchParams();
     if (selectedCategories.length > 0)
       query.set("category", selectedCategories.join(","));
-    axiosInstance.get(`/products/brands?${query.toString()}`)
+    axiosInstance
+      .get(`/products/brands?${query.toString()}`)
       .then((res) => setBrands(Array.isArray(res.data) ? res.data : []))
       .catch(() => {});
   }, [selectedCategories]);
