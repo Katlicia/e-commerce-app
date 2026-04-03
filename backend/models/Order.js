@@ -29,6 +29,14 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    cargoCompany: {
+      type: String,
+      required: true,
+    },
+    cargoPrice: {
+      type: Number,
+      required: true,
+    },
     address: {
       fullName: { type: String, required: true },
       phone: { type: String, required: true },
