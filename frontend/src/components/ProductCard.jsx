@@ -167,16 +167,20 @@ function ProductCard({ product }) {
               )}
             </button>
             <span className="fw-semibold">{cartItem.quantity}</span>
-            <button
-              className="btn p-0 px-2 h-100"
-              style={{ fontSize: "20px", color: "inherit" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                dispatch(addToCartWithSync(product));
-              }}
-            >
-              +
-            </button>
+            {cartItem.quantity >= product.stock ? (
+              <span></span>
+            ) : (
+              <button
+                className="btn p-0 px-2 h-100"
+                style={{ fontSize: "20px", color: "inherit" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dispatch(addToCartWithSync(product));
+                }}
+              >
+                +
+              </button>
+            )}
           </div>
         ) : (
           <button
@@ -185,8 +189,9 @@ function ProductCard({ product }) {
               e.stopPropagation();
               dispatch(addToCartWithSync(product));
             }}
+            disabled={product.stock <= 0}
           >
-            Sepete Ekle
+            {product.stock <= 0 ? "Stokta Yok" : "Sepete Ekle"}
           </button>
         )}
       </div>
