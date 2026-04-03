@@ -8,7 +8,8 @@ function ProductFeaturesSection({ product }) {
 
   if (!product) return null;
 
-  const { description, images, reviews, price, features } = product;
+  const { description, images, descriptionImages, reviews, price, features } =
+    product;
 
   const descriptions = description
     ? description
@@ -50,7 +51,9 @@ function ProductFeaturesSection({ product }) {
                 <h6 className="pfs-section-title">ÖNE ÇIKAN ÖZELLİKLER</h6>
                 <ul className="pfs-feature-list">
                   {features?.length > 0 ? (
-                    featureArray.map((f, i) => <li key={i}>{f.trim()}</li>)
+                    featureArray
+                      .slice(0, 3)
+                      .map((f, i) => <li key={i}>{f.trim()}</li>)
                   ) : (
                     <li>Ürün özellikleri mevcut değil.</li>
                   )}
@@ -58,11 +61,14 @@ function ProductFeaturesSection({ product }) {
               </div>
               {images?.length > 0 && (
                 <div className="col-lg-6">
-                  <img
-                    src={images[0].url}
-                    alt={product.name}
-                    className="pfs-media-img"
-                  />
+                  {descriptionImages?.[0]?.url && (
+                    <img
+                      src={descriptionImages[0].url}
+                      alt={product.name}
+                      className="pfs-media-img"
+                    />
+                  )}
+                  ;
                 </div>
               )}
             </div>
