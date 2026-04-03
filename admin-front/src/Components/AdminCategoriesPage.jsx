@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import {
   adminGetCategories,
@@ -7,6 +8,7 @@ import {
   adminUpdateCategory,
   adminDeleteCategory,
 } from "../redux/adminSlice";
+import { addNotification } from "../redux/notificationSlice";
 import "../styles/AdminPage.css";
 
 const toSlug = (str) =>
@@ -19,8 +21,10 @@ const toSlug = (str) =>
 
 function AdminCategoriesPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { categories, loading } = useSelector((state) => state.admin);
 
+  const [search, setSearch] = useState("");
   const [editingCategory, setEditingCategory] = useState(null);
   const [editName, setEditName] = useState("");
   const [editSlug, setEditSlug] = useState("");
@@ -45,7 +49,9 @@ function AdminCategoriesPage() {
         slug: values.slug,
         ...(values.parent && { parent: values.parent }),
       };
-      dispatch(adminCreateCategory(payload));
+      dispatch(adminCreateCategory(payload)).then(() =>
+        dispatch(addNotification({ message: "Kategori eklendi." })),
+      );
       resetForm();
     },
   });
@@ -62,7 +68,11 @@ function AdminCategoriesPage() {
       )
     )
       return;
-    dispatch(adminDeleteCategory(id));
+    dispatch(adminDeleteCategory(id)).then(() =>
+      dispatch(
+        addNotification({ message: `"${name}" silindi.`, type: "warning" }),
+      ),
+    );
     if (editingCategory?._id === id) setEditingCategory(null);
   };
 
@@ -121,6 +131,8 @@ function AdminCategoriesPage() {
           subcategories: editSubs,
         },
       }),
+    ).then(() =>
+      dispatch(addNotification({ message: "Kategori güncellendi." })),
     );
     setEditingCategory(null);
   };
@@ -134,7 +146,15 @@ function AdminCategoriesPage() {
   return (
     <div className="admin-page">
       <div className="container">
-        <h4 className="fw-bold mb-4">Kategori Yönetimi</h4>
+        <div className="d-flex align-items-center gap-3 mb-4">
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => navigate("/")}
+          >
+            ← Geri
+          </button>
+          <h4 className="fw-bold mb-0">Kategori Yönetimi</h4>
+        </div>
 
         <div className="row g-4">
           <div className="col-12 col-lg-4">
@@ -241,7 +261,7 @@ function AdminCategoriesPage() {
                 </div>
 
                 <button
-                  className="btn btn-primary w-100 rounded py-2 fw-semibold"
+                  className="btn orange-btn w-100 rounded py-2 fw-semibold"
                   onClick={handleEditSave}
                 >
                   Kaydet
@@ -307,7 +327,7 @@ function AdminCategoriesPage() {
                   </div>
                   <button
                     type="submit"
-                    className="btn btn-primary w-100 rounded py-2 fw-semibold"
+                    className="btn btn-primary w-100 rounded py-2 fw-semibold orange-btn"
                   >
                     Kategori Ekle
                   </button>
@@ -317,6 +337,13 @@ function AdminCategoriesPage() {
           </div>
 
           <div className="col-12 col-lg-8">
+            <input
+              type="text"
+              className="form-control mb-3"
+              placeholder="Kategori adı veya slug ara..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
             {loading ? (
               <p className="text-muted">Yükleniyor...</p>
             ) : (
@@ -331,40 +358,50 @@ function AdminCategoriesPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {categories.map((cat) => (
-                      <tr
-                        key={cat._id}
-                        className={
-                          editingCategory?._id === cat._id
-                            ? "table-warning"
-                            : ""
-                        }
-                      >
-                        <td className="fw-semibold">{cat.name}</td>
-                        <td className="text-muted">{cat.slug}</td>
-                        <td>{getParentName(cat.parent)}</td>
-                        <td>
-                          <div className="d-flex gap-2">
-                            <button
-                              className="btn btn-primary"
-                              onClick={() => handleEditClick(cat)}
-                            >
-                              Düzenle
-                            </button>
-                            <button
-                              className="btn btn-danger"
-                              onClick={() => handleDelete(cat._id, cat.name)}
-                            >
-                              Sil
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {categories
+                      .filter(
+                        (cat) =>
+                          cat.name
+                            .toLowerCase()
+                            .includes(search.toLowerCase()) ||
+                          cat.slug.toLowerCase().includes(search.toLowerCase()),
+                      )
+                      .map((cat) => (
+                        <tr
+                          key={cat._id}
+                          className={
+                            editingCategory?._id === cat._id
+                              ? "table-warning"
+                              : ""
+                          }
+                        >
+                          <td className="fw-semibold">{cat.name}</td>
+                          <td className="text-muted">{cat.slug}</td>
+                          <td>{getParentName(cat.parent)}</td>
+                          <td>
+                            <div className="d-flex gap-2">
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => handleEditClick(cat)}
+                              >
+                                Düzenle
+                              </button>
+                              <button
+                                className="btn btn-danger"
+                                onClick={() => handleDelete(cat._id, cat.name)}
+                              >
+                                Sil
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                     {categories.length === 0 && (
                       <tr>
                         <td colSpan={4} className="text-center text-muted py-4">
-                          Kategori bulunamadı.
+                          {search
+                            ? "Aramayla eşleşen kategori bulunamadı."
+                            : "Kategori bulunamadı."}
                         </td>
                       </tr>
                     )}
