@@ -95,7 +95,9 @@ function ProductDetails() {
     e.preventDefault();
     if (!reviewComment.trim()) return;
     setReviewSubmitting(true);
-    await dispatch(createReview({ productId, comment: reviewComment, rating: reviewRating }));
+    await dispatch(
+      createReview({ productId, comment: reviewComment, rating: reviewRating }),
+    ).unwrap();
     setReviewComment("");
     setReviewRating(5);
     setReviewSubmitting(false);
@@ -270,7 +272,10 @@ function ProductDetails() {
 
               <div className="d-flex gap-3 align-items-center">
                 {cartItem ? (
-                  <div className="d-flex align-items-center justify-content-between pd-add-btn rounded-pill px-2" style={{ minWidth: 140 }}>
+                  <div
+                    className="d-flex align-items-center justify-content-between pd-add-btn rounded-pill px-2"
+                    style={{ minWidth: 140 }}
+                  >
                     <button
                       className="btn p-0 px-2 h-100"
                       style={{ color: "inherit" }}
@@ -280,26 +285,49 @@ function ProductDetails() {
                           : dispatch(decreaseCartWithSync(productId))
                       }
                     >
-                      {cartItem.quantity === 1 ? <FaTrash size={14} /> : <span style={{ fontSize: 20 }}>−</span>}
+                      {cartItem.quantity === 1 ? (
+                        <FaTrash size={14} />
+                      ) : (
+                        <span style={{ fontSize: 20 }}>−</span>
+                      )}
                     </button>
                     <span className="fw-semibold">{cartItem.quantity}</span>
-                    <button
-                      className="btn p-0 px-2 h-100"
-                      style={{ color: "inherit", fontSize: 20 }}
-                      onClick={() => dispatch(addToCartWithSync(product))}
-                    >
-                      +
-                    </button>
+                    {cartItem.quantity >= product.stock ? (
+                      <span></span>
+                    ) : (
+                      <button
+                        className="btn p-0 px-2 h-100"
+                        style={{ color: "inherit", fontSize: 20 }}
+                        onClick={() => dispatch(addToCartWithSync(product))}
+                      >
+                        +
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <>
                     <div className="pd-qty-control rounded-pill">
-                      <button className="pd-qty-btn" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>−</button>
+                      <button
+                        className="pd-qty-btn"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      >
+                        −
+                      </button>
                       <span className="pd-qty-num">{quantity}</span>
-                      <button className="pd-qty-btn" onClick={() => setQuantity((q) => q + 1)}>+</button>
+                      <button
+                        className="pd-qty-btn"
+                        onClick={() => setQuantity((q) => q + 1)}
+                        disabled={quantity >= product.stock}
+                      >
+                        +
+                      </button>
                     </div>
-                    <button className="pd-add-btn rounded-pill" onClick={handleAddToCart}>
-                      SEPETE EKLE
+                    <button
+                      className="pd-add-btn rounded-pill"
+                      onClick={handleAddToCart}
+                      disabled={product.stock <= 0}
+                    >
+                      {product.stock <= 0 ? "STOKTA YOK" : "SEPETE EKLE"}
                     </button>
                   </>
                 )}
@@ -427,17 +455,28 @@ function ProductDetails() {
       <ProductFeaturesSection product={product} />
 
       <div className="container my-5">
-        <h5 className="fw-bold mb-4">Yorumlar ({product.reviews?.length || 0})</h5>
+        <h5 className="fw-bold mb-4">
+          Yorumlar ({product.reviews?.length || 0})
+        </h5>
 
         {user ? (
           <form onSubmit={handleReviewSubmit} className="pd-review-form mb-5">
             <div className="mb-3">
-              <label className="fw-semibold mb-2 d-block" style={{ fontSize: 14 }}>Puanınız</label>
+              <label
+                className="fw-semibold mb-2 d-block"
+                style={{ fontSize: 14 }}
+              >
+                Puanınız
+              </label>
               <div className="d-flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
-                    style={{ fontSize: 22, cursor: "pointer", color: star <= reviewRating ? "#ff7700" : "#dee2e6" }}
+                    style={{
+                      fontSize: 22,
+                      cursor: "pointer",
+                      color: star <= reviewRating ? "#ff7700" : "#dee2e6",
+                    }}
                     onClick={() => setReviewRating(star)}
                   >
                     ★
@@ -446,7 +485,12 @@ function ProductDetails() {
               </div>
             </div>
             <div className="mb-3">
-              <label className="fw-semibold mb-2 d-block" style={{ fontSize: 14 }}>Yorumunuz</label>
+              <label
+                className="fw-semibold mb-2 d-block"
+                style={{ fontSize: 14 }}
+              >
+                Yorumunuz
+              </label>
               <textarea
                 className="form-control"
                 rows={3}
@@ -456,7 +500,9 @@ function ProductDetails() {
               />
             </div>
             {reviewSuccess && (
-              <p className="text-success mb-2" style={{ fontSize: 13 }}>Yorumunuz eklendi!</p>
+              <p className="text-success mb-2" style={{ fontSize: 13 }}>
+                Yorumunuz eklendi!
+              </p>
             )}
             <button
               type="submit"
@@ -470,7 +516,10 @@ function ProductDetails() {
           <div className="pd-review-login mb-5">
             <p style={{ fontSize: 14, color: "#6c757d" }}>
               Yorum yapabilmek için{" "}
-              <Link to="/login" style={{ color: "#ff4d2d", fontWeight: 600 }}>giriş yapın</Link>.
+              <Link to="/login" style={{ color: "#ff4d2d", fontWeight: 600 }}>
+                giriş yapın
+              </Link>
+              .
             </p>
           </div>
         )}
@@ -480,17 +529,24 @@ function ProductDetails() {
             {product.reviews.map((rev, i) => (
               <div key={i} className="pd-review-item">
                 <div className="d-flex align-items-center gap-2 mb-1">
-                  <span className="fw-semibold" style={{ fontSize: 14 }}>{rev.name}</span>
+                  <span className="fw-semibold" style={{ fontSize: 14 }}>
+                    {rev.name}
+                  </span>
                   <span style={{ fontSize: 13, color: "#ff7700" }}>
-                    {"★".repeat(rev.rating)}{"☆".repeat(5 - rev.rating)}
+                    {"★".repeat(rev.rating)}
+                    {"☆".repeat(5 - rev.rating)}
                   </span>
                 </div>
-                <p className="mb-0" style={{ fontSize: 14, color: "#424040" }}>{rev.comment}</p>
+                <p className="mb-0" style={{ fontSize: 14, color: "#424040" }}>
+                  {rev.comment}
+                </p>
               </div>
             ))}
           </div>
         ) : (
-          <p style={{ fontSize: 14, color: "#6c757d" }}>Henüz yorum yapılmamış.</p>
+          <p style={{ fontSize: 14, color: "#6c757d" }}>
+            Henüz yorum yapılmamış.
+          </p>
         )}
       </div>
     </>
