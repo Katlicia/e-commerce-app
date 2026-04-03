@@ -35,9 +35,8 @@ function AdminProductFormPage() {
   const { categories } = useSelector((state) => state.admin);
   const { product } = useSelector((state) => state.product);
 
-  const [descriptions, setDescriptions] = useState([""]);
-  const [newImages, setNewImages] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
+  const [features, setFeatures] = useState([""]);
+  const [imageList, setImageList] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -56,12 +55,14 @@ function AdminProductFormPage() {
         badge: product.badge || "",
         category: product.category?._id || product.category || "",
       });
-      setDescriptions(
-        Array.isArray(product.description) && product.description.length > 0
-          ? product.description
+      setFeatures(
+        Array.isArray(product.features) && product.features.length > 0
+          ? product.features
           : [""],
       );
-      setExistingImages(product.images || []);
+      setImageList(
+        (product.images || []).map((img) => ({ type: "existing", ...img })),
+      );
     }
   }, [product]);
 
@@ -84,27 +85,39 @@ function AdminProductFormPage() {
       if (!values.stock || isNaN(values.stock))
         errors.stock = "Geçerli bir stok giriniz";
       if (!values.category) errors.category = "Kategori seçiniz";
-      if (!isEdit && newImages.length === 0)
-        errors.images = "En az 1 görsel ekleyiniz";
+      if (imageList.length === 0) errors.images = "En az 1 görsel ekleyiniz";
       return errors;
     },
     onSubmit: async (values) => {
       setSubmitting(true);
-      const base64Images = await Promise.all(newImages.map(toBase64));
 
-      const payload = {
+      const newFiles = imageList
+        .filter((i) => i.type === "new")
+        .map((i) => i.file);
+      const base64New = await Promise.all(newFiles.map(toBase64));
+
+      const basePayload = {
         name: values.name,
         brand: values.brand,
         price: Number(values.price),
         stock: Number(values.stock),
         category: values.category,
-        description: descriptions.filter((d) => d.trim()),
-        ...(values.badge && { badge: values.badge }),
-        ...(values.discountPercent && {
-          discountPercent: Number(values.discountPercent),
-        }),
-        ...(base64Images.length > 0 && { images: base64Images }),
+        features: features.filter((d) => d.trim()),
+        badge: values.badge || "",
+        discountPercent: values.discountPercent
+          ? Number(values.discountPercent)
+          : 0,
       };
+
+      let payload;
+      if (isEdit) {
+        const keepImages = imageList
+          .filter((i) => i.type === "existing")
+          .map(({ public_id, url }) => ({ public_id, url }));
+        payload = { ...basePayload, keepImages, newImages: base64New };
+      } else {
+        payload = { ...basePayload, images: base64New };
+      }
 
       if (isEdit) {
         await dispatch(adminUpdateProduct({ id, productData: payload }));
@@ -113,21 +126,45 @@ function AdminProductFormPage() {
       }
 
       setSubmitting(false);
-      navigate("/admin/products");
     },
   });
 
-  const handleImageChange = (e) => {
-    setNewImages(Array.from(e.target.files));
+  const handleAddImages = (e) => {
+    const files = Array.from(e.target.files);
+    const newItems = files.map((file) => ({
+      type: "new",
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setImageList((prev) => [...prev, ...newItems]);
+    e.target.value = "";
   };
 
-  const addDescription = () => setDescriptions((prev) => [...prev, ""]);
+  const removeImage = (idx) => {
+    setImageList((prev) => {
+      const item = prev[idx];
+      if (item.type === "new") URL.revokeObjectURL(item.preview);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const moveImage = (idx, dir) => {
+    setImageList((prev) => {
+      const next = [...prev];
+      const target = idx + dir;
+      if (target < 0 || target >= next.length) return prev;
+      [next[idx], next[target]] = [next[target], next[idx]];
+      return next;
+    });
+  };
+
+  const addDescription = () => setFeatures((prev) => [...prev, ""]);
 
   const removeDescription = (idx) =>
-    setDescriptions((prev) => prev.filter((_, i) => i !== idx));
+    setFeatures((prev) => prev.filter((_, i) => i !== idx));
 
   const updateDescription = (idx, value) =>
-    setDescriptions((prev) => prev.map((d, i) => (i === idx ? value : d)));
+    setFeatures((prev) => prev.map((d, i) => (i === idx ? value : d)));
 
   return (
     <div className="admin-page">
@@ -260,9 +297,9 @@ function AdminProductFormPage() {
               </div>
 
               <div className="admin-form-card mb-4">
-                <h6 className="fw-bold mb-3">Açıklamalar</h6>
+                <h6 className="fw-bold mb-3">Özellikler</h6>
                 <div className="d-flex flex-column gap-2">
-                  {descriptions.map((desc, idx) => (
+                  {features.map((desc, idx) => (
                     <div key={idx} className="admin-desc-item">
                       <input
                         className="form-control"
@@ -270,7 +307,7 @@ function AdminProductFormPage() {
                         value={desc}
                         onChange={(e) => updateDescription(idx, e.target.value)}
                       />
-                      {descriptions.length > 1 && (
+                      {features.length > 1 && (
                         <button
                           type="button"
                           className="btn btn-sm btn-outline-danger"
@@ -292,51 +329,84 @@ function AdminProductFormPage() {
               </div>
 
               <div className="admin-form-card">
-                <h6 className="fw-bold mb-3">Görseller</h6>
-                {isEdit && existingImages.length > 0 && (
-                  <div className="d-flex flex-wrap gap-2 mb-3">
-                    {existingImages.map((img, idx) => (
-                      <img
+                <h6 className="fw-bold mb-3">
+                  Görseller
+                  <span
+                    className="text-muted fw-normal ms-2"
+                    style={{ fontSize: "0.8rem" }}
+                  >
+                    ({imageList.length} görsel)
+                  </span>
+                </h6>
+
+                {imageList.length > 0 && (
+                  <div className="admin-img-grid mb-3">
+                    {imageList.map((item, idx) => (
+                      <div
                         key={idx}
-                        src={img.url}
-                        alt=""
-                        className="admin-image-preview"
-                      />
+                        className={`admin-img-card${item.type === "new" ? " is-new" : ""}`}
+                      >
+                        {item.type === "new" && (
+                          <span className="admin-img-new-badge">Yeni</span>
+                        )}
+                        {idx === 0 && (
+                          <span className="admin-img-main-badge">Kapak</span>
+                        )}
+                        <img
+                          src={
+                            item.type === "existing" ? item.url : item.preview
+                          }
+                          alt=""
+                        />
+                        <div className="admin-img-card-actions">
+                          <button
+                            type="button"
+                            title="Sola taşı"
+                            disabled={idx === 0}
+                            onClick={() => moveImage(idx, -1)}
+                          >
+                            ←
+                          </button>
+                          <button
+                            type="button"
+                            className="delete-btn"
+                            title="Sil"
+                            onClick={() => removeImage(idx)}
+                          >
+                            ×
+                          </button>
+                          <button
+                            type="button"
+                            title="Sağa taşı"
+                            disabled={idx === imageList.length - 1}
+                            onClick={() => moveImage(idx, 1)}
+                          >
+                            →
+                          </button>
+                        </div>
+                      </div>
                     ))}
-                    <p
-                      className="text-muted w-100 mb-0"
-                      style={{ fontSize: "0.8rem" }}
-                    >
-                      Yeni görsel seçilirse mevcut görseller değiştirilir.
-                    </p>
                   </div>
                 )}
-                <input
-                  type="file"
-                  className="form-control"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+
+                <label className="admin-img-add-btn">
+                  + Görsel Ekle
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleAddImages}
+                  />
+                </label>
+
                 {formik.submitCount > 0 && formik.errors.images && (
                   <p
-                    className="text-danger mb-0 mt-1"
+                    className="text-danger mb-0 mt-2"
                     style={{ fontSize: "0.8rem" }}
                   >
                     {formik.errors.images}
                   </p>
-                )}
-                {newImages.length > 0 && (
-                  <div className="d-flex flex-wrap gap-2 mt-3">
-                    {newImages.map((file, idx) => (
-                      <img
-                        key={idx}
-                        src={URL.createObjectURL(file)}
-                        alt=""
-                        className="admin-image-preview"
-                      />
-                    ))}
-                  </div>
                 )}
               </div>
             </div>
@@ -369,7 +439,7 @@ function AdminProductFormPage() {
 
                 <button
                   type="submit"
-                  className="btn btn-primary w-100 rounded mt-4 py-2 fw-semibold"
+                  className="btn orange-btn w-100 rounded mt-4 py-2 fw-semibold"
                   disabled={submitting}
                 >
                   {submitting
