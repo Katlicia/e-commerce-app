@@ -74,8 +74,10 @@ const cartSlice = createSlice({
       const id = product._id;
       const existing = state.cart.find((item) => (item._id || item.id) === id);
       if (existing) {
+        if (existing.quantity >= (product.stock ?? Infinity)) return;
         existing.quantity += 1;
       } else {
+        if ((product.stock ?? 1) <= 0) return;
         state.cart.push({ ...product, quantity: 1 });
       }
       state.totalAmount = calcTotal(state.cart);
