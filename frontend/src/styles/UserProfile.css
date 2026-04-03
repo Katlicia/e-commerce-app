@@ -77,13 +77,26 @@
 }
 
 .order-card-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
   align-items: center;
-  justify-content: space-between;
   padding: 16px 20px;
   cursor: pointer;
   gap: 12px;
-  flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .order-card-header {
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    padding-right: 40px;
+  }
+
+  .order-card-header > *:last-child {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
 }
 
 .order-card-header:hover {
