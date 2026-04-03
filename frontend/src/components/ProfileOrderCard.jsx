@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { cancelOrder, returnOrder } from "../redux/orderSlice";
-import { addToCartWithSync, syncClearCart } from "../redux/cartSlice";
 import {
   FiChevronDown,
   FiChevronUp,
@@ -10,21 +9,14 @@ import {
   FiRefreshCw,
   FiXCircle,
 } from "react-icons/fi";
+import { useReorder } from "../hooks/useReorder";
 
 function ProfileOrderCard({ order, onDetailClick }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const handleReorder = async () => {
-    await dispatch(syncClearCart());
-    order.items.forEach(({ product, quantity }) => {
-      for (let i = 0; i < quantity; i++) {
-        dispatch(addToCartWithSync(product));
-      }
-    });
-    navigate("/checkout");
-  };
+  const { handleReorder } = useReorder();
 
   const images =
     order.items
@@ -58,7 +50,10 @@ function ProfileOrderCard({ order, onDetailClick }) {
         <div>
           <p className="order-meta-label mb-0">Toplam Tutar</p>
           <p className="order-meta-value mb-0 orange-text">
-            {(Number(order.totalAmount) + Number(order.cargoPrice || 0)).toFixed(2)}₺
+            {(
+              Number(order.totalAmount) + Number(order.cargoPrice || 0)
+            ).toFixed(2)}
+            ₺
           </p>
         </div>
         {open ? (
@@ -83,15 +78,20 @@ function ProfileOrderCard({ order, onDetailClick }) {
               <button
                 className="btn btn-outline-secondary rounded-pill d-flex align-items-center gap-2"
                 style={{ fontSize: "0.82rem" }}
-                onClick={handleReorder}
+                onClick={() => handleReorder(order)}
               >
                 <FiRefreshCw size={14} />
                 Siparişi Tekrarla
               </button>
-              {(order.status === "Hazırlanıyor" || order.status === "Teslim Edildi") && (
+              {(order.status === "Hazırlanıyor" ||
+                order.status === "Teslim Edildi") && (
                 <button
                   className="btn rounded-pill d-flex align-items-center gap-2"
-                  style={{ fontSize: "0.82rem", backgroundColor: "#ff7700", color: "white" }}
+                  style={{
+                    fontSize: "0.82rem",
+                    backgroundColor: "#ff7700",
+                    color: "white",
+                  }}
                   onClick={() =>
                     order.status === "Hazırlanıyor"
                       ? dispatch(cancelOrder(order._id))
@@ -99,7 +99,9 @@ function ProfileOrderCard({ order, onDetailClick }) {
                   }
                 >
                   <FiXCircle size={16} />
-                  {order.status === "Hazırlanıyor" ? "Siparişi İptal Et" : "Siparişi İade Et"}
+                  {order.status === "Hazırlanıyor"
+                    ? "Siparişi İptal Et"
+                    : "Siparişi İade Et"}
                 </button>
               )}
               <div

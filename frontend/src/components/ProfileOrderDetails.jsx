@@ -7,10 +7,9 @@ import paymentIcon from "../assets/Profile/payment.svg";
 import readyIcon from "../assets/Profile/ready.svg";
 import cargoIcon from "../assets/Profile/cargo.svg";
 import checkIcon from "../assets/Profile/check.svg";
-import { addToCartWithSync, syncClearCart } from "../redux/cartSlice";
 import { cancelOrder, returnOrder } from "../redux/orderSlice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useReorder } from "../hooks/useReorder";
 
 const STEPS = [
   { label: "Sipariş Alındı", icon: orderIcon },
@@ -33,24 +32,18 @@ function ProfileOrderDetails({ order }) {
   const isActive = (i) => currentIndex !== -1 && i <= currentIndex;
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
-  const handleReorder = async () => {
-    await dispatch(syncClearCart());
-    order.items.forEach(({ product, quantity }) => {
-      for (let i = 0; i < quantity; i++) {
-        dispatch(addToCartWithSync(product));
-      }
-    });
-    navigate("/checkout");
-  };
+  const { handleReorder } = useReorder();
 
   return (
     <div className="container">
       <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
         <h4 className="fw-bold mb-0">{order.orderNo} nolu siparişiniz</h4>
         <div className="d-flex gap-2">
-          <button className="btn buttons flex-grow-1" onClick={handleReorder}>
+          <button
+            className="btn buttons flex-grow-1"
+            onClick={() => handleReorder(order)}
+          >
             <div className="d-flex justify-content-center align-items-center gap-2">
               <img src={restockIcon} width={20} alt="Restock" />
               Siparişi Tekrarla
