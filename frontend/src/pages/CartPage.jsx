@@ -100,9 +100,7 @@ function CartPage() {
                   </div>
                   <button
                     className="btn p-0 text-danger"
-                    onClick={() =>
-                      cart.forEach((item) => dispatch(syncClearCart()))
-                    }
+                    onClick={() => dispatch(syncClearCart())}
                   >
                     <span className="text-selected">
                       <strong>Temizle</strong>
@@ -193,12 +191,16 @@ function CartPage() {
                         >
                           {item.quantity}
                         </span>
-                        <button
-                          className="btn btn-sm px-2 py-1"
-                          onClick={() => dispatch(addToCartWithSync(item))}
-                        >
-                          +
-                        </button>
+                        {item.quantity >= item.stock ? (
+                          <span></span>
+                        ) : (
+                          <button
+                            className="btn btn-sm px-2 py-1"
+                            onClick={() => dispatch(addToCartWithSync(item))}
+                          >
+                            +
+                          </button>
+                        )}
                       </div>
 
                       <div className="d-flex gap-2">
