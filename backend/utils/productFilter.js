@@ -17,7 +17,7 @@ class ProductFilter {
 
     filter() {
         const queryCopy = { ...this.queryStr };
-        const deleteArea = ["keyword", "page", "limit"];
+        const deleteArea = ["keyword", "page", "limit", "sort"];
         deleteArea.forEach(item => {
             delete queryCopy[item];
         });
@@ -26,6 +26,15 @@ class ProductFilter {
         queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, key => `$${key}`);
 
         this.query = this.query.find(JSON.parse(queryStr));
+        return this;
+    }
+
+    sort() {
+        if (this.queryStr.sort) {
+            this.query = this.query.sort(this.queryStr.sort);
+        } else {
+            this.query = this.query.sort("-createdAt");
+        }
         return this;
     }
 
