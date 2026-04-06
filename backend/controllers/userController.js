@@ -95,6 +95,37 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+exports.visitProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const user = req.user;
+
+    user.visitedProducts = [
+      productId,
+      ...user.visitedProducts
+        .map((id) => id.toString())
+        .filter((id) => id !== productId),
+    ].slice(0, 10);
+
+    await user.save();
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getVisitedProducts = async (req, res) => {
+  try {
+    const user = await req.user.populate({
+      path: "visitedProducts",
+      populate: { path: "category", select: "name slug" },
+    });
+    res.json(user.visitedProducts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.updateUserAddress = async (req, res) => {
   try {
     const { index, fullName, phone, city, district, address, billingAddress } =
