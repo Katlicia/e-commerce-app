@@ -141,6 +141,19 @@ exports.createProduct = async (req, res) => {
   }
 
   req.body.images = allImage;
+
+  const rawDescImages = req.body.descriptionImages || [];
+  const descImagesArr =
+    typeof rawDescImages === "string" ? [rawDescImages] : rawDescImages;
+  const allDescImages = [];
+  for (const img of descImagesArr) {
+    const result = await cloudinary.uploader.upload(img, {
+      folder: "products",
+    });
+    allDescImages.push({ public_id: result.public_id, url: result.secure_url });
+  }
+  req.body.descriptionImages = allDescImages;
+
   req.body.user = req.user.id;
 
   const product = await Product.create(req.body);
@@ -166,8 +179,12 @@ exports.deleteProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
   const keepImages = req.body.keepImages || [];
   const rawNewImages = req.body.newImages || [];
+  const keepDescriptionImages = req.body.keepDescriptionImages || [];
+  const rawNewDescImages = req.body.newDescriptionImages || [];
   delete req.body.keepImages;
   delete req.body.newImages;
+  delete req.body.keepDescriptionImages;
+  delete req.body.newDescriptionImages;
 
   // Remove deleted images from cloudinary
   const current = await Product.findById(req.params.id);
@@ -175,6 +192,14 @@ exports.updateProduct = async (req, res) => {
     const keepIds = new Set(keepImages.map((img) => img.public_id));
     for (const img of current.images) {
       if (!keepIds.has(img.public_id)) {
+        await cloudinary.uploader.destroy(img.public_id);
+      }
+    }
+    const keepDescIds = new Set(
+      keepDescriptionImages.map((img) => img.public_id),
+    );
+    for (const img of current.descriptionImages || []) {
+      if (!keepDescIds.has(img.public_id)) {
         await cloudinary.uploader.destroy(img.public_id);
       }
     }
@@ -188,8 +213,20 @@ exports.updateProduct = async (req, res) => {
     });
     uploadedNew.push({ public_id: result.public_id, url: result.secure_url });
   }
-
   req.body.images = [...keepImages, ...uploadedNew];
+
+  // Upload new description images
+  const uploadedNewDesc = [];
+  for (const img of rawNewDescImages) {
+    const result = await cloudinary.uploader.upload(img, {
+      folder: "products",
+    });
+    uploadedNewDesc.push({
+      public_id: result.public_id,
+      url: result.secure_url,
+    });
+  }
+  req.body.descriptionImages = [...keepDescriptionImages, ...uploadedNewDesc];
 
   const updateFields = { ...req.body };
   let unsetFields = {};
