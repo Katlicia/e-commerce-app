@@ -1,3 +1,19 @@
+.banner-list {
+  align-items: stretch;
+}
+
+.banner-list > div {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.banner-list img {
+  width: 100%;
+  height: 200px;
+  display: block;
+  border-radius: 8px;
+}
+
 @media (max-width: 992px) {
   .banner-list {
     overflow-x: auto;
@@ -6,12 +22,9 @@
     gap: 16px;
     padding-bottom: 4px;
   }
-}
 
-@media (min-width: 992px) {
-  img {
-    max-width: 100%;
-    height: auto;
+  .banner-list > div {
+    flex: 0 0 260px;
   }
 }
 
