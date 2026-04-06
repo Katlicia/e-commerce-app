@@ -7,6 +7,7 @@ const initialState = {
   brands: [],
   cargos: [],
   orders: [],
+  users: [],
   taxSettings: null,
   banners: {},
   homeSections: [],
@@ -115,6 +116,16 @@ export const adminDeleteCargo = createAsyncThunk(
     return id;
   },
 );
+
+export const adminGetUsers = createAsyncThunk("admin/getUsers", async () => {
+  const { data } = await axiosInstance.get("/users");
+  return data;
+});
+
+export const adminUpdateUser = createAsyncThunk("admin/updateUser", async ({ id, userData }) => {
+  const { data } = await axiosInstance.put(`/users/${id}`, userData);
+  return data;
+});
 
 export const adminGetOrders = createAsyncThunk("admin/getOrders", async () => {
   const { data } = await axiosInstance.get("/admin/orders");
@@ -244,6 +255,13 @@ const adminSlice = createSlice({
       })
       .addCase(adminDeleteCargo.fulfilled, (state, action) => {
         state.cargos = state.cargos.filter((c) => c._id !== action.payload);
+      })
+      .addCase(adminGetUsers.fulfilled, (state, action) => {
+        state.users = action.payload;
+      })
+      .addCase(adminUpdateUser.fulfilled, (state, action) => {
+        const idx = state.users.findIndex((u) => u._id === action.payload._id);
+        if (idx !== -1) state.users[idx] = action.payload;
       })
       .addCase(adminGetOrders.pending, (state) => {
         state.loading = true;
