@@ -8,6 +8,8 @@ import favouriteReducer from "./favouriteSlice";
 import orderReducer from "./orderSlice";
 import cargoReducer from "./cargoSlice";
 import taxSettingsReducer from "./taxSettingsSlice";
+import bannerReducer from "./bannerSlice";
+import homeSectionReducer from "./homeSectionSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,5 +22,7 @@ export const store = configureStore({
     order: orderReducer,
     cargo: cargoReducer,
     taxSettings: taxSettingsReducer,
+    banner: bannerReducer,
+    homeSection: homeSectionReducer,
   },
 });
