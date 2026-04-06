@@ -40,6 +40,7 @@ function AdminProductFormPage() {
   const [imageList, setImageList] = useState([]);
   const [descImageList, setDescImageList] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [categorySearch, setCategorySearch] = useState("");
 
   useEffect(() => {
     dispatch(adminGetCategories());
@@ -56,6 +57,9 @@ function AdminProductFormPage() {
         discountPercent: product.discountPercent || "",
         stock: product.stock || "",
         badge: product.badge || "",
+        newUntil: product.newUntil
+          ? new Date(product.newUntil).toISOString().split("T")[0]
+          : "",
         category: product.category?._id || product.category || "",
       });
       setFeatures(
@@ -81,6 +85,7 @@ function AdminProductFormPage() {
       discountPercent: "",
       stock: "",
       badge: "",
+      newUntil: "",
       category: "",
     },
     validate: (values) => {
@@ -121,6 +126,9 @@ function AdminProductFormPage() {
         discountPercent: values.discountPercent
           ? Number(values.discountPercent)
           : 0,
+        ...(values.badge === "yeni" && values.newUntil
+          ? { newUntil: values.newUntil }
+          : {}),
       };
 
       let payload;
@@ -378,7 +386,15 @@ function AdminProductFormPage() {
                       className="form-select"
                       name="badge"
                       value={formik.values.badge}
-                      onChange={formik.handleChange}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        formik.setFieldValue("badge", val);
+                        if (val === "yeni" && !formik.values.newUntil) {
+                          const d = new Date();
+                          d.setDate(d.getDate() + 30);
+                          formik.setFieldValue("newUntil", d.toISOString().split("T")[0]);
+                        }
+                      }}
                     >
                       {BADGES.map((b) => (
                         <option key={b.value} value={b.value}>
@@ -387,6 +403,19 @@ function AdminProductFormPage() {
                       ))}
                     </select>
                   </div>
+                  {formik.values.badge === "yeni" && (
+                    <div className="col-6">
+                      <label className="admin-form-label">Yeni Rozet Son Tarihi</label>
+                      <input
+                        className="form-control"
+                        type="date"
+                        name="newUntil"
+                        value={formik.values.newUntil}
+                        onChange={formik.handleChange}
+                        min={new Date().toISOString().split("T")[0]}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -576,20 +605,68 @@ function AdminProductFormPage() {
             <div className="col-12 col-lg-4">
               <div className="admin-form-card">
                 <h6 className="fw-bold mb-3">Kategori</h6>
-                <select
-                  className="form-select"
-                  name="category"
-                  value={formik.values.category}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+                {formik.values.category && (
+                  <p className="mb-2" style={{ fontSize: "0.85rem" }}>
+                    <span className="text-muted">Seçili: </span>
+                    <span className="fw-semibold">
+                      {categories.find((c) => c._id === formik.values.category)?.name || "—"}
+                    </span>
+                  </p>
+                )}
+                <input
+                  type="text"
+                  className="form-control form-control-sm mb-2"
+                  placeholder="Kategori ara..."
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                />
+                <div
+                  style={{
+                    maxHeight: 220,
+                    overflowY: "auto",
+                    border: "1px solid #dee2e6",
+                    borderRadius: 6,
+                  }}
                 >
-                  <option value="">Kategori seçiniz</option>
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat._id}>
-                      {cat.parent ? `↳ ${cat.name}` : cat.name}
-                    </option>
-                  ))}
-                </select>
+                  {categories
+                    .filter((cat) =>
+                      cat.name.toLowerCase().includes(categorySearch.toLowerCase()),
+                    )
+                    .map((cat) => (
+                      <div
+                        key={cat._id}
+                        onClick={() => {
+                          formik.setFieldValue("category", cat._id);
+                          formik.setFieldTouched("category", true);
+                        }}
+                        style={{
+                          padding: "7px 12px",
+                          cursor: "pointer",
+                          fontSize: "0.875rem",
+                          backgroundColor:
+                            formik.values.category === cat._id
+                              ? "#fff3e0"
+                              : "transparent",
+                          borderLeft:
+                            formik.values.category === cat._id
+                              ? "3px solid #f97316"
+                              : "3px solid transparent",
+                        }}
+                      >
+                        {cat.parent ? (
+                          <span className="text-muted" style={{ marginRight: 4 }}>↳</span>
+                        ) : null}
+                        {cat.name}
+                      </div>
+                    ))}
+                  {categories.filter((cat) =>
+                    cat.name.toLowerCase().includes(categorySearch.toLowerCase()),
+                  ).length === 0 && (
+                    <p className="text-muted text-center py-3 mb-0" style={{ fontSize: "0.85rem" }}>
+                      Sonuç yok
+                    </p>
+                  )}
+                </div>
                 {formik.touched.category && formik.errors.category && (
                   <p
                     className="text-danger mb-0 mt-1"
