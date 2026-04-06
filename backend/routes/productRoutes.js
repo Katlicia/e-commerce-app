@@ -4,6 +4,8 @@ const {
   getBrands,
   getProductById,
   getProductByBadge,
+  getNewProducts,
+  getBestSellers,
   createProduct,
   deleteProduct,
   updateProduct,
@@ -15,6 +17,8 @@ const { authenticationMiddle, isAdmin } = require("../middleware/auth");
 
 router.get("/products", getProducts);
 router.get("/products/brands", getBrands);
+router.get("/products/new-arrivals", getNewProducts);
+router.get("/products/best-sellers", getBestSellers);
 router.get("/products/badge/:badge", getProductByBadge);
 router.get("/admin/products", authenticationMiddle, isAdmin, adminProducts);
 router.get("/products/:id", getProductById);
