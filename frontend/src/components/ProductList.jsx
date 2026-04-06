@@ -7,12 +7,9 @@ import BannerCard from "./BannerCard";
 import Loading from "./Loading";
 import axiosInstance from "../utils/axiosInstance";
 
-const TARGET = new Date(
-  Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000,
-);
-
-function getTimeLeft() {
-  const diff = Math.max(0, TARGET - Date.now());
+function getTimeLeft(target) {
+  if (!target) return { saat: 0, dakika: 0, saniye: 0 };
+  const diff = Math.max(0, new Date(target) - Date.now());
   return {
     saat: Math.floor(diff / 3600000),
     dakika: Math.floor((diff % 3600000) / 60000),
@@ -21,35 +18,40 @@ function getTimeLeft() {
 }
 
 function ProductList({ title, settings = {} }) {
-  const { showTimer, banner, badge } = settings;
+  const { showTimer, timerEnd, banner, badge, recentlyViewed } = settings;
   const rowRef = useRef(null);
-  const [time, setTime] = useState(getTimeLeft());
+  const [time, setTime] = useState(getTimeLeft(timerEnd));
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!showTimer) return;
-    const id = setInterval(() => setTime(getTimeLeft()), 1000);
+    if (!showTimer || !timerEnd) return;
+    setTime(getTimeLeft(timerEnd));
+    const id = setInterval(() => setTime(getTimeLeft(timerEnd)), 1000);
     return () => clearInterval(id);
-  }, [showTimer]);
+  }, [showTimer, timerEnd]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const url = badge ? `/products/badge/${badge}` : `/products`;
-        const res = await axiosInstance.get(url);
-        setProducts(
-          Array.isArray(res.data) ? res.data : res.data.products || [],
-        );
-      } catch (err) {
-        console.error("ProductList fetch error:", err);
+        let res;
+        if (recentlyViewed) {
+          res = await axiosInstance.get("/users/me/visited");
+          setProducts(Array.isArray(res.data) ? res.data : []);
+        } else {
+          const url = badge ? `/products/badge/${badge}` : `/products`;
+          res = await axiosInstance.get(url);
+          setProducts(Array.isArray(res.data) ? res.data : res.data.products || []);
+        }
+      } catch {
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, [badge]);
+  }, [badge, recentlyViewed]);
 
   function scrollLeft() {
     rowRef.current.scrollBy({ left: -600, behavior: "smooth" });
@@ -58,6 +60,8 @@ function ProductList({ title, settings = {} }) {
   function scrollRight() {
     rowRef.current.scrollBy({ left: 600, behavior: "smooth" });
   }
+
+  if (recentlyViewed && !loading && products.length === 0) return null;
 
   return (
     <div className="container my-4">
