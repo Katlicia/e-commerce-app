@@ -29,7 +29,7 @@ const BADGES = {
   indirimli: indirimBadge,
 };
 
-function ProductCard({ product }) {
+function ProductCard({ product, overrideBadge }) {
   const {
     _id,
     images,
@@ -58,7 +58,7 @@ function ProductCard({ product }) {
     (item) => (item._id || item.id) === productId,
   );
 
-  const badgeIcon = BADGES[badge];
+  const badgeIcon = BADGES[overrideBadge || badge];
 
   return (
     <div
