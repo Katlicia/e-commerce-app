@@ -18,7 +18,7 @@ function getTimeLeft(target) {
 }
 
 function ProductList({ title, settings = {} }) {
-  const { showTimer, timerEnd, banner, badge, recentlyViewed } = settings;
+  const { showTimer, timerEnd, banner, badge, recentlyViewed, bestSellers } = settings;
   const rowRef = useRef(null);
   const [time, setTime] = useState(getTimeLeft(timerEnd));
   const [products, setProducts] = useState([]);
@@ -39,6 +39,9 @@ function ProductList({ title, settings = {} }) {
         if (recentlyViewed) {
           res = await axiosInstance.get("/users/me/visited");
           setProducts(Array.isArray(res.data) ? res.data : []);
+        } else if (bestSellers) {
+          res = await axiosInstance.get("/products/best-sellers");
+          setProducts(res.data.products || []);
         } else {
           const url = badge ? `/products/badge/${badge}` : `/products`;
           res = await axiosInstance.get(url);
@@ -51,7 +54,7 @@ function ProductList({ title, settings = {} }) {
       }
     };
     fetchProducts();
-  }, [badge, recentlyViewed]);
+  }, [badge, recentlyViewed, bestSellers]);
 
   function scrollLeft() {
     rowRef.current.scrollBy({ left: -600, behavior: "smooth" });
@@ -104,7 +107,10 @@ function ProductList({ title, settings = {} }) {
             )}
             {products.map((product) => (
               <div key={product._id} className="col-6 col-md-4 col-lg-5-custom">
-                <ProductCard product={product} />
+                <ProductCard
+                  product={product}
+                  overrideBadge={bestSellers ? "en-cok-satan" : undefined}
+                />
               </div>
             ))}
           </div>
