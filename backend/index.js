@@ -13,6 +13,8 @@ const favouriteRoutes = require("./routes/favouriteRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const cargoRoutes = require("./routes/cargoRoutes");
 const taxSettingsRoutes = require("./routes/taxSettingsRoutes");
+const bannerRoutes = require("./routes/bannerRoutes");
+const homeSectionRoutes = require("./routes/homeSectionRoutes");
 const cloudinary = require("cloudinary").v2;
 
 cloudinary.config({
@@ -30,7 +32,8 @@ app.use(
   }),
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
 app.use(cookieParser());
 
 db();
@@ -44,6 +47,8 @@ app.use("/", favouriteRoutes);
 app.use("/", orderRoutes);
 app.use("/", cargoRoutes);
 app.use("/", taxSettingsRoutes);
+app.use("/", bannerRoutes);
+app.use("/", homeSectionRoutes);
 
 app.get("/", (req, res) => {
   res.send("API working.");
