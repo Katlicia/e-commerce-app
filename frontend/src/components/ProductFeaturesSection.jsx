@@ -8,15 +8,7 @@ function ProductFeaturesSection({ product }) {
 
   if (!product) return null;
 
-  const { description, images, descriptionImages, reviews, price, features } =
-    product;
-
-  const descriptions = description
-    ? description
-        .map((s) => s.trim())
-        .filter(Boolean)
-        .map((s) => s + " ")
-    : [];
+  const { description, descriptionImages, reviews, price, features } = product;
 
   const featureArray = features
     ? features.map((s) => s.trim() + " ").filter(Boolean)
@@ -39,12 +31,9 @@ function ProductFeaturesSection({ product }) {
       <div className="pfs-content">
         {activeTab === 0 && (
           <div>
-            {descriptions.length > 0 &&
-              descriptions.map((d, i) => (
-                <p key={i} className="pfs-description d-inline">
-                  {d}
-                </p>
-              ))}
+            {description && (
+              <p className="pfs-description d-inline">{description}</p>
+            )}
 
             <div className="row g-4 mt-2">
               <div className="col-lg-6">
@@ -59,16 +48,16 @@ function ProductFeaturesSection({ product }) {
                   )}
                 </ul>
               </div>
-              {images?.length > 0 && (
-                <div className="col-lg-6">
-                  {descriptionImages?.[0]?.url && (
+              {descriptionImages?.length > 0 && (
+                <div className="col-lg-6 d-flex flex-column gap-3">
+                  {descriptionImages.map((img, i) => (
                     <img
-                      src={descriptionImages[0].url}
+                      key={i}
+                      src={img.url}
                       alt={product.name}
                       className="pfs-media-img"
                     />
-                  )}
-                  ;
+                  ))}
                 </div>
               )}
             </div>
