@@ -13,18 +13,20 @@ import AdminOrderDetailPage from "./Components/AdminOrderDetailPage.jsx";
 import AdminBannersPage from "./Components/AdminBannersPage.jsx";
 import AdminHomeSectionsPage from "./Components/AdminHomeSectionsPage.jsx";
 import AdminToast from "./Components/AdminToast.jsx";
+import Home from "./Components/Home.jsx";
 
 function App() {
   const { user } = useSelector((state) => state.auth);
 
   return (
     <BrowserRouter>
-      <AdminHeader />
+      {/* <AdminHeader /> */}
       <AdminToast />
       <Routes>
         <Route
           path="/"
-          element={user ? <AdminHome /> : <Navigate to="/login" />}
+          // element={user ? <AdminHome /> : <Navigate to="/login" />}
+          element={user ? <Home /> : <Navigate to="/login" />}
         />
         <Route
           path="/login"
@@ -58,7 +60,9 @@ function App() {
         />
         <Route
           path="/admin/tax-settings"
-          element={user?.isAdmin ? <AdminTaxSettingsPage /> : <Navigate to="/" />}
+          element={
+            user?.isAdmin ? <AdminTaxSettingsPage /> : <Navigate to="/" />
+          }
         />
         <Route
           path="/admin/orders"
@@ -66,7 +70,9 @@ function App() {
         />
         <Route
           path="/admin/orders/:id"
-          element={user?.isAdmin ? <AdminOrderDetailPage /> : <Navigate to="/" />}
+          element={
+            user?.isAdmin ? <AdminOrderDetailPage /> : <Navigate to="/" />
+          }
         />
         <Route
           path="/admin/banners"
@@ -74,7 +80,9 @@ function App() {
         />
         <Route
           path="/admin/home-sections"
-          element={user?.isAdmin ? <AdminHomeSectionsPage /> : <Navigate to="/" />}
+          element={
+            user?.isAdmin ? <AdminHomeSectionsPage /> : <Navigate to="/" />
+          }
         />
       </Routes>
     </BrowserRouter>
