@@ -115,8 +115,35 @@ exports.getProductById = async (req, res) => {
 
 exports.getProductByBadge = async (req, res) => {
   const { badge } = req.params;
-  const products = await Product.find({ badge });
+  const query = badge === "yeni"
+    ? { badge: "yeni", newUntil: { $gt: new Date() } }
+    : { badge };
+  const products = await Product.find(query);
   res.json(products);
+};
+
+exports.getBestSellers = async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 12;
+    const products = await Product.find()
+      .sort({ soldCount: -1 })
+      .limit(limit);
+    res.json({ products });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getNewProducts = async (req, res) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 12;
+    const products = await Product.find({ badge: "yeni", newUntil: { $gt: new Date() } })
+      .sort({ createdAt: -1 })
+      .limit(limit);
+    res.json({ products, total: products.length });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.createProduct = async (req, res) => {
@@ -155,6 +182,10 @@ exports.createProduct = async (req, res) => {
   req.body.descriptionImages = allDescImages;
 
   req.body.user = req.user.id;
+
+  if (!req.body.badge) delete req.body.badge;
+  if (!req.body.discountPercent) delete req.body.discountPercent;
+  if (!req.body.newUntil) delete req.body.newUntil;
 
   const product = await Product.create(req.body);
 
