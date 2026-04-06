@@ -14,6 +14,7 @@ import {
 } from "../redux/favouriteSlice";
 import { FaStar, FaRegStar } from "react-icons/fa6";
 import HeaderLinks from "../components/HeaderLinks";
+import axiosInstance from "../utils/axiosInstance";
 import "../styles/ProductDetails.css";
 
 import ProductList from "../components/ProductList";
@@ -69,6 +70,9 @@ function ProductDetails() {
   useEffect(() => {
     dispatch(getProductDetail(id));
     setActiveImg(0);
+    if (user) {
+      axiosInstance.post(`/users/me/visited/${id}`).catch(() => {});
+    }
   }, [dispatch, id]);
 
   useEffect(() => {
@@ -84,8 +88,8 @@ function ProductDetails() {
   const images = product.images || [];
   const currentImg = images[activeImg]?.url || "";
   const isFavourite = favourites.some((f) => (f._id || f.id) === productId);
-  const features = product.description
-    ? product.description.map((s) => s.trim()).filter(Boolean)
+  const features = product.features
+    ? product.features.map((s) => s.trim()).filter(Boolean)
     : [];
   const price = product.price || 0;
   const discountedPrice = product.discountedPrice || null;
@@ -522,31 +526,6 @@ function ProductDetails() {
               .
             </p>
           </div>
-        )}
-
-        {product.reviews?.length > 0 ? (
-          <div className="d-flex flex-column gap-3">
-            {product.reviews.map((rev, i) => (
-              <div key={i} className="pd-review-item">
-                <div className="d-flex align-items-center gap-2 mb-1">
-                  <span className="fw-semibold" style={{ fontSize: 14 }}>
-                    {rev.name}
-                  </span>
-                  <span style={{ fontSize: 13, color: "#ff7700" }}>
-                    {"★".repeat(rev.rating)}
-                    {"☆".repeat(5 - rev.rating)}
-                  </span>
-                </div>
-                <p className="mb-0" style={{ fontSize: 14, color: "#424040" }}>
-                  {rev.comment}
-                </p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={{ fontSize: 14, color: "#6c757d" }}>
-            Henüz yorum yapılmamış.
-          </p>
         )}
       </div>
     </>
