@@ -4,9 +4,12 @@ import axiosInstance from "../utils/axiosInstance";
 const initialState = {
   products: [],
   categories: [],
+  brands: [],
   cargos: [],
   orders: [],
   taxSettings: null,
+  banners: {},
+  homeSections: [],
   loading: false,
   error: null,
 };
@@ -126,6 +129,40 @@ export const adminUpdateOrderStatus = createAsyncThunk(
   },
 );
 
+export const adminGetBrands = createAsyncThunk("admin/getBrands", async () => {
+  const { data } = await axiosInstance.get("/products/brands");
+  return data;
+});
+
+export const adminGetBanner = createAsyncThunk("admin/getBanner", async (type) => {
+  const { data } = await axiosInstance.get(`/banners/${type}`);
+  return { type, data };
+});
+
+export const adminUpdateBanner = createAsyncThunk(
+  "admin/updateBanner",
+  async ({ type, bannerData }) => {
+    const { data } = await axiosInstance.put(`/banners/${type}`, bannerData);
+    return { type, data };
+  },
+);
+
+export const adminGetHomeSections = createAsyncThunk(
+  "admin/getHomeSections",
+  async () => {
+    const { data } = await axiosInstance.get("/home-sections");
+    return data;
+  },
+);
+
+export const adminUpdateHomeSection = createAsyncThunk(
+  "admin/updateHomeSection",
+  async ({ key, sectionData }) => {
+    const { data } = await axiosInstance.put(`/home-sections/${key}`, sectionData);
+    return data;
+  },
+);
+
 export const adminGetTaxSettings = createAsyncThunk(
   "admin/getTaxSettings",
   async () => {
@@ -229,6 +266,22 @@ const adminSlice = createSlice({
       })
       .addCase(adminUpdateTaxSettings.fulfilled, (state, action) => {
         state.taxSettings = action.payload;
+      })
+      .addCase(adminGetBrands.fulfilled, (state, action) => {
+        state.brands = action.payload;
+      })
+      .addCase(adminGetBanner.fulfilled, (state, action) => {
+        state.banners[action.payload.type] = action.payload.data.images || [];
+      })
+      .addCase(adminUpdateBanner.fulfilled, (state, action) => {
+        state.banners[action.payload.type] = action.payload.data.images || [];
+      })
+      .addCase(adminGetHomeSections.fulfilled, (state, action) => {
+        state.homeSections = action.payload;
+      })
+      .addCase(adminUpdateHomeSection.fulfilled, (state, action) => {
+        const idx = state.homeSections.findIndex((s) => s.key === action.payload.key);
+        if (idx !== -1) state.homeSections[idx] = action.payload;
       });
   },
 });
