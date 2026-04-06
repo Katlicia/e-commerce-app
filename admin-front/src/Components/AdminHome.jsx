@@ -41,6 +41,20 @@ function AdminPage() {
             <h2>Vergi Ayarları</h2>
           </div>
         </div>
+        <div className="d-flex gap-4">
+          <div
+            className="admin-panel-card flex-fill d-flex align-items-center justify-content-center"
+            onClick={() => navigate("/admin/banners")}
+          >
+            <h2>Bannerlar</h2>
+          </div>
+          <div
+            className="admin-panel-card flex-fill d-flex align-items-center justify-content-center"
+            onClick={() => navigate("/admin/home-sections")}
+          >
+            <h2>Anasayfa Bölümleri</h2>
+          </div>
+        </div>
       </div>
     </div>
   );
