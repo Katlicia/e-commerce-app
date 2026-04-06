@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    orderCount: { type: Number, default: 0 },
+    cancelCount: { type: Number, default: 0 },
+    returnCount: { type: Number, default: 0 },
   },
   { timestamps: true },
 );
