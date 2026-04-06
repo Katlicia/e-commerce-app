@@ -10,6 +10,8 @@ import AdminCargoPage from "./Components/AdminCargoPage.jsx";
 import AdminTaxSettingsPage from "./Components/AdminTaxSettingsPage.jsx";
 import AdminOrdersPage from "./Components/AdminOrdersPage.jsx";
 import AdminOrderDetailPage from "./Components/AdminOrderDetailPage.jsx";
+import AdminBannersPage from "./Components/AdminBannersPage.jsx";
+import AdminHomeSectionsPage from "./Components/AdminHomeSectionsPage.jsx";
 import AdminToast from "./Components/AdminToast.jsx";
 
 function App() {
@@ -65,6 +67,14 @@ function App() {
         <Route
           path="/admin/orders/:id"
           element={user?.isAdmin ? <AdminOrderDetailPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/admin/banners"
+          element={user?.isAdmin ? <AdminBannersPage /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/admin/home-sections"
+          element={user?.isAdmin ? <AdminHomeSectionsPage /> : <Navigate to="/" />}
         />
       </Routes>
     </BrowserRouter>
