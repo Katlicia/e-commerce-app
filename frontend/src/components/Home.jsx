@@ -67,12 +67,13 @@ function Home() {
       />
       <AdBanners images={adBanner1?.length > 0 ? adBanner1 : FALLBACK_AD1} />
       <ProductList
-        title={getSection("featured").title || "Önerilen Ürünler"}
+        title={getSection("featured").title || "En Çok Satanlar"}
         settings={{
           showTimer: getSection("featured").showTimer ?? false,
           timerEnd: getSection("featured").timerEnd,
           banner: getSection("featured").banner?.url || null,
           badge: getSection("featured").badge || "en-cok-satan",
+          bestSellers: true,
         }}
       />
       {getSection("categoryRow-1").left && getSection("categoryRow-1").right ? (
