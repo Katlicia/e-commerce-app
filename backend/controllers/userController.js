@@ -26,6 +26,7 @@ exports.updateUser = async (req, res) => {
     user.name = req.body.name || user.name;
     user.surname = req.body.surname || user.surname;
     user.email = req.body.email || user.email;
+    if (req.body.isAdmin !== undefined) user.isAdmin = req.body.isAdmin;
 
     const updatedUser = await user.save();
     res.status(200).json(updatedUser);
