@@ -22,6 +22,9 @@ const productSchema = new mongoose.Schema(
       type: String,
       enum: ["yeni", "gunun-firsati", "en-cok-satan", "indirimli"],
     },
+    newUntil: {
+      type: Date,
+    },
     descriptionImages: [
       {
         public_id: { type: String },
@@ -106,12 +109,20 @@ const productSchema = new mongoose.Schema(
 
 const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
+const NEW_BADGE_DAYS = 30;
+
 productSchema.pre("save", async function () {
   if (!this.code) {
     this.code = Array.from(
       { length: 8 },
       () => CHARS[Math.floor(Math.random() * CHARS.length)],
     ).join("");
+  }
+  if (this.isNew) {
+    if (!this.badge) this.badge = "yeni";
+    if (!this.newUntil) {
+      this.newUntil = new Date(Date.now() + NEW_BADGE_DAYS * 24 * 60 * 60 * 1000);
+    }
   }
   if (this.badge === "indirimli" && this.discountPercent) {
     this.discountedPrice = +(
