@@ -17,11 +17,7 @@ const productsBySlug = {
   "hazir-kahveler": [
     {
       name: "Nescafé Classic 200g",
-      description: [
-        "Klasik çözünür kahve, yoğun aroma.",
-        "İyi kahve.",
-        "Yoğun tat.",
-      ],
+      description: "Klasik çözünür kahve, yoğun aroma.",
       price: 89.9,
       stock: 150,
       rating: 4,
