@@ -9,6 +9,8 @@ const {
   updateUserAddress,
   getUserDetail,
   changePassword,
+  visitProduct,
+  getVisitedProducts,
 } = require("../controllers/userController");
 const { authenticationMiddle } = require("../middleware/auth");
 
@@ -20,6 +22,8 @@ router.get("/users/me/addresses", authenticationMiddle, getUserAddresses);
 router.post("/users/me/addresses", authenticationMiddle, addUserAddresses);
 router.put("/users/me/addresses", authenticationMiddle, updateUserAddress);
 router.put("/users/me/password", authenticationMiddle, changePassword);
+router.post("/users/me/visited/:id", authenticationMiddle, visitProduct);
+router.get("/users/me/visited", authenticationMiddle, getVisitedProducts);
 router.get("/users/:id", getUserById);
 router.put("/users/:id", authenticationMiddle, updateUser);
 router.delete("/users/:id", authenticationMiddle, deleteUser);
