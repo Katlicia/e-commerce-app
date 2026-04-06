@@ -54,6 +54,12 @@ function CategoryList() {
   }, [searchParams]);
 
   useEffect(() => {
+    const brandParam = searchParams.get("brand");
+    if (!brandParam) return;
+    setSelectedBrands([decodeURIComponent(brandParam)]);
+  }, [searchParams]);
+
+  useEffect(() => {
     axiosInstance
       .get(`/categories`)
       .then((res) => setCategories(Array.isArray(res.data) ? res.data : []))
