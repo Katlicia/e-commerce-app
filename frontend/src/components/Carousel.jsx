@@ -2,32 +2,63 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import "../styles/Carousel.css";
-import icerikFoto from "../assets/Carousel/icerik.png";
 import bicLogo from "../assets/Carousel/bic-logo.png";
 import dogusLogo from "../assets/Carousel/dogus-logo.png";
 import nestleLogo from "../assets/Carousel/nestle-logo.png";
 import selpakLogo from "../assets/Carousel/selpak-logo.png";
 import sleepyLogo from "../assets/Carousel/sleepy-logo.png";
+import icerikFoto from "../assets/Carousel/icerik.png";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
+import { getBanner } from "../redux/bannerSlice";
 
 function Carousel() {
-  var settings = {
-    dots: false,
+  const dispatch = useDispatch();
+  const sliderRef = useRef(null);
+  const images = useSelector((state) => state.banner.banners["carousel"]);
+
+  useEffect(() => {
+    dispatch(getBanner("carousel"));
+  }, []);
+
+  const slides = images?.length > 0 ? images : [{ url: icerikFoto, link: "" }];
+
+  const settings = {
+    dots: true,
     infinite: true,
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 4000,
+    pauseOnHover: false,
+    pauseOnFocus: false,
+    arrows: false,
   };
+
   return (
     <div className="carousel-container">
-      <Slider.default {...settings}>
-        <div className="d-flex justify-content-center align-items-center">
-          <img
-            src={icerikFoto}
-            className="img-fluid"
-            style={{ marginTop: "25px" }}
-          />
-        </div>
-      </Slider.default>
+      <div className="carousel-wrapper">
+        <button
+          className="carousel-arrow carousel-arrow-left"
+          onClick={() => sliderRef.current.slickPrev()}
+        >
+          &#8249;
+        </button>
+        <Slider.default ref={sliderRef} {...settings}>
+          {slides.map((img, i) => (
+            <div key={i} className="carousel-slide">
+              <img src={img.url} alt={`slide-${i}`} />
+            </div>
+          ))}
+        </Slider.default>
+        <button
+          className="carousel-arrow carousel-arrow-right"
+          onClick={() => sliderRef.current.slickNext()}
+        >
+          &#8250;
+        </button>
+      </div>
       <div className="logos d-flex justify-content-center align-items-center">
         <img src={sleepyLogo} className="img-fluid" />
         <img src={bicLogo} className="img-fluid" />
