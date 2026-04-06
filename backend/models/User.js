@@ -61,6 +61,12 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    visitedProducts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true },
 );
