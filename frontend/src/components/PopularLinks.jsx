@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
+import { getKeyword } from "../redux/generalSlice";
 import "../styles/PopularLinks.css";
 
 const popularSearches = [
@@ -27,7 +30,14 @@ function flatten(tree) {
 }
 
 function PopularLinks() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
+
+  const handleCategoryClick = (cat) => {
+    dispatch(getKeyword(""));
+    navigate("/products?category=" + cat.slug);
+  };
 
   useEffect(() => {
     axiosInstance
@@ -54,7 +64,8 @@ function PopularLinks() {
                 <div key={cat._id} className="col">
                   <a
                     className="text-muted text-decoration-none popular-link"
-                    style={{ fontSize: "13px" }}
+                    style={{ fontSize: "13px", cursor: "pointer" }}
+                    onClick={() => handleCategoryClick(cat)}
                   >
                     {cat.name}
                   </a>
