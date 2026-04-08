@@ -22,9 +22,9 @@ function AdBanners({ images = [] }) {
   };
 
   return (
-    <div className="container my-4 d-flex gap-1 banner-list">
+    <div className="container my-4 d-flex gap-1">
       {images.map((img, i) => (
-        <div key={i} className="flex-fill">
+        <div key={i} className="">
           <img
             className={`rounded img-fluid w-100${img.link ? " banner-clickable" : ""}`}
             src={img.url}
