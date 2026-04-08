@@ -5,15 +5,21 @@ exports.getCategories = async (req, res) => {
 
   const map = {};
   all.forEach((c) => {
-    map[c._id] = { ...c, children: [] };
+    map[c._id.toString()] = { ...c, children: [] };
   });
 
   const tree = [];
   all.forEach((c) => {
     if (c.parent) {
-      map[c.parent]?.children.push(map[c._id]);
+      const parentEntry = map[c.parent.toString()];
+      if (parentEntry) {
+        parentEntry.children.push(map[c._id.toString()]);
+      } else {
+        // parent not found (deleted or in a cycle) treat as root
+        tree.push(map[c._id.toString()]);
+      }
     } else {
-      tree.push(map[c._id]);
+      tree.push(map[c._id.toString()]);
     }
   });
 
@@ -62,14 +68,7 @@ exports.updateCategory = async (req, res) => {
 
   let parentId = undefined;
   if (parent !== undefined) {
-    if (!parent) {
-      parentId = null;
-    } else {
-      const parentDoc = await Category.findOne({ slug: parent });
-      if (!parentDoc)
-        return res.status(404).json({ message: "Parent kategori bulunamadı." });
-      parentId = parentDoc._id;
-    }
+    parentId = parent || null;
   }
 
   const updateData = {};
