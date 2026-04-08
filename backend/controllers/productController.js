@@ -100,7 +100,7 @@ exports.getProducts = async (req, res) => {
 };
 
 exports.adminProducts = async (req, res) => {
-  const products = await Product.find();
+  const products = await Product.find().populate("category", "name");
   res.json(products);
 };
 
