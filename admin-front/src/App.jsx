@@ -84,6 +84,7 @@ function App() {
             user?.isAdmin ? <AdminHomeSectionsPage /> : <Navigate to="/" />
           }
         />
+        <Route path="*" element={user ? <Home /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );
