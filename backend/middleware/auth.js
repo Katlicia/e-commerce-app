@@ -38,7 +38,7 @@ exports.optionalAuth = async (req, res, next) => {
     const decodedData = jwt.verify(token, process.env.JWT_KEY);
     req.user = await User.findById(decodedData.id);
   } catch {
-    // geçersiz token → misafir olarak devam
+    // as guest
   }
   next();
 };
