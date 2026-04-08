@@ -1,12 +1,267 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { adminGetCategories } from "../redux/adminSlice";
+import {
+  adminGetCategories,
+  adminUpdateCategory,
+  adminCreateCategory,
+} from "../redux/adminSlice";
+
+function EditModal({ category, categories, onClose }) {
+  const dispatch = useDispatch();
+  const isNew = !category;
+  const [name, setName] = useState(category?.name || "");
+  const [slug, setSlug] = useState(category?.slug || "");
+  const [parent, setParent] = useState(category?.parent || "");
+  const [saving, setSaving] = useState(false);
+  const [parentSearch, setParentSearch] = useState(
+    categories.find((c) => c._id === category?.parent)?.name || "",
+  );
+  const [parentOpen, setParentOpen] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    if (isNew) {
+      await dispatch(
+        adminCreateCategory({ name, slug, parent: parent || null }),
+      );
+    } else {
+      await dispatch(
+        adminUpdateCategory({
+          id: category._id,
+          categoryData: { name, slug, parent: parent || null },
+        }),
+      );
+    }
+    setSaving(false);
+    onClose();
+  };
+
+  const getDescendantIds = (id) => {
+    const result = new Set([id]);
+    const queue = [id];
+    while (queue.length) {
+      const current = queue.shift();
+      categories
+        .filter((c) => c.parent === current)
+        .forEach((c) => {
+          result.add(c._id);
+          queue.push(c._id);
+        });
+    }
+    return result;
+  };
+  const excluded = category?._id ? getDescendantIds(category._id) : new Set();
+  const parentOptions = categories.filter((c) => !excluded.has(c._id));
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.4)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#fff",
+          borderRadius: "12px",
+          padding: "28px",
+          width: "380px",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+        }}
+      >
+        <div
+          style={{ fontWeight: 700, fontSize: "16px", marginBottom: "20px" }}
+        >
+          {isNew ? "Yeni Kategori" : "Kategori Düzenle"}
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <label
+            style={{
+              fontSize: "12px",
+              color: "#999",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            Kategori Adı
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{
+              width: "100%",
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <label
+            style={{
+              fontSize: "12px",
+              color: "#999",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            Slug
+          </label>
+          <input
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            style={{
+              width: "100%",
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "24px", position: "relative" }}>
+          <label
+            style={{
+              fontSize: "12px",
+              color: "#999",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            Üst Kategori
+          </label>
+          <input
+            value={parentSearch}
+            onChange={(e) => {
+              setParentSearch(e.target.value);
+              setParentOpen(true);
+            }}
+            onFocus={() => setParentOpen(true)}
+            onBlur={() => setParentOpen(false)}
+            placeholder="Kategori ara..."
+            style={{
+              width: "100%",
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+            }}
+          />
+          {parentOpen && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #eee",
+                borderRadius: "8px",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+                maxHeight: "180px",
+                overflowY: "auto",
+                zIndex: 10,
+              }}
+            >
+              <div
+                onMouseDown={() => {
+                  setParent("");
+                  setParentSearch("");
+                  setParentOpen(false);
+                }}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: "13px",
+                  color: "#bbb",
+                  cursor: "pointer",
+                }}
+              >
+                — Yok —
+              </div>
+              {parentOptions
+                .filter((c) =>
+                  c.name.toLowerCase().includes(parentSearch.toLowerCase()),
+                )
+                .map((c) => (
+                  <div
+                    key={c._id}
+                    onMouseDown={() => {
+                      setParent(c._id);
+                      setParentSearch(c.name);
+                      setParentOpen(false);
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      fontSize: "13px",
+                      cursor: "pointer",
+                      background: parent === c._id ? "#fff3e0" : "transparent",
+                      color: parent === c._id ? "#ff6a00" : "#222",
+                    }}
+                  >
+                    {c.name}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+
+        <div className="d-flex gap-2 justify-content-end">
+          <button
+            onClick={onClose}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "8px",
+              border: "1px solid #eee",
+              background: "#fff",
+              fontSize: "13px",
+              cursor: "pointer",
+            }}
+          >
+            İptal
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "8px",
+              border: "none",
+              background: "#ff6a00",
+              color: "#fff",
+              fontSize: "13px",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            {saving ? "Kaydediliyor..." : isNew ? "Oluştur" : "Kaydet"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CategoriesPanel() {
   const dispatch = useDispatch();
   const categories = useSelector((state) => state.admin.categories);
   const loading = useSelector((state) => state.admin.loading);
   const [search, setSearch] = useState("");
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   useEffect(() => {
     if (categories.length === 0) dispatch(adminGetCategories());
@@ -25,6 +280,20 @@ function CategoriesPanel() {
 
   return (
     <div className="p-4">
+      {editingCategory && (
+        <EditModal
+          category={editingCategory}
+          categories={categories}
+          onClose={() => setEditingCategory(null)}
+        />
+      )}
+      {creatingCategory && (
+        <EditModal
+          category={null}
+          categories={categories}
+          onClose={() => setCreatingCategory(false)}
+        />
+      )}
       <div
         style={{
           background: "#fff",
@@ -35,26 +304,42 @@ function CategoriesPanel() {
       >
         <div className="d-flex justify-content-between align-items-center fw-bold mb-4 h3">
           <span>Kategoriler</span>
-          <span style={{ fontSize: "14px", fontWeight: 400, color: "#999" }}>
-            {filtered.length} kategori
-          </span>
+          <div className="d-flex align-items-center gap-3">
+            <span style={{ fontSize: "14px", fontWeight: 400, color: "#999" }}>
+              {filtered.length} kategori
+            </span>
+          </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="Kategori ara..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "100%",
-            border: "1px solid #eee",
-            borderRadius: "8px",
-            padding: "8px 12px",
-            fontSize: "13px",
-            marginBottom: "20px",
-            outline: "none",
-          }}
-        />
+        <div className="d-flex justify-content-between align-items-center">
+          <input
+            type="text"
+            placeholder="Kategori ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "50%",
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              marginBottom: "20px",
+              outline: "none",
+            }}
+          />
+          <button
+            className="orange-btn"
+            onClick={() => setCreatingCategory(true)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "8px",
+              marginBottom: "20px",
+              fontSize: "13px",
+            }}
+          >
+            + Yeni Kategori
+          </button>
+        </div>
 
         {loading ? (
           <div style={{ color: "#999", fontSize: "14px" }}>Yükleniyor...</div>
@@ -127,7 +412,7 @@ function CategoriesPanel() {
                         color: "#222",
                       }}
                     >
-                      {category.children.length}
+                      {category.children?.length ?? 0}
                     </td>
                     <td
                       style={{
@@ -141,6 +426,7 @@ function CategoriesPanel() {
                     <td style={{ padding: "10px 12px" }}>
                       <button
                         className="orange-btn"
+                        onClick={() => setEditingCategory(category)}
                         style={{
                           padding: "4px 12px",
                           borderRadius: "6px",
