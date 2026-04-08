@@ -1,4 +1,4 @@
-import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
+import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -58,7 +58,7 @@ function Home() {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       <Sidebar
-        style={{ height: "100vh" }}
+        style={{ height: "100vh", backgroundColor: "#fff" }}
         collapsed={collapsed}
         toggled={toggled}
         onBackdropClick={() => setToggled(false)}
