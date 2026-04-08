@@ -260,6 +260,9 @@ function CategoriesPanel() {
   const categories = useSelector((state) => state.admin.categories);
   const loading = useSelector((state) => state.admin.loading);
   const [search, setSearch] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("");
+  const [filterSearch, setFilterSearch] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
 
@@ -271,11 +274,34 @@ function CategoriesPanel() {
     categories.map((c) => [c._id.toString(), c]),
   );
 
+  const childCount = (id) =>
+    categories.filter((c) => c.parent?.toString() === id?.toString()).length;
+
+  const getDescendantIds = (id) => {
+    const result = new Set([id]);
+    const queue = [id];
+    while (queue.length) {
+      const current = queue.shift();
+      categories
+        .filter((c) => c.parent?.toString() === current)
+        .forEach((c) => {
+          result.add(c._id.toString());
+          queue.push(c._id.toString());
+        });
+    }
+    return result;
+  };
+
   const filtered = categories.filter((cat) => {
     const q = search.toLowerCase();
-    return (
-      cat.name?.toLowerCase().includes(q) || cat.slug?.toLowerCase().includes(q)
-    );
+    const matchesSearch =
+      !search ||
+      cat.name?.toLowerCase().includes(q) ||
+      cat.slug?.toLowerCase().includes(q);
+    const matchesFilter =
+      !filterCategoryId ||
+      getDescendantIds(filterCategoryId).has(cat._id.toString());
+    return matchesSearch && matchesFilter;
   });
 
   return (
@@ -304,37 +330,151 @@ function CategoriesPanel() {
       >
         <div className="d-flex justify-content-between align-items-center fw-bold mb-4 h3">
           <span>Kategoriler</span>
-          <div className="d-flex align-items-center gap-3">
-            <span style={{ fontSize: "14px", fontWeight: 400, color: "#999" }}>
-              {filtered.length} kategori
-            </span>
-          </div>
+          <span style={{ fontSize: "14px", fontWeight: 400, color: "#999" }}>
+            {filtered.length} kategori
+          </span>
         </div>
 
-        <div className="d-flex justify-content-between align-items-center">
-          <input
-            type="text"
-            placeholder="Kategori ara..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{
-              width: "50%",
-              border: "1px solid #eee",
-              borderRadius: "8px",
-              padding: "8px 12px",
-              fontSize: "13px",
-              marginBottom: "20px",
-              outline: "none",
-            }}
-          />
+        <div
+          className="d-flex flex-wrap gap-2 align-items-center"
+          style={{ marginBottom: "20px" }}
+        >
+          <>
+            <input
+              type="text"
+              placeholder="Kategori ara..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: "180px",
+                border: "1px solid #eee",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                fontSize: "13px",
+                outline: "none",
+              }}
+            />
+            <div
+              style={{
+                position: "relative",
+                flex: 1,
+                minWidth: "180px",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <input
+                value={filterSearch}
+                onChange={(e) => {
+                  setFilterSearch(e.target.value);
+                  setFilterOpen(true);
+                }}
+                onFocus={() => setFilterOpen(true)}
+                onBlur={() => setFilterOpen(false)}
+                placeholder={
+                  filterCategoryId
+                    ? categories.find((c) => c._id === filterCategoryId)?.name
+                    : "Kategori filtrele..."
+                }
+                style={{
+                  width: "100%",
+                  border: "1px solid #eee",
+                  borderRadius: "8px",
+                  padding: "8px 36px 8px 12px",
+                  fontSize: "13px",
+                  outline: "none",
+                }}
+              />
+              {filterCategoryId && (
+                <span
+                  onClick={() => {
+                    setFilterCategoryId("");
+                    setFilterSearch("");
+                  }}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    cursor: "pointer",
+                    color: "#bbb",
+                    fontSize: "16px",
+                    lineHeight: 1,
+                    userSelect: "none",
+                  }}
+                >
+                  ×
+                </span>
+              )}
+              {filterOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    left: 0,
+                    right: 0,
+                    background: "#fff",
+                    border: "1px solid #eee",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+                    maxHeight: "200px",
+                    overflowY: "auto",
+                    zIndex: 10,
+                  }}
+                >
+                  <div
+                    onMouseDown={() => {
+                      setFilterCategoryId("");
+                      setFilterSearch("");
+                      setFilterOpen(false);
+                    }}
+                    style={{
+                      padding: "8px 12px",
+                      fontSize: "13px",
+                      color: "#bbb",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Tüm Kategoriler
+                  </div>
+                  {categories
+                    .filter((c) =>
+                      c.name.toLowerCase().includes(filterSearch.toLowerCase()),
+                    )
+                    .map((c) => (
+                      <div
+                        key={c._id}
+                        onMouseDown={() => {
+                          setFilterCategoryId(c._id);
+                          setFilterSearch("");
+                          setFilterOpen(false);
+                        }}
+                        style={{
+                          padding: "8px 12px",
+                          fontSize: "13px",
+                          cursor: "pointer",
+                          background:
+                            filterCategoryId === c._id
+                              ? "#fff3e0"
+                              : "transparent",
+                          color:
+                            filterCategoryId === c._id ? "#ff6a00" : "#222",
+                        }}
+                      >
+                        {c.name}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </>
           <button
             className="orange-btn"
             onClick={() => setCreatingCategory(true)}
             style={{
               padding: "8px 12px",
               borderRadius: "8px",
-              marginBottom: "20px",
               fontSize: "13px",
+              flexShrink: 0,
             }}
           >
             + Yeni Kategori
@@ -412,7 +552,7 @@ function CategoriesPanel() {
                         color: "#222",
                       }}
                     >
-                      {category.children?.length ?? 0}
+                      {childCount(category._id)}
                     </td>
                     <td
                       style={{
