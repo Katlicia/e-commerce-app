@@ -485,7 +485,6 @@ function OrdersPanel() {
                   <th style={{ padding: "8px 12px" }}>Kargo</th>
                   <th style={{ padding: "8px 12px" }}>Adres</th>
                   <th style={{ padding: "8px 12px" }}>Sipariş Tarihi</th>
-                  <th style={{ padding: "8px 12px" }}></th>
                 </tr>
               </thead>
               <tbody>
