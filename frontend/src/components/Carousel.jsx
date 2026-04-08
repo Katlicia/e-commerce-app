@@ -7,7 +7,6 @@ import dogusLogo from "../assets/Carousel/dogus-logo.png";
 import nestleLogo from "../assets/Carousel/nestle-logo.png";
 import selpakLogo from "../assets/Carousel/selpak-logo.png";
 import sleepyLogo from "../assets/Carousel/sleepy-logo.png";
-import icerikFoto from "../assets/Carousel/icerik.png";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 import { getBanner } from "../redux/bannerSlice";
@@ -21,7 +20,9 @@ function Carousel() {
     dispatch(getBanner("carousel"));
   }, []);
 
-  const slides = images?.length > 0 ? images : [{ url: icerikFoto, link: "" }];
+  if (!images || images.length === 0) return null;
+
+  const slides = images;
 
   const settings = {
     dots: true,
