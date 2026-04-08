@@ -1,5 +1,4 @@
 import "../styles/TopBar.css";
-import topbarImg from "../assets/Banners/topbar.png";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getBanner } from "../redux/bannerSlice";
@@ -12,11 +11,11 @@ function TopBar() {
     dispatch(getBanner("topbar"));
   }, []);
 
-  const src = images?.length > 0 ? images[0].url : topbarImg;
+  if (!images || images.length === 0) return null;
 
   return (
     <div className="topbar">
-      <img src={src} alt="topbar" />
+      <img src={images[0].url} alt="topbar" />
     </div>
   );
 }
