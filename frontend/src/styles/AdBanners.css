@@ -1,33 +1,3 @@
-.banner-list {
-  align-items: stretch;
-}
-
-.banner-list > div {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.banner-list img {
-  width: 100%;
-  height: 200px;
-  display: block;
-  border-radius: 8px;
-}
-
-@media (max-width: 992px) {
-  .banner-list {
-    overflow-x: auto;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    gap: 16px;
-    padding-bottom: 4px;
-  }
-
-  .banner-list > div {
-    flex: 0 0 260px;
-  }
-}
-
 .banner-clickable {
   cursor: pointer;
   transition: transform 0.2s;
