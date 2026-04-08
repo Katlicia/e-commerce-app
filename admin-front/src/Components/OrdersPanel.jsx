@@ -547,7 +547,13 @@ function OrdersPanel() {
                         </span>
                       </td>
                       <td style={{ padding: "10px 12px", fontWeight: 500 }}>
-                        {order.totalAmount.toFixed(2)}₺
+                        {order.cargoPrice
+                          ? (
+                              Number(order.totalAmount) +
+                              Number(order.cargoPrice)
+                            ).toFixed(2)
+                          : Number(order.totalAmount).toFixed(2)}
+                        ₺
                       </td>
                       <td style={{ padding: "10px 12px" }}>
                         {order.cargoCompany}
