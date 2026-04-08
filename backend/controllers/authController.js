@@ -4,7 +4,6 @@ const generateToken = require("../utils/generateToken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
-const { isAdmin } = require("../middleware/auth");
 
 exports.register = async (req, res) => {
   const { name, surname, email, password } = req.body;
@@ -15,13 +14,13 @@ exports.register = async (req, res) => {
     return res.status(400).json({ message: "User already exists" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   if (password.length < 6) {
     return res
       .status(400)
       .json({ message: "Password can't be less than 6 characters" });
   }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await User.create({
     name,
