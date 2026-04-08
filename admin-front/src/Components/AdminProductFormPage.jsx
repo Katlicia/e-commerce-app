@@ -9,6 +9,7 @@ import {
   adminUpdateProduct,
 } from "../redux/adminSlice";
 import { addNotification } from "../redux/notificationSlice";
+import AdminLayout from "./AdminLayout";
 import "../styles/AdminPage.css";
 
 const BADGES = [
@@ -240,13 +241,14 @@ function AdminProductFormPage() {
     setFeatures((prev) => prev.map((d, i) => (i === idx ? value : d)));
 
   return (
+    <AdminLayout activeKey="products">
     <div className="admin-page">
       <div className="container">
         <div className="d-flex align-items-center gap-3 mb-4">
           <button
             type="button"
             className="btn btn-sm btn-outline-secondary"
-            onClick={() => navigate("/admin/products")}
+            onClick={() => navigate(-1)}
           >
             ← Geri
           </button>
@@ -693,6 +695,7 @@ function AdminProductFormPage() {
         </form>
       </div>
     </div>
+    </AdminLayout>
   );
 }
 
