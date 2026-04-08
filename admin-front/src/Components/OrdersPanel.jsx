@@ -404,6 +404,7 @@ function OrdersPanel() {
   const orders = useSelector((state) => state.admin.orders);
   const loading = useSelector((state) => state.admin.loading);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [detailOrder, setDetailOrder] = useState(null);
 
   useEffect(() => {
@@ -412,11 +413,12 @@ function OrdersPanel() {
 
   const filtered = orders.filter((o) => {
     const q = search.toLowerCase();
-    return (
+    const matchesSearch =
       o.orderNo?.toLowerCase().includes(q) ||
       o.user?.name.toLowerCase().includes(q) ||
-      o.guestEmail?.toLowerCase().includes(q)
-    );
+      o.guestEmail?.toLowerCase().includes(q);
+    const matchesStatus = statusFilter === "" || o.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
   return (
@@ -442,21 +444,42 @@ function OrdersPanel() {
           </span>
         </div>
 
-        <input
-          type="text"
-          placeholder="Sipariş veya kişi ara..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "100%",
-            border: "1px solid #eee",
-            borderRadius: "8px",
-            padding: "8px 12px",
-            fontSize: "13px",
-            marginBottom: "20px",
-            outline: "none",
-          }}
-        />
+        <div className="d-flex gap-3 mb-4 flex-wrap">
+          <input
+            type="text"
+            placeholder="Sipariş veya kişi ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              flex: 1,
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+            }}
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+              background: "#fff",
+              minWidth: "160px",
+            }}
+          >
+            <option value="">Tüm Durumlar</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {loading ? (
           <div style={{ color: "#999", fontSize: "14px" }}>Yükleniyor...</div>
