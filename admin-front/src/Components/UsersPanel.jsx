@@ -126,20 +126,32 @@ function UsersPanel() {
   const users = useSelector((state) => state.admin.users);
   const loading = useSelector((state) => state.admin.loading);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("default");
   const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
     if (users.length === 0) dispatch(adminGetUsers());
   }, []);
 
-  const filtered = users.filter((u) => {
-    const q = search.toLowerCase();
-    return (
-      u.name?.toLowerCase().includes(q) ||
-      u.surname?.toLowerCase().includes(q) ||
-      u.email?.toLowerCase().includes(q)
+  const SORT_OPTIONS = [
+    { value: "default", label: "Varsayılan" },
+    { value: "orderCount", label: "En Çok Sipariş" },
+    { value: "cancelCount", label: "En Çok İptal" },
+    { value: "returnCount", label: "En Çok İade" },
+  ];
+
+  const filtered = users
+    .filter((u) => {
+      const q = search.toLowerCase();
+      return (
+        u.name?.toLowerCase().includes(q) ||
+        u.surname?.toLowerCase().includes(q) ||
+        u.email?.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) =>
+      sortBy === "default" ? 0 : (b[sortBy] || 0) - (a[sortBy] || 0),
     );
-  });
 
   return (
     <div className="p-4">
@@ -162,21 +174,42 @@ function UsersPanel() {
           </span>
         </div>
 
-        <input
-          type="text"
-          placeholder="İsim veya e-posta ara..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "100%",
-            border: "1px solid #eee",
-            borderRadius: "8px",
-            padding: "8px 12px",
-            fontSize: "13px",
-            marginBottom: "20px",
-            outline: "none",
-          }}
-        />
+        <div className="d-flex gap-3 align-items-center mb-4" style={{ flexWrap: "wrap" }}>
+          <input
+            type="text"
+            placeholder="İsim veya e-posta ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              flex: 1,
+              minWidth: "180px",
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+            }}
+          />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              border: "1px solid #eee",
+              borderRadius: "8px",
+              padding: "8px 12px",
+              fontSize: "13px",
+              outline: "none",
+              background: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {loading ? (
           <div style={{ color: "#999", fontSize: "14px" }}>Yükleniyor...</div>
