@@ -62,8 +62,30 @@ exports.getProducts = async (req, res) => {
       delete queryCopy.brand;
     }
 
+    if (queryCopy.keyword) {
+      const kw = queryCopy.keyword;
+      const orConditions = [{ name: { $regex: kw, $options: "i" } }];
+
+      // Check for category names
+      const matchedCats = await Category.find({
+        name: { $regex: kw, $options: "i" },
+      }).select("_id");
+      if (matchedCats.length > 0) {
+        const catDescIds = [];
+        for (const cat of matchedCats) {
+          catDescIds.push(...(await getAllDescendantIds(cat._id.toString())));
+        }
+        orConditions.push({ category: { $in: [...new Set(catDescIds)] } });
+      }
+
+      // Check for brand names
+      orConditions.push({ brand: { $regex: kw, $options: "i" } });
+
+      baseQuery = baseQuery.find({ $or: orConditions });
+      delete queryCopy.keyword;
+    }
+
     const productFilter = new ProductFilter(baseQuery, queryCopy)
-      .search()
       .filter()
       .sort();
 
@@ -115,9 +137,10 @@ exports.getProductById = async (req, res) => {
 
 exports.getProductByBadge = async (req, res) => {
   const { badge } = req.params;
-  const query = badge === "yeni"
-    ? { badge: "yeni", newUntil: { $gt: new Date() } }
-    : { badge };
+  const query =
+    badge === "yeni"
+      ? { badge: "yeni", newUntil: { $gt: new Date() } }
+      : { badge };
   const products = await Product.find(query);
   res.json(products);
 };
@@ -125,9 +148,7 @@ exports.getProductByBadge = async (req, res) => {
 exports.getBestSellers = async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 12;
-    const products = await Product.find()
-      .sort({ soldCount: -1 })
-      .limit(limit);
+    const products = await Product.find().sort({ soldCount: -1 }).limit(limit);
     res.json({ products });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -137,7 +158,10 @@ exports.getBestSellers = async (req, res) => {
 exports.getNewProducts = async (req, res) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 12;
-    const products = await Product.find({ badge: "yeni", newUntil: { $gt: new Date() } })
+    const products = await Product.find({
+      badge: "yeni",
+      newUntil: { $gt: new Date() },
+    })
       .sort({ createdAt: -1 })
       .limit(limit);
     res.json({ products, total: products.length });
