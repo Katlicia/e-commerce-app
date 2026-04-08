@@ -5,6 +5,10 @@ import UsersPanel from "./UsersPanel";
 import CategoriesPanel from "./CategoriesPanel";
 import ProductsPanel from "./ProductsPanel";
 import OrdersPanel from "./OrdersPanel";
+import CargoPanel from "./CargoPanel";
+import TaxSettingsPanel from "./TaxSettingsPanel";
+import BannersPanel from "./BannersPanel";
+import ProductListsPanel from "./ProductListsPanel";
 
 const PAGES = {
   analytics: <Analytics />,
@@ -12,6 +16,10 @@ const PAGES = {
   categories: <CategoriesPanel />,
   products: <ProductsPanel />,
   orders: <OrdersPanel />,
+  cargos: <CargoPanel />,
+  taxSettings: <TaxSettingsPanel />,
+  banners: <BannersPanel />,
+  productLists: <ProductListsPanel />,
 };
 
 function Home() {
