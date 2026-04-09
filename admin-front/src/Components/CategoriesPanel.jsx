@@ -4,7 +4,11 @@ import {
   adminGetCategories,
   adminUpdateCategory,
   adminCreateCategory,
+  adminDeleteCategory,
 } from "../redux/adminSlice";
+import { addNotification } from "../redux/notificationSlice";
+import { FaTrash } from "react-icons/fa";
+import ConfirmModal from "./ConfirmModal";
 
 function EditModal({ category, categories, onClose }) {
   const dispatch = useDispatch();
@@ -20,15 +24,28 @@ function EditModal({ category, categories, onClose }) {
 
   const handleSave = async () => {
     setSaving(true);
-    if (isNew) {
-      await dispatch(
-        adminCreateCategory({ name, slug, parent: parent || null }),
-      );
-    } else {
-      await dispatch(
-        adminUpdateCategory({
-          id: category._id,
-          categoryData: { name, slug, parent: parent || null },
+    try {
+      if (isNew) {
+        await dispatch(
+          adminCreateCategory({ name, slug, parent: parent || null }),
+        ).unwrap();
+        dispatch(addNotification({ message: "Kategori oluşturuldu." }));
+      } else {
+        await dispatch(
+          adminUpdateCategory({
+            id: category._id,
+            categoryData: { name, slug, parent: parent || null },
+          }),
+        ).unwrap();
+        dispatch(addNotification({ message: "Kategori güncellendi." }));
+      }
+    } catch {
+      dispatch(
+        addNotification({
+          message: isNew
+            ? "Kategori oluşturulamadı."
+            : "Kategori güncellenemedi.",
+          type: "error",
         }),
       );
     }
@@ -265,6 +282,33 @@ function CategoriesPanel() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [creatingCategory, setCreatingCategory] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState(null);
+
+  const handleDelete = (category) => {
+    setConfirmConfig({
+      message: `"${category.name}" kategorisini silmek istediğinize emin misiniz?`,
+      onConfirm: () => {
+        dispatch(adminDeleteCategory(category._id))
+          .unwrap()
+          .then(() =>
+            dispatch(
+              addNotification({
+                message: `"${category.name}" silindi.`,
+                type: "warning",
+              }),
+            ),
+          )
+          .catch(() =>
+            dispatch(
+              addNotification({
+                message: "Kategori silinemedi.",
+                type: "error",
+              }),
+            ),
+          );
+      },
+    });
+  };
 
   useEffect(() => {
     if (categories.length === 0) dispatch(adminGetCategories());
@@ -306,6 +350,13 @@ function CategoriesPanel() {
 
   return (
     <div className="p-4">
+      {confirmConfig && (
+        <ConfirmModal
+          message={confirmConfig.message}
+          onConfirm={confirmConfig.onConfirm}
+          onClose={() => setConfirmConfig(null)}
+        />
+      )}
       {editingCategory && (
         <EditModal
           category={editingCategory}
@@ -468,7 +519,7 @@ function CategoriesPanel() {
             </div>
           </>
           <button
-            className="orange-btn"
+            className="btn orange-btn"
             onClick={() => setCreatingCategory(true)}
             style={{
               padding: "8px 12px",
@@ -563,9 +614,12 @@ function CategoriesPanel() {
                     >
                       {category.createdAt.slice(0, 10)}
                     </td>
-                    <td style={{ padding: "10px 12px" }}>
+                    <td
+                      className="d-flex align-items-center gap-3"
+                      style={{ padding: "10px 12px" }}
+                    >
                       <button
-                        className="orange-btn"
+                        className="btn orange-btn"
                         onClick={() => setEditingCategory(category)}
                         style={{
                           padding: "4px 12px",
@@ -574,6 +628,13 @@ function CategoriesPanel() {
                         }}
                       >
                         Düzenle
+                      </button>
+                      <button
+                        className="btn orange-btn orange-text"
+                        style={{ padding: "2px 12px" }}
+                        onClick={() => handleDelete(category)}
+                      >
+                        <FaTrash />
                       </button>
                     </td>
                   </tr>
