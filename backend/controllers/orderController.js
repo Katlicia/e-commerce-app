@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
+const Coupon = require("../models/Coupon");
 
 exports.createOrder = async (req, res) => {
   try {
@@ -12,6 +13,7 @@ exports.createOrder = async (req, res) => {
       guestEmail,
       cargoCompany,
       cargoPrice,
+      coupon,
     } = req.body;
 
     if (!items || items.length === 0) {
@@ -62,7 +64,12 @@ exports.createOrder = async (req, res) => {
       cargoCompany,
       cargoPrice,
       ...(billingAddress && { billingAddress }),
+      ...(coupon?.couponId && { coupon }),
     });
+
+    if (coupon?.couponId) {
+      await Coupon.findByIdAndUpdate(coupon.couponId, { $inc: { usedCount: 1 } });
+    }
 
     if (req.user) {
       await User.findByIdAndUpdate(req.user._id, {
