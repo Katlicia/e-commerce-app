@@ -6,7 +6,10 @@ import {
   decreaseCartWithSync,
   removeFromCartWithSync,
   syncClearCart,
+  setAppliedCoupon,
+  clearAppliedCoupon,
 } from "../redux/cartSlice";
+import axiosInstance from "../utils/axiosInstance";
 import HeaderLinks from "../components/HeaderLinks";
 import addressIcon from "../assets/Cart/address.svg";
 import checkoutIcon from "../assets/Cart/checkout.svg";
@@ -27,12 +30,32 @@ function CartPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { cart, totalAmount } = useSelector((state) => state.cart);
-  const [coupon, setCoupon] = useState("");
+  const { cart, totalAmount, appliedCoupon } = useSelector((state) => state.cart);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  async function handleApplyCoupon() {
+    if (!couponCode.trim()) return;
+    setCouponError("");
+    setCouponLoading(true);
+    try {
+      const { data } = await axiosInstance.post("/coupons/apply", {
+        code: couponCode.trim(),
+        orderTotal: totalAmount,
+      });
+      dispatch(setAppliedCoupon(data));
+      setCouponCode("");
+    } catch (err) {
+      setCouponError(err.response?.data?.message || "Kupon uygulanamadı.");
+    } finally {
+      setCouponLoading(false);
+    }
+  }
 
   return (
     <>
@@ -255,21 +278,49 @@ function CartPage() {
 
                 <h6 className="fw-bold mb-3">Sipariş Özeti</h6>
                 <CartSummary />
-                <div className="d-flex align-items-center gap-2 mb-3">
-                  <input
-                    className="form-control rounded-pill py-3 ps-4 text-muted"
-                    placeholder="Kupon Kodunuz"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                    style={{ fontSize: "0.875rem", backgroundColor: "#F1F5F6" }}
-                  />
-                  <span
-                    className="border-0 px-3 text-selected"
-                    style={{ fontSize: "0.9rem" }}
-                  >
-                    <strong>EKLE</strong>
-                  </span>
-                </div>
+                {appliedCoupon ? (
+                  <div className="d-flex align-items-center justify-content-between mb-3 px-1">
+                    <span style={{ fontSize: "0.875rem" }}>
+                      <strong className="text-selected">{appliedCoupon.code}</strong>
+                      <span className="text-success ms-2">
+                        -{Number(appliedCoupon.discount).toFixed(2)}₺ indirim
+                      </span>
+                    </span>
+                    <button
+                      className="btn p-0 text-muted"
+                      style={{ fontSize: "0.8rem" }}
+                      onClick={() => dispatch(clearAppliedCoupon())}
+                    >
+                      ✕ Kaldır
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <input
+                        className="form-control rounded-pill py-3 ps-4 text-muted"
+                        placeholder="Kupon Kodunuz"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                        style={{ fontSize: "0.875rem", backgroundColor: "#F1F5F6" }}
+                        disabled={couponLoading}
+                      />
+                      <span
+                        className="border-0 px-3 text-selected"
+                        style={{ fontSize: "0.9rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                        onClick={handleApplyCoupon}
+                      >
+                        <strong>{couponLoading ? "..." : "EKLE"}</strong>
+                      </span>
+                    </div>
+                    {couponError && (
+                      <p className="text-danger mb-2 ps-2" style={{ fontSize: "0.8rem" }}>
+                        {couponError}
+                      </p>
+                    )}
+                  </>
+                )}
 
                 <Link to="/checkout">
                   <button className="btn orange-btn w-100 rounded-pill py-2 fw-semibold">
