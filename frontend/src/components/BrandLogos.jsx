@@ -7,31 +7,28 @@ import bicLogo from "../assets/Brands/bicLogo.png";
 import dogusLogo from "../assets/Brands/dogusLogo.png";
 import "../styles/BrandLogos.css";
 
+const logos = [
+  caykurLogo,
+  kahveciLogo,
+  sleepyLogo,
+  jacobsLogo,
+  omoLogo,
+  bicLogo,
+  dogusLogo,
+];
+
 function BrandLogos() {
   return (
     <div className="container my-4">
       <div className="row flex-nowrap overflow-x-auto brand-list g-3 desktop-gap mb-5">
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={caykurLogo} className="img-fluid" />
-        </div>
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={kahveciLogo} className="img-fluid" />
-        </div>
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={sleepyLogo} className="img-fluid" />
-        </div>
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={jacobsLogo} className="img-fluid" />
-        </div>
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={omoLogo} className="img-fluid" />
-        </div>
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={bicLogo} className="img-fluid" />
-        </div>
-        <div className="col-4 col-md-3 col-lg d-flex justify-content-center">
-          <img src={dogusLogo} className="img-fluid" />
-        </div>
+        {logos.map((logo, index) => (
+          <div
+            key={index}
+            className="col-4 col-md-3 col-lg d-flex justify-content-center"
+          >
+            <img src={logo} className="img-fluid" />
+          </div>
+        ))}
       </div>
     </div>
   );
