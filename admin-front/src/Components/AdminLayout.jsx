@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { LuUser } from "react-icons/lu";
-import { TbCategory, TbGift, TbReceipt, TbReportAnalytics, TbLogout, TbTruck, TbReceiptTax, TbPhoto, TbLayoutList } from "react-icons/tb";
+import { TbCategory, TbGift, TbReceipt, TbReportAnalytics, TbLogout, TbTruck, TbReceiptTax, TbPhoto, TbLayoutList, TbTicket } from "react-icons/tb";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../redux/authSlice";
@@ -17,6 +17,7 @@ const MENU_ITEMS = [
   { key: "taxSettings", label: "Vergi & Kargo Ayarları", icon: <TbReceiptTax />, path: "/" },
   { key: "banners", label: "Bannerlar", icon: <TbPhoto />, path: "/" },
   { key: "productLists", label: "Ürün Listeleri", icon: <TbLayoutList />, path: "/" },
+  { key: "coupons", label: "Kuponlar", icon: <TbTicket />, path: "/" },
 ];
 
 function AdminLayout({ children, activeKey, onMenuClick }) {
