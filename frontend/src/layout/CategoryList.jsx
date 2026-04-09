@@ -53,6 +53,9 @@ function CategoryList() {
       .catch(() => {});
   }, [searchParams]);
 
+  const badgeParam = searchParams.get("badge") || undefined;
+  const stockLteParam = searchParams.get("stockLte") || undefined;
+
   useEffect(() => {
     const brandParam = searchParams.get("brand");
     if (!brandParam) return;
@@ -80,6 +83,8 @@ function CategoryList() {
     dispatch(
       getProducts({
         keyword,
+        badge: badgeParam,
+        stockLte: stockLteParam,
         brand: selectedBrands.length > 0 ? selectedBrands.join(",") : undefined,
         category:
           selectedCategories.length > 0
@@ -94,6 +99,8 @@ function CategoryList() {
   }, [
     dispatch,
     keyword,
+    badgeParam,
+    stockLteParam,
     selectedBrands,
     selectedCategories,
     appliedPrice,
