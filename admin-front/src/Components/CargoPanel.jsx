@@ -7,6 +7,7 @@ import {
   adminDeleteCargo,
 } from "../redux/adminSlice";
 import { addNotification } from "../redux/notificationSlice";
+import { FaTrash } from "react-icons/fa";
 
 const EMPTY_FORM = { companyName: "", cargoPrice: "" };
 
@@ -58,9 +59,16 @@ function CargoPanel() {
   };
 
   const handleDelete = (id, name) => {
-    if (!window.confirm(`"${name}" kargo firmasını silmek istediğinize emin misiniz?`)) return;
+    if (
+      !window.confirm(
+        `"${name}" kargo firmasını silmek istediğinize emin misiniz?`,
+      )
+    )
+      return;
     dispatch(adminDeleteCargo(id)).then(() =>
-      dispatch(addNotification({ message: `"${name}" silindi.`, type: "warning" })),
+      dispatch(
+        addNotification({ message: `"${name}" silindi.`, type: "warning" }),
+      ),
     );
   };
 
@@ -100,13 +108,26 @@ function CargoPanel() {
               marginBottom: "24px",
             }}
           >
-            <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "14px" }}>
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: "14px",
+                marginBottom: "14px",
+              }}
+            >
               {editId ? "Kargoyu Düzenle" : "Yeni Kargo Ekle"}
             </div>
             <form onSubmit={handleSubmit}>
               <div className="d-flex gap-3 flex-wrap mb-3">
                 <div style={{ flex: "2 1 200px" }}>
-                  <label style={{ fontSize: "12px", color: "#999", display: "block", marginBottom: "4px" }}>
+                  <label
+                    style={{
+                      fontSize: "12px",
+                      color: "#999",
+                      display: "block",
+                      marginBottom: "4px",
+                    }}
+                  >
                     Firma Adı
                   </label>
                   <input
@@ -119,7 +140,14 @@ function CargoPanel() {
                   />
                 </div>
                 <div style={{ flex: "1 1 130px" }}>
-                  <label style={{ fontSize: "12px", color: "#999", display: "block", marginBottom: "4px" }}>
+                  <label
+                    style={{
+                      fontSize: "12px",
+                      color: "#999",
+                      display: "block",
+                      marginBottom: "4px",
+                    }}
+                  >
                     Kargo Ücreti (₺)
                   </label>
                   <input
@@ -139,7 +167,11 @@ function CargoPanel() {
                 <button
                   type="submit"
                   className="orange-btn"
-                  style={{ padding: "7px 20px", borderRadius: "8px", fontSize: "13px" }}
+                  style={{
+                    padding: "7px 20px",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                  }}
                 >
                   {editId ? "Güncelle" : "Ekle"}
                 </button>
@@ -165,9 +197,13 @@ function CargoPanel() {
         {!showForm && (
           <div className="mb-4">
             <button
-              className="orange-btn"
+              className="btn orange-btn"
               onClick={() => setShowForm(true)}
-              style={{ padding: "8px 16px", borderRadius: "8px", fontSize: "13px" }}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                fontSize: "13px",
+              }}
             >
               + Yeni Kargo
             </button>
@@ -177,9 +213,21 @@ function CargoPanel() {
         {loading ? (
           <div style={{ color: "#999", fontSize: "14px" }}>Yükleniyor...</div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: "13px",
+            }}
+          >
             <thead>
-              <tr style={{ borderBottom: "2px solid #f0f0f0", color: "#999", textAlign: "left" }}>
+              <tr
+                style={{
+                  borderBottom: "2px solid #f0f0f0",
+                  color: "#999",
+                  textAlign: "left",
+                }}
+              >
                 <th style={{ padding: "8px 12px" }}>#</th>
                 <th style={{ padding: "8px 12px" }}>Firma Adı</th>
                 <th style={{ padding: "8px 12px" }}>Kargo Ücreti</th>
@@ -189,33 +237,34 @@ function CargoPanel() {
             <tbody>
               {cargos.map((c, i) => (
                 <tr key={c._id} style={{ borderBottom: "1px solid #f5f5f5" }}>
-                  <td style={{ padding: "10px 12px", color: "#bbb" }}>{i + 1}</td>
-                  <td style={{ padding: "10px 12px", fontWeight: 600 }}>{c.companyName}</td>
+                  <td style={{ padding: "10px 12px", color: "#bbb" }}>
+                    {i + 1}
+                  </td>
+                  <td style={{ padding: "10px 12px", fontWeight: 600 }}>
+                    {c.companyName}
+                  </td>
                   <td style={{ padding: "10px 12px", color: "#444" }}>
                     {Number(c.cargoPrice).toFixed(2)}₺
                   </td>
                   <td style={{ padding: "10px 12px" }}>
                     <div className="d-flex gap-2">
                       <button
-                        className="orange-btn"
+                        className="btn orange-btn"
                         onClick={() => handleEdit(c)}
-                        style={{ padding: "4px 12px", borderRadius: "6px", fontSize: "12px" }}
-                      >
-                        Düzenle
-                      </button>
-                      <button
-                        onClick={() => handleDelete(c._id, c.companyName)}
                         style={{
                           padding: "4px 12px",
                           borderRadius: "6px",
                           fontSize: "12px",
-                          border: "1px solid #ffcdd2",
-                          background: "#fff5f5",
-                          color: "#c62828",
-                          cursor: "pointer",
                         }}
                       >
-                        Sil
+                        Düzenle
+                      </button>
+                      <button
+                        className="btn orange-btn orange-text"
+                        onClick={() => handleDelete(c._id, c.companyName)}
+                        style={{ padding: "2px 12px" }}
+                      >
+                        <FaTrash />
                       </button>
                     </div>
                   </td>
@@ -223,7 +272,14 @@ function CargoPanel() {
               ))}
               {cargos.length === 0 && (
                 <tr>
-                  <td colSpan={4} style={{ padding: "20px", textAlign: "center", color: "#bbb" }}>
+                  <td
+                    colSpan={4}
+                    style={{
+                      padding: "20px",
+                      textAlign: "center",
+                      color: "#bbb",
+                    }}
+                  >
                     Henüz kargo firması eklenmemiş.
                   </td>
                 </tr>

@@ -36,7 +36,9 @@ const inputStyle = {
 
 function BannersPanel() {
   const dispatch = useDispatch();
-  const { banners, categories, brands, loading } = useSelector((state) => state.admin);
+  const { banners, categories, brands, loading } = useSelector(
+    (state) => state.admin,
+  );
 
   const [activeType, setActiveType] = useState("carousel");
   const [imageList, setImageList] = useState([]);
@@ -97,13 +99,24 @@ function BannersPanel() {
       .filter((i) => i.type === "existing")
       .map(({ public_id, url, link }) => ({ public_id, url, link }));
 
-    const newFiles = imageList.filter((i) => i.type === "new").map((i) => i.file);
+    const newFiles = imageList
+      .filter((i) => i.type === "new")
+      .map((i) => i.file);
     const newImages = await Promise.all(newFiles.map(toBase64));
 
-    dispatch(adminUpdateBanner({ type: activeType, bannerData: { keepImages, newImages } }))
+    dispatch(
+      adminUpdateBanner({
+        type: activeType,
+        bannerData: { keepImages, newImages },
+      }),
+    )
       .unwrap()
       .then(() => dispatch(addNotification({ message: "Banner güncellendi." })))
-      .catch(() => dispatch(addNotification({ message: "Banner güncellenemedi.", type: "error" })))
+      .catch(() =>
+        dispatch(
+          addNotification({ message: "Banner güncellenemedi.", type: "error" }),
+        ),
+      )
       .finally(() => setSaving(false));
   };
 
@@ -121,7 +134,14 @@ function BannersPanel() {
 
         {/* Banner tipi seçimi */}
         <div style={{ marginBottom: "24px" }}>
-          <label style={{ fontSize: "12px", color: "#999", display: "block", marginBottom: "6px" }}>
+          <label
+            style={{
+              fontSize: "12px",
+              color: "#999",
+              display: "block",
+              marginBottom: "6px",
+            }}
+          >
             Banner Bölümü
           </label>
           <select
@@ -145,7 +165,9 @@ function BannersPanel() {
             padding: "20px",
           }}
         >
-          <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "16px" }}>
+          <div
+            style={{ fontWeight: 600, fontSize: "14px", marginBottom: "16px" }}
+          >
             Görseller{" "}
             <span style={{ fontWeight: 400, fontSize: "12px", color: "#999" }}>
               ({imageList.length} görsel)
@@ -157,15 +179,33 @@ function BannersPanel() {
           ) : (
             <>
               {imageList.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "16px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "16px",
+                    marginBottom: "16px",
+                  }}
+                >
                   {imageList.map((item, idx) => (
-                    <div key={idx} style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap" }}>
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        gap: "16px",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
                       {/* Görsel önizleme */}
                       <div
                         style={{
                           position: "relative",
                           flexShrink: 0,
-                          border: item.type === "new" ? "2px dashed #ff6a00" : "1px solid #eee",
+                          border:
+                            item.type === "new"
+                              ? "2px dashed #ff6a00"
+                              : "1px solid #eee",
                           borderRadius: "8px",
                           overflow: "hidden",
                           width: 120,
@@ -192,14 +232,27 @@ function BannersPanel() {
                           </span>
                         )}
                         <img
-                          src={item.type === "existing" ? item.url : item.preview}
+                          src={
+                            item.type === "existing" ? item.url : item.preview
+                          }
                           alt=""
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
                         />
                       </div>
 
                       {/* Sıra ve sil butonları */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                          flexShrink: 0,
+                        }}
+                      >
                         <button
                           type="button"
                           disabled={idx === 0}
@@ -244,7 +297,10 @@ function BannersPanel() {
                             background: "#fff",
                             width: 32,
                             height: 28,
-                            cursor: idx === imageList.length - 1 ? "default" : "pointer",
+                            cursor:
+                              idx === imageList.length - 1
+                                ? "default"
+                                : "pointer",
                             opacity: idx === imageList.length - 1 ? 0.4 : 1,
                             fontSize: "13px",
                           }}
@@ -255,9 +311,18 @@ function BannersPanel() {
 
                       {/* Link seçimi */}
                       <div style={{ flex: 1, minWidth: 200 }}>
-                        <label style={{ fontSize: "12px", color: "#999", display: "block", marginBottom: "4px" }}>
+                        <label
+                          style={{
+                            fontSize: "12px",
+                            color: "#999",
+                            display: "block",
+                            marginBottom: "4px",
+                          }}
+                        >
                           Kategori Linki{" "}
-                          <span style={{ color: "#bbb" }}>(boş bırakılırsa tıklanamaz)</span>
+                          <span style={{ color: "#bbb" }}>
+                            (boş bırakılırsa tıklanamaz)
+                          </span>
                         </label>
                         <CategorySelect
                           categories={categories}
@@ -271,7 +336,14 @@ function BannersPanel() {
                 </div>
               )}
 
-              <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
                 <label
                   style={{
                     display: "inline-block",
@@ -295,10 +367,15 @@ function BannersPanel() {
                   />
                 </label>
                 <button
-                  className="orange-btn"
+                  className="btn orange-btn"
                   onClick={handleSave}
                   disabled={saving}
-                  style={{ padding: "8px 24px", borderRadius: "8px", fontSize: "13px", fontWeight: 600 }}
+                  style={{
+                    padding: "8px 24px",
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                  }}
                 >
                   {saving ? "Kaydediliyor..." : "Kaydet"}
                 </button>
