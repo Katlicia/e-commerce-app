@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { adminGetOrders, adminUpdateOrderStatus } from "../redux/adminSlice";
+import { addNotification } from "../redux/notificationSlice";
 
 const STATUS_OPTIONS = [
   "Hazırlanıyor",
@@ -25,9 +26,16 @@ function OrderDetailModal({ order, onClose }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await dispatch(
-      adminUpdateOrderStatus({ id: order._id, status: editStatus }),
-    );
+    try {
+      await dispatch(
+        adminUpdateOrderStatus({ id: order._id, status: editStatus }),
+      ).unwrap();
+      dispatch(addNotification({ message: "Sipariş durumu güncellendi." }));
+    } catch {
+      dispatch(
+        addNotification({ message: "Sipariş durumu güncellenemedi.", type: "error" }),
+      );
+    }
     setSaving(false);
     onClose();
   };
@@ -566,7 +574,7 @@ function OrdersPanel() {
                       </td>
                       <td style={{ padding: "10px 12px" }}>
                         <button
-                          className="orange-btn"
+                          className="btn orange-btn"
                           onClick={() => setDetailOrder(order)}
                           style={{
                             padding: "4px 12px",
