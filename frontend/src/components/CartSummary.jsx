@@ -2,7 +2,7 @@ import { useSelector } from "react-redux";
 import smileEmoji from "../assets/Emoji/smile.svg";
 
 function CartSummary({ cargoPrice } = {}) {
-  const { cart, totalAmount } = useSelector((state) => state.cart);
+  const { cart, totalAmount, appliedCoupon } = useSelector((state) => state.cart);
   const { freeShippingThreshold, kdv1Rate, kdv20Rate } = useSelector(
     (state) => state.taxSettings,
   );
@@ -26,7 +26,8 @@ function CartSummary({ cargoPrice } = {}) {
       : cargoPrice !== undefined
         ? cargoPrice
         : undefined;
-  const total = +(totalAmount + (shipping ?? 0)).toFixed(2);
+  const couponDiscount = appliedCoupon?.discount ?? 0;
+  const total = +(totalAmount + (shipping ?? 0) - couponDiscount).toFixed(2);
 
   return (
     <div>
@@ -62,6 +63,17 @@ function CartSummary({ cargoPrice } = {}) {
           </span>
         )}
       </div>
+
+      {couponDiscount > 0 && (
+        <div className="d-flex justify-content-between mb-3">
+          <span className="text-muted">
+            Kupon ({appliedCoupon.code})
+          </span>
+          <span className="fw-semibold text-success">
+            -{couponDiscount.toFixed(2)}₺
+          </span>
+        </div>
+      )}
 
       {totalDiscount > 0 && (
         <div className="d-flex justify-content-between mb-3">
