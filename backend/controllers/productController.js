@@ -340,14 +340,22 @@ exports.updateProduct = async (req, res) => {
 exports.createReview = async (req, res) => {
   const { productId, comment, rating } = req.body;
 
+  const product = await Product.findById(productId);
+
+  const alreadyReviewed = product.reviews.find(
+    (r) => r.user?.toString() === req.user._id.toString()
+  );
+
+  if (alreadyReviewed) {
+    return res.status(400).json({ message: "Bu ürüne zaten yorum yaptınız." });
+  }
+
   const review = {
-    user: req.user_id,
+    user: req.user._id,
     name: req.user.name,
     comment,
     rating: Number(rating),
   };
-
-  const product = await Product.findById(productId);
 
   product.reviews.push(review);
 
@@ -359,7 +367,52 @@ exports.createReview = async (req, res) => {
 
   await product.save({ validateBeforeSave: false });
 
-  res.json({
-    message: "Yorum eklendi",
+  res.json({ message: "Yorum eklendi" });
+};
+
+exports.updateReview = async (req, res) => {
+  const { productId, comment, rating } = req.body;
+
+  const product = await Product.findById(productId);
+
+  const review = product.reviews.find(
+    (r) => r.user?.toString() === req.user._id.toString()
+  );
+
+  if (!review) {
+    return res.status(404).json({ message: "Yorum bulunamadı." });
+  }
+
+  review.comment = comment;
+  review.rating = Number(rating);
+
+  let avg = 0;
+  product.reviews.forEach((rev) => {
+    avg += rev.rating;
   });
+  product.rating = avg / product.reviews.length;
+
+  await product.save({ validateBeforeSave: false });
+
+  res.json({ message: "Yorum güncellendi" });
+};
+
+exports.deleteReview = async (req, res) => {
+  const { productId } = req.body;
+
+  const product = await Product.findById(productId);
+
+  product.reviews = product.reviews.filter(
+    (r) => r.user?.toString() !== req.user._id.toString()
+  );
+
+  let avg = 0;
+  product.reviews.forEach((rev) => {
+    avg += rev.rating;
+  });
+  product.rating = product.reviews.length > 0 ? avg / product.reviews.length : 0;
+
+  await product.save({ validateBeforeSave: false });
+
+  res.json({ message: "Yorum silindi" });
 };
