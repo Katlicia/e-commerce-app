@@ -11,13 +11,13 @@ exports.register = async (req, res) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    return res.status(400).json({ message: "User already exists" });
+    return res.status(400).json({ message: "Böyle bir kullanıcı var." });
   }
 
   if (password.length < 6) {
     return res
       .status(400)
-      .json({ message: "Password can't be less than 6 characters" });
+      .json({ message: "Parola 6 karakterden uzun olmalı." });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -41,7 +41,6 @@ exports.register = async (req, res) => {
     name: user.name,
     surname: user.surname,
     email: user.email,
-    token: token,
   });
 };
 
@@ -63,13 +62,12 @@ exports.login = async (req, res) => {
         name: user.name,
         surname: user.surname,
         email: user.email,
-        token: token,
       });
     } else {
-      return res.status(401).json({ message: "Incorrect password." });
+      return res.status(401).json({ message: "Hatalı parola." });
     }
   } else {
-    res.status(401).json({ message: "Invalid credentials." });
+    res.status(401).json({ message: "Geçersiz bilgiler." });
   }
 };
 
@@ -82,7 +80,7 @@ exports.adminLogin = async (req, res) => {
       if (!user.isAdmin) {
         return res
           .status(403)
-          .json({ message: "Access denied. Not an admin." });
+          .json({ message: "Erişim reddedildi. Admin hesabı ile deneyin." });
       }
 
       const token = generateToken(user._id);
@@ -97,14 +95,13 @@ exports.adminLogin = async (req, res) => {
         name: user.name,
         surname: user.surname,
         email: user.email,
-        token: token,
         isAdmin: user.isAdmin,
       });
     } else {
-      return res.status(401).json({ message: "Incorrect password." });
+      return res.status(401).json({ message: "Hatalı parola." });
     }
   } else {
-    res.status(401).json({ message: "Invalid credentials." });
+    res.status(401).json({ message: "Geçersiz bilgiler." });
   }
 };
 
@@ -115,7 +112,7 @@ exports.logout = async (req, res) => {
   };
 
   res.status(200).cookie("token", null, cookieOptions).json({
-    message: "Logout successful",
+    message: "Çıkış başarılı.",
   });
 };
 
@@ -123,23 +120,26 @@ exports.forgetPassword = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return res.status(404).json({ message: "User not found." });
+    return res.status(404).json({ message: "Kullanıcı bulunamadı." });
   }
 
   const resetToken = crypto.randomBytes(20).toString("hex");
 
+  // create password reset token (expires in 5 minutes)
   user.resetPasswordToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
   user.resetPasswordExpire = new Date(Date.now() + 60 * 5 * 1000);
 
+  // don't validate mongoose schemas this is for password change only
   await user.save({ validateBeforeSave: false });
 
   const passwordUrl = `${process.env.CLIENT_URL}/reset/${resetToken}`;
 
   const message = `Password Reset: ${passwordUrl}`;
 
+  // setup mail info and send
   try {
     const transporter = nodemailer.createTransport({
       port: 465,
@@ -161,13 +161,13 @@ exports.forgetPassword = async (req, res) => {
 
     await transporter.sendMail(mailData);
 
-    res.status(200).json({ message: "Check your email." });
+    res.status(200).json({ message: "E-Postanızı kontrol edin." });
   } catch (error) {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
 
-    res.status(500).json({ message: "Email could not be sent." });
+    res.status(500).json({ message: "E-Posta gönderilemedi." });
   }
 };
 
@@ -184,7 +184,7 @@ exports.resetPassword = async (req, res) => {
 
   if (!user) {
     return res.status(500).json({
-      message: "Invalid token.",
+      message: "Geçersiz token.",
     });
   }
 
@@ -213,6 +213,5 @@ exports.resetPassword = async (req, res) => {
         surname: user.surname,
         email: user.email,
       },
-      token,
     });
 };
