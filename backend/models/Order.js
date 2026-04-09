@@ -29,6 +29,11 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    coupon: {
+      couponId: { type: mongoose.Schema.Types.ObjectId, ref: "Coupon" },
+      code: { type: String },
+      discount: { type: Number },
+    },
     cargoCompany: {
       type: String,
       required: true,
