@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { getProductDetail, createReview } from "../redux/productSlice";
+import {
+  getProductDetail,
+  createReview,
+  updateReview,
+  deleteReview,
+} from "../redux/productSlice";
 import {
   addToCartWithSync,
   decreaseCartWithSync,
@@ -66,6 +71,7 @@ function ProductDetails() {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [editMode, setEditMode] = useState(false);
 
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -99,6 +105,14 @@ function ProductDetails() {
   const discountedPrice = product.discountedPrice || null;
   const discountPercent = product.discountPercent || null;
 
+  const myReview = user
+    ? product.reviews?.find(
+        (r) =>
+          (r.user?.toString?.() ?? r.user) ===
+          (user._id?.toString?.() ?? user._id),
+      )
+    : null;
+
   async function handleReviewSubmit(e) {
     e.preventDefault();
     if (!reviewComment.trim()) return;
@@ -112,6 +126,37 @@ function ProductDetails() {
     setReviewSuccess(true);
     dispatch(getProductDetail(id));
     setTimeout(() => setReviewSuccess(false), 3000);
+  }
+
+  async function handleReviewUpdate(e) {
+    e.preventDefault();
+    if (!reviewComment.trim()) return;
+    setReviewSubmitting(true);
+    await dispatch(
+      updateReview({ productId, comment: reviewComment, rating: reviewRating }),
+    ).unwrap();
+    setEditMode(false);
+    setReviewSubmitting(false);
+    setReviewSuccess(true);
+    dispatch(getProductDetail(id));
+    setTimeout(() => setReviewSuccess(false), 3000);
+  }
+
+  async function handleReviewDelete() {
+    await dispatch(deleteReview({ productId })).unwrap();
+    dispatch(getProductDetail(id));
+  }
+
+  function handleEditStart() {
+    setReviewComment(myReview.comment);
+    setReviewRating(myReview.rating);
+    setEditMode(true);
+  }
+
+  function handleEditCancel() {
+    setEditMode(false);
+    setReviewComment("");
+    setReviewRating(5);
   }
 
   function handleAddToCart() {
@@ -452,58 +497,162 @@ function ProductDetails() {
         </h5>
 
         {user ? (
-          <form onSubmit={handleReviewSubmit} className="pd-review-form mb-5">
-            <div className="mb-3">
-              <label
-                className="fw-semibold mb-2 d-block"
-                style={{ fontSize: 14 }}
-              >
-                Puanınız
-              </label>
-              <div className="d-flex gap-1">
+          myReview && !editMode ? (
+            <div className="pd-review-form mb-5">
+              <p className="fw-semibold mb-2" style={{ fontSize: 14 }}>
+                Yorumunuz
+              </p>
+              <div className="d-flex gap-1 mb-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <span
                     key={star}
                     style={{
                       fontSize: 22,
-                      cursor: "pointer",
-                      color: star <= reviewRating ? "#ff7700" : "#dee2e6",
+                      color: star <= myReview.rating ? "#ff7700" : "#dee2e6",
                     }}
-                    onClick={() => setReviewRating(star)}
                   >
                     ★
                   </span>
                 ))}
               </div>
-            </div>
-            <div className="mb-3">
-              <label
-                className="fw-semibold mb-2 d-block"
-                style={{ fontSize: 14 }}
+              <p
+                className="border rounded p-3 mb-3"
+                style={{ fontSize: 14, background: "#fafafa" }}
               >
-                Yorumunuz
-              </label>
-              <textarea
-                className="form-control"
-                rows={3}
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                placeholder="Ürün hakkında görüşlerinizi yazın..."
-              />
-            </div>
-            {reviewSuccess && (
-              <p className="text-success mb-2" style={{ fontSize: 13 }}>
-                Yorumunuz eklendi!
+                {myReview.comment}
               </p>
-            )}
-            <button
-              type="submit"
-              className="btn pd-add-btn rounded-pill px-4"
-              disabled={reviewSubmitting}
-            >
-              {reviewSubmitting ? "Gönderiliyor..." : "Yorum Yap"}
-            </button>
-          </form>
+              {reviewSuccess && (
+                <p className="text-success mb-2" style={{ fontSize: 13 }}>
+                  Yorumunuz güncellendi!
+                </p>
+              )}
+              <div className="d-flex gap-2">
+                <button
+                  className="btn pd-add-btn rounded-pill px-4"
+                  onClick={handleEditStart}
+                >
+                  Düzenle
+                </button>
+                <button
+                  className="btn btn-outline-danger rounded-pill px-4"
+                  style={{ fontSize: 14 }}
+                  onClick={handleReviewDelete}
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            </div>
+          ) : myReview && editMode ? (
+            <form onSubmit={handleReviewUpdate} className="pd-review-form mb-5">
+              <div className="mb-3">
+                <label
+                  className="fw-semibold mb-2 d-block"
+                  style={{ fontSize: 14 }}
+                >
+                  Puanınız
+                </label>
+                <div className="d-flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{
+                        fontSize: 22,
+                        cursor: "pointer",
+                        color: star <= reviewRating ? "#ff7700" : "#dee2e6",
+                      }}
+                      onClick={() => setReviewRating(star)}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-3">
+                <label
+                  className="fw-semibold mb-2 d-block"
+                  style={{ fontSize: 14 }}
+                >
+                  Yorumunuz
+                </label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                />
+              </div>
+              <div className="d-flex gap-2">
+                <button
+                  type="submit"
+                  className="btn pd-add-btn rounded-pill px-4"
+                  disabled={reviewSubmitting}
+                >
+                  {reviewSubmitting ? "Kaydediliyor..." : "Kaydet"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary rounded-pill px-4"
+                  style={{ fontSize: 14 }}
+                  onClick={handleEditCancel}
+                >
+                  İptal
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleReviewSubmit} className="pd-review-form mb-5">
+              <div className="mb-3">
+                <label
+                  className="fw-semibold mb-2 d-block"
+                  style={{ fontSize: 14 }}
+                >
+                  Puanınız
+                </label>
+                <div className="d-flex gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      style={{
+                        fontSize: 22,
+                        cursor: "pointer",
+                        color: star <= reviewRating ? "#ff7700" : "#dee2e6",
+                      }}
+                      onClick={() => setReviewRating(star)}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-3">
+                <label
+                  className="fw-semibold mb-2 d-block"
+                  style={{ fontSize: 14 }}
+                >
+                  Yorumunuz
+                </label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Ürün hakkında görüşlerinizi yazın..."
+                />
+              </div>
+              {reviewSuccess && (
+                <p className="text-success mb-2" style={{ fontSize: 13 }}>
+                  Yorumunuz eklendi!
+                </p>
+              )}
+              <button
+                type="submit"
+                className="btn pd-add-btn rounded-pill px-4"
+                disabled={reviewSubmitting}
+              >
+                {reviewSubmitting ? "Gönderiliyor..." : "Yorum Yap"}
+              </button>
+            </form>
+          )
         ) : (
           <div className="pd-review-login mb-5">
             <p style={{ fontSize: 14, color: "#6c757d" }}>
