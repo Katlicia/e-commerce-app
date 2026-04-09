@@ -4,19 +4,24 @@ const ProductFilter = require("../utils/productFilter");
 const cloudinary = require("cloudinary").v2;
 
 async function getAllDescendantIds(categoryId) {
-  const ids = [categoryId];
-  const queue = [categoryId];
-  while (queue.length) {
-    const current = queue.shift();
-    const children = await Category.find({ parent: current })
-      .select("_id")
-      .lean();
-    for (const child of children) {
-      ids.push(child._id.toString());
-      queue.push(child._id.toString());
-    }
-  }
-  return ids;
+  const result = await Category.aggregate([
+    { $match: { _id: categoryId } },
+    {
+      $graphLookup: {
+        from: "categories",
+        startWith: "$_id",
+        connectFromField: "_id",
+        connectToField: "parent",
+        as: "descendants",
+      },
+    },
+    { $project: { "descendants._id": 1 } },
+  ]);
+
+  if (!result.length) return [categoryId.toString()];
+
+  const descendantIds = result[0].descendants.map((d) => d._id.toString());
+  return [categoryId.toString(), ...descendantIds];
 }
 
 exports.getProducts = async (req, res) => {
