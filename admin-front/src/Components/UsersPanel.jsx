@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { adminGetUsers, adminUpdateUser } from "../redux/adminSlice";
+import { addNotification } from "../redux/notificationSlice";
 
 function EditModal({ user, onClose }) {
   const dispatch = useDispatch();
@@ -9,7 +10,12 @@ function EditModal({ user, onClose }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await dispatch(adminUpdateUser({ id: user._id, userData: { isAdmin } }));
+    try {
+      await dispatch(adminUpdateUser({ id: user._id, userData: { isAdmin } })).unwrap();
+      dispatch(addNotification({ message: "Kullanıcı güncellendi." }));
+    } catch {
+      dispatch(addNotification({ message: "Kullanıcı güncellenemedi.", type: "error" }));
+    }
     setSaving(false);
     onClose();
   };
@@ -174,7 +180,10 @@ function UsersPanel() {
           </span>
         </div>
 
-        <div className="d-flex gap-3 align-items-center mb-4" style={{ flexWrap: "wrap" }}>
+        <div
+          className="d-flex gap-3 align-items-center mb-4"
+          style={{ flexWrap: "wrap" }}
+        >
           <input
             type="text"
             placeholder="İsim veya e-posta ara..."
@@ -318,7 +327,7 @@ function UsersPanel() {
                     </td>
                     <td style={{ padding: "10px 12px" }}>
                       <button
-                        className="orange-btn"
+                        className="btn orange-btn"
                         onClick={() => setEditingUser(user)}
                         style={{
                           padding: "4px 12px",
