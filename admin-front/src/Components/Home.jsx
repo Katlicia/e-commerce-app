@@ -9,6 +9,7 @@ import CargoPanel from "./CargoPanel";
 import TaxSettingsPanel from "./TaxSettingsPanel";
 import BannersPanel from "./BannersPanel";
 import ProductListsPanel from "./ProductListsPanel";
+import CouponsPanel from "./CouponsPanel";
 
 const PAGES = {
   analytics: <Analytics />,
@@ -20,6 +21,7 @@ const PAGES = {
   taxSettings: <TaxSettingsPanel />,
   banners: <BannersPanel />,
   productLists: <ProductListsPanel />,
+  coupons: <CouponsPanel />,
 };
 
 function Home() {
