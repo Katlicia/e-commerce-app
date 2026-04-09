@@ -108,12 +108,26 @@ function BannerField({ preview, onChange, onRemove }) {
           Banner yok
         </p>
       )}
-      <input
-        type="file"
-        accept="image/*"
-        onChange={onChange}
-        style={{ fontSize: "12px" }}
-      />
+      <label
+        style={{
+          display: "inline-block",
+          padding: "8px 4px",
+          borderRadius: "8px",
+          border: "1px dashed #ff6a00",
+          color: "#ff6a00",
+          fontSize: "13px",
+          fontWeight: 600,
+          cursor: "pointer",
+        }}
+      >
+        + Görsel Ekle
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onChange}
+          style={{ display: "none" }}
+        />
+      </label>
     </div>
   );
 }
@@ -256,7 +270,7 @@ function SectionEditor({ section, onSaved }) {
 
       <div>
         <button
-          className="orange-btn"
+          className="btn orange-btn"
           onClick={handleSave}
           disabled={saving}
           style={{
@@ -399,7 +413,7 @@ function CategoryRowEditor({ section, onSaved, categories, brands }) {
       </div>
       <div>
         <button
-          className="orange-btn"
+          className="btn orange-btn"
           onClick={handleSave}
           disabled={saving}
           style={{
