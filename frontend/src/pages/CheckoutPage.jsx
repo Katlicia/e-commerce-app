@@ -45,8 +45,9 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const { addresses: apiAddresses } = useSelector((state) => state.user);
-  const { totalAmount } = useSelector((state) => state.cart);
-  const { cart } = useSelector((state) => state.cart);
+  const { totalAmount, cart, appliedCoupon } = useSelector((state) => state.cart);
+  const couponDiscount = appliedCoupon?.discount ?? 0;
+  const finalAmount = Math.max(0, totalAmount - couponDiscount);
   const {
     loading: orderLoading,
     success: orderSuccess,
@@ -133,12 +134,13 @@ function CheckoutPage() {
       dispatch(
         createOrder({
           items,
-          totalAmount,
+          totalAmount: finalAmount,
           address: addresses[selectedAddressIdx],
           cargoCompany: selectedCargoData?.companyName,
           cargoPrice: effectiveCargoPrice,
           ...(!sameAsBilling && { billingAddress: addresses[selectedBillingIdx] }),
           ...(!user && { guestEmail: values.email }),
+          ...(appliedCoupon && { coupon: appliedCoupon }),
         }),
       );
     },
@@ -598,7 +600,7 @@ function CheckoutPage() {
                                 style={{ fontSize: "0.9rem" }}
                               >
                                 <strong>
-                                  {Number(totalAmount * opt.multiplier).toFixed(
+                                  {Number(finalAmount * opt.multiplier).toFixed(
                                     2,
                                   )}
                                   ₺
