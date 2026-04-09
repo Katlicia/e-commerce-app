@@ -31,6 +31,7 @@ import clipboardIcon from "../assets/ProductDetails/clipboard.svg";
 import briefcaseIcon from "../assets/ProductDetails/briefcase.svg";
 import bellIcon from "../assets/ProductDetails/bell.svg";
 import ProductFeaturesSection from "../components/ProductFeaturesSection";
+import CouponBanner from "../components/CouponBanner";
 import { getKeyword } from "../redux/generalSlice";
 
 const TARGET = new Date(
@@ -410,43 +411,7 @@ function ProductDetails() {
                 </div>
               </div>
 
-              <div>
-                <p className="fw-bold mb-2" style={{ fontSize: 14 }}>
-                  Kuponlar
-                </p>
-                <div className="d-flex gap-2 flex-wrap">
-                  {[
-                    {
-                      label: "Alt Limit: 2500TL • Son 3 Gün",
-                      amount: "500TL",
-                      sub: "Alışverişe devam et →",
-                    },
-                    {
-                      label: "Alt Limit: 10.000TL • Son 21 Gün",
-                      amount: "2.500TL",
-                      sub: "Alışverişe devam et →",
-                    },
-                  ].map((c, i) => (
-                    <div key={i} className="pd-coupon flex-grow-1">
-                      <span style={{ fontSize: 10, color: "#6c757d" }}>
-                        {c.label}
-                      </span>
-                      <span className="pd-coupon-amount">{c.amount}</span>
-                      <button className="pd-coupon-btn">Kullan</button>
-                      <a
-                        href="#0"
-                        style={{
-                          fontSize: 11,
-                          color: "#2878ff",
-                          textDecoration: "none",
-                        }}
-                      >
-                        {c.sub}
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <CouponBanner />
 
               <div
                 className="d-flex gap-3 flex-wrap"
