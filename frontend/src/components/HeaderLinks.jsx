@@ -1,16 +1,12 @@
+import { useEffect, useState } from "react";
 import shoppingIcon from "../assets/Links/shopping_1.svg";
 import messengerIcon from "../assets/Links/messenger_1.svg";
 import presentIcon from "../assets/Links/present_1.svg";
 import "../styles/Header.css";
-
-const categories = [
-  "Gıda Mutfak",
-  "Kağıt Ürünleri",
-  "Ofis Kırtasiye",
-  "Temizlik Ürünleri",
-  "Çok Al Az Öde",
-  "Listeli Ürünler",
-];
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { getKeyword } from "../redux/generalSlice";
+import axiosInstance from "../utils/axiosInstance";
 
 const featuredLinks = [
   { label: "Kampanyalar", colorClass: "header-link-blue", icon: presentIcon },
@@ -23,6 +19,22 @@ const featuredLinks = [
 ];
 
 function HeaderLinks() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    axiosInstance
+      .get("/categories")
+      .then((res) => setCategories(res.data.slice(0, 6)))
+      .catch((err) => console.error(err));
+  }, []);
+
+  const handleCategoryClick = (cat) => {
+    dispatch(getKeyword(""));
+    navigate("/products?category=" + cat.slug);
+  };
+
   return (
     <div
       className="header-nav-wrapper"
@@ -31,9 +43,14 @@ function HeaderLinks() {
       <div className="container">
         <div className="header-nav">
           <nav className="header-categories">
-            {categories.map((item) => (
-              <a key={item} className="header-nav-link" href="#0">
-                {item}
+            {categories.map((cat) => (
+              <a
+                key={cat._id}
+                className="header-nav-link"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleCategoryClick(cat)}
+              >
+                {cat.name}
               </a>
             ))}
           </nav>
