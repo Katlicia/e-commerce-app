@@ -20,6 +20,14 @@ function OrderSummary({ order }) {
           {isFree ? "Ücretsiz" : `${shipping.toFixed(2)}₺`}
         </span>
       </div>
+      {order.coupon?.discount > 0 && (
+        <div className="d-flex justify-content-between mb-3">
+          <span className="text-muted">Kupon ({order.coupon.code})</span>
+          <span className="fw-semibold text-success">
+            -{Number(order.coupon.discount).toFixed(2)}₺
+          </span>
+        </div>
+      )}
       <hr className="my-3" />
       <div className="d-flex justify-content-between mb-3">
         <span className="fw-bold fs-6">TOPLAM</span>
