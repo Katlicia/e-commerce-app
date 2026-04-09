@@ -189,7 +189,7 @@ function TaxSettingsPanel() {
 
             <button
               type="submit"
-              className="orange-btn"
+              className="btn orange-btn"
               disabled={loading}
               style={{
                 marginTop: "28px",
