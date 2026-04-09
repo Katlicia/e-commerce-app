@@ -4,6 +4,7 @@ import axiosInstance from "../utils/axiosInstance.js";
 const initialState = {
   products: [],
   product: {},
+  dealOfDay: null,
   total: 0,
   loading: false,
 };
@@ -17,6 +18,8 @@ export const getProducts = createAsyncThunk("products", async (params = {}) => {
   if (params.page) query.set("page", params.page);
   if (params.minPrice !== undefined && params.minPrice !== "") query.set("minPrice", params.minPrice);
   if (params.maxPrice !== undefined && params.maxPrice !== "") query.set("maxPrice", params.maxPrice);
+  if (params.badge) query.set("badge", params.badge);
+  if (params.stockLte != null) query.set("stockLte", params.stockLte);
   if (params.sort) query.set("sort", params.sort);
   const response = await axiosInstance.get(`/products?${query.toString()}`);
   return response.data;
@@ -24,6 +27,11 @@ export const getProducts = createAsyncThunk("products", async (params = {}) => {
 
 export const getProductDetail = createAsyncThunk("product", async (id) => {
   const response = await axiosInstance.get(`/products/${id}`);
+  return response.data;
+});
+
+export const getDealOfDay = createAsyncThunk("products/dealOfDay", async () => {
+  const response = await axiosInstance.get("/products/badge/gunun-firsati");
   return response.data;
 });
 
@@ -62,6 +70,9 @@ export const productSlice = createSlice({
     builder.addCase(getProductDetail.fulfilled, (state, action) => {
       state.loading = false;
       state.product = action.payload;
+    });
+    builder.addCase(getDealOfDay.fulfilled, (state, action) => {
+      state.dealOfDay = action.payload?.[0] ?? null;
     });
   },
 });
