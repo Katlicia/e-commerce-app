@@ -21,29 +21,33 @@
   background: #f05a28;
   color: #fff;
   border-radius: 6px;
-  width: 48px;
-  height: 48px;
+  width: 80px;
+  height: 80px;
   line-height: 1;
 }
 
 .chances-value {
-  font-size: 16px;
+  font-size: 23px;
   font-weight: 700;
 }
 
 .chances-label {
-  font-size: 9px;
+  font-size: 23px;
   font-weight: 500;
   margin-top: 2px;
 }
 
 @media (max-width: 576px) {
   .chances-box {
-    width: 40px;
-    height: 40px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .chances-label {
+    font-size: 20px;
   }
 
   .chances-value {
-    font-size: 13px;
+    font-size: 20px;
   }
 }
