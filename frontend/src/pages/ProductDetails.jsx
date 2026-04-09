@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { getProductDetail, createReview } from "../redux/productSlice";
 import {
   addToCartWithSync,
@@ -31,6 +31,7 @@ import clipboardIcon from "../assets/ProductDetails/clipboard.svg";
 import briefcaseIcon from "../assets/ProductDetails/briefcase.svg";
 import bellIcon from "../assets/ProductDetails/bell.svg";
 import ProductFeaturesSection from "../components/ProductFeaturesSection";
+import { getKeyword } from "../redux/generalSlice";
 
 const TARGET = new Date(
   Date.now() +
@@ -53,6 +54,8 @@ function getTimeLeft() {
 function ProductDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { product } = useSelector((state) => state.product);
   const { favourites } = useSelector((state) => state.favourite);
   const { cart } = useSelector((state) => state.cart);
@@ -116,6 +119,16 @@ function ProductDetails() {
     }
   }
 
+  function handleCategoryClick(cat) {
+    dispatch(getKeyword(""));
+    navigate("/products?category=" + cat.slug);
+  }
+
+  function handleBrandClick(item) {
+    dispatch(getKeyword(""));
+    navigate("/products?brand=" + item.brand);
+  }
+
   return (
     <>
       <HeaderLinks />
@@ -125,17 +138,23 @@ function ProductDetails() {
           {product.category?.parent && (
             <>
               {" / "}
-              <Link to={`/kategori/${product.category.parent.slug}`}>
+              <a
+                style={{ cursor: "pointer" }}
+                onClick={() => handleCategoryClick(product.category.parent)}
+              >
                 {product.category.parent.name}
-              </Link>
+              </a>
             </>
           )}
           {product.category && (
             <>
               {" / "}
-              <Link to={`/kategori/${product.category.slug}`}>
+              <a
+                style={{ cursor: "pointer" }}
+                onClick={() => handleCategoryClick(product.category)}
+              >
                 {product.category.name}
-              </Link>
+              </a>
             </>
           )}
           {" / "}
@@ -189,7 +208,11 @@ function ProductDetails() {
               <div className="pd-meta">
                 <span className="r-border">
                   Marka:{" "}
-                  <a href="#0" className="pd-brand">
+                  <a
+                    href="#0"
+                    className="pd-brand"
+                    onClick={() => handleBrandClick(product)}
+                  >
                     {product.brand || "—"}
                   </a>
                 </span>
