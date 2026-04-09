@@ -16,16 +16,29 @@ class ProductFilter {
     }
 
     filter() {
+        const ALLOWED_FIELDS = ["price", "stock", "rating", "category", "brand", "badge"];
+        const ALLOWED_OPERATORS = ["gt", "gte", "lt", "lte"];
+
         const queryCopy = { ...this.queryStr };
         const deleteArea = ["keyword", "page", "limit", "sort"];
-        deleteArea.forEach(item => {
-            delete queryCopy[item];
-        });
+        deleteArea.forEach(item => delete queryCopy[item]);
 
-        let queryStr = JSON.stringify(queryCopy);
-        queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, key => `$${key}`);
+        const safeQuery = {};
+        for (const field of ALLOWED_FIELDS) {
+            if (!(field in queryCopy)) continue;
+            const val = queryCopy[field];
+            if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+                const safeOps = {};
+                for (const op of ALLOWED_OPERATORS) {
+                    if (op in val) safeOps[`$${op}`] = val[op];
+                }
+                if (Object.keys(safeOps).length) safeQuery[field] = safeOps;
+            } else {
+                safeQuery[field] = val;
+            }
+        }
 
-        this.query = this.query.find(JSON.parse(queryStr));
+        this.query = this.query.find(safeQuery);
         return this;
     }
 
