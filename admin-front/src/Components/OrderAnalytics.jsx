@@ -35,8 +35,10 @@ const YEARS = Array.from(
 
 const TRACKED_STATUSES = [
   { key: "Teslim Edildi", label: "Teslim Edildi", color: "#22c55e" },
-  { key: "İptal Edildi", label: "İptal Edildi", color: "#ef4444" },
-  { key: "İade Edildi", label: "İade Edildi", color: "#f97316" },
+  { key: "İptal Edildi", label: "İptal Edildi", color: "#ff0000" },
+  { key: "İade Edildi", label: "İade Edildi", color: "#4882ff" },
+  { key: "Hazırlanıyor", label: "Hazırlanıyor", color: "#ffa15e" },
+  { key: "Kargoya Verildi", label: "Kargoya Verildi", color: "#78e4ff" },
 ];
 
 function buildMonthlyData(orders, year) {
