@@ -18,7 +18,8 @@ function getTimeLeft(target) {
 }
 
 function ProductList({ title, settings = {} }) {
-  const { showTimer, timerEnd, banner, badge, recentlyViewed, bestSellers } = settings;
+  const { showTimer, timerEnd, banner, badge, recentlyViewed, bestSellers } =
+    settings;
   const rowRef = useRef(null);
   const [time, setTime] = useState(getTimeLeft(timerEnd));
   const [products, setProducts] = useState([]);
@@ -45,7 +46,9 @@ function ProductList({ title, settings = {} }) {
         } else {
           const url = badge ? `/products/badge/${badge}` : `/products`;
           res = await axiosInstance.get(url);
-          setProducts(Array.isArray(res.data) ? res.data : res.data.products || []);
+          setProducts(
+            Array.isArray(res.data) ? res.data : res.data.products || [],
+          );
         }
       } catch {
         setProducts([]);
@@ -78,11 +81,11 @@ function ProductList({ title, settings = {} }) {
                 { value: time.dakika, label: "Dakika" },
                 { value: time.saniye, label: "Saniye" },
               ].map((u) => (
-                <div key={u.label} className="chances-box">
-                  <span className="chances-value">
+                <div key={u.label} className="timer-chances-box">
+                  <span className="timer-chances-value">
                     {String(u.value).padStart(2, "0")}
                   </span>
-                  <span className="chances-label">{u.label}</span>
+                  <span className="timer-chances-label">{u.label}</span>
                 </div>
               ))}
             </div>
