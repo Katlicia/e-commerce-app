@@ -11,6 +11,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useRef } from "react";
 import { getBanner } from "../redux/bannerSlice";
 
+const logos = [bicLogo, dogusLogo, nestleLogo, selpakLogo, sleepyLogo];
+
 function Carousel() {
   const dispatch = useDispatch();
   const sliderRef = useRef(null);
@@ -42,7 +44,7 @@ function Carousel() {
       <div className="carousel-wrapper">
         <button
           className="carousel-arrow carousel-arrow-left"
-          onClick={() => sliderRef.current.slickPrev()}
+          onClick={() => sliderRef.current?.slickPrev()}
         >
           &#8249;
         </button>
@@ -55,17 +57,15 @@ function Carousel() {
         </Slider.default>
         <button
           className="carousel-arrow carousel-arrow-right"
-          onClick={() => sliderRef.current.slickNext()}
+          onClick={() => sliderRef.current?.slickNext()}
         >
           &#8250;
         </button>
       </div>
       <div className="logos d-flex justify-content-center align-items-center">
-        <img src={sleepyLogo} className="img-fluid" />
-        <img src={bicLogo} className="img-fluid" />
-        <img src={dogusLogo} className="img-fluid" />
-        <img src={nestleLogo} className="img-fluid" />
-        <img src={selpakLogo} className="img-fluid" />
+        {logos.map((logo, i) => (
+          <img key={i} src={logo} className="img-fluid" />
+        ))}
       </div>
     </div>
   );
