@@ -33,7 +33,10 @@ function OrderDetailModal({ order, onClose }) {
       dispatch(addNotification({ message: "Sipariş durumu güncellendi." }));
     } catch {
       dispatch(
-        addNotification({ message: "Sipariş durumu güncellenemedi.", type: "error" }),
+        addNotification({
+          message: "Sipariş durumu güncellenemedi.",
+          type: "error",
+        }),
       );
     }
     setSaving(false);
@@ -223,13 +226,26 @@ function OrderDetailModal({ order, onClose }) {
                     <span>{Number(order.cargoPrice).toFixed(2)}₺</span>
                   </div>
                 )}
+                {order.coupon?.discount > 0 && (
+                  <div
+                    className="d-flex justify-content-between"
+                    style={{
+                      fontSize: "13px",
+                      color: "#2e7d32",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <span>Kupon ({order.coupon.code})</span>
+                    <span>-{Number(order.coupon.discount).toFixed(2)}₺</span>
+                  </div>
+                )}
                 <div
                   className="d-flex justify-content-between"
                   style={{ fontSize: "14px", fontWeight: 700 }}
                 >
                   <span>Toplam</span>
                   <span style={{ color: "#ff6a00" }}>
-                    {(itemsTotal + (order.cargoPrice || 0)).toFixed(2)}₺
+                    {(order.totalAmount + (order.cargoPrice || 0)).toFixed(2)}₺
                   </span>
                 </div>
               </div>
@@ -385,7 +401,7 @@ function OrderDetailModal({ order, onClose }) {
                 ))}
               </select>
               <button
-                className="orange-btn"
+                className="btn orange-btn"
                 onClick={handleSave}
                 disabled={saving || editStatus === order.status}
                 style={{
