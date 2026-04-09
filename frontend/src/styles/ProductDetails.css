@@ -41,6 +41,7 @@
 .pd-timer-value {
   background: linear-gradient(90deg, #ff4d2d, var(--orange-btn));
   font-weight: 600;
+  font-size: 16px;
 }
 
 .pd-main-image {
@@ -307,7 +308,7 @@
 
 @media (max-width: 572px) {
   .pd-timer-banner {
-    display: none;
+    flex-direction: column;
   }
 }
 
