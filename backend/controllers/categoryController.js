@@ -50,16 +50,7 @@ exports.getCategoryBySlug = async (req, res) => {
 
 exports.createCategory = async (req, res) => {
   const { name, slug, parent } = req.body;
-
-  let parentId = null;
-  if (parent) {
-    const parentDoc = await Category.findOne({ slug: parent });
-    if (!parentDoc)
-      return res.status(404).json({ message: "Parent kategori bulunamadı." });
-    parentId = parentDoc._id;
-  }
-
-  const category = await Category.create({ name, slug, parent: parentId });
+  const category = await Category.create({ name, slug, parent: parent || null });
   res.json(category);
 };
 
