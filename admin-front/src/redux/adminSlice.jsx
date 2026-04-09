@@ -8,6 +8,7 @@ const initialState = {
   cargos: [],
   orders: [],
   users: [],
+  coupons: [],
   taxSettings: null,
   banners: {},
   homeSections: [],
@@ -174,6 +175,35 @@ export const adminUpdateHomeSection = createAsyncThunk(
   },
 );
 
+export const adminGetCoupons = createAsyncThunk("admin/getCoupons", async () => {
+  const { data } = await axiosInstance.get("/coupons");
+  return data;
+});
+
+export const adminCreateCoupon = createAsyncThunk(
+  "admin/createCoupon",
+  async (couponData) => {
+    const { data } = await axiosInstance.post("/coupons/new", couponData);
+    return data;
+  },
+);
+
+export const adminUpdateCoupon = createAsyncThunk(
+  "admin/updateCoupon",
+  async ({ id, couponData }) => {
+    const { data } = await axiosInstance.put(`/coupons/${id}`, couponData);
+    return data;
+  },
+);
+
+export const adminDeleteCoupon = createAsyncThunk(
+  "admin/deleteCoupon",
+  async (id) => {
+    await axiosInstance.delete(`/coupons/${id}`);
+    return id;
+  },
+);
+
 export const adminGetTaxSettings = createAsyncThunk(
   "admin/getTaxSettings",
   async () => {
@@ -278,6 +308,19 @@ const adminSlice = createSlice({
       .addCase(adminUpdateOrderStatus.fulfilled, (state, action) => {
         const idx = state.orders.findIndex((o) => o._id === action.payload._id);
         if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(adminGetCoupons.fulfilled, (state, action) => {
+        state.coupons = action.payload;
+      })
+      .addCase(adminCreateCoupon.fulfilled, (state, action) => {
+        state.coupons.unshift(action.payload);
+      })
+      .addCase(adminUpdateCoupon.fulfilled, (state, action) => {
+        const idx = state.coupons.findIndex((c) => c._id === action.payload._id);
+        if (idx !== -1) state.coupons[idx] = action.payload;
+      })
+      .addCase(adminDeleteCoupon.fulfilled, (state, action) => {
+        state.coupons = state.coupons.filter((c) => c._id !== action.payload);
       })
       .addCase(adminGetTaxSettings.fulfilled, (state, action) => {
         state.taxSettings = action.payload;
