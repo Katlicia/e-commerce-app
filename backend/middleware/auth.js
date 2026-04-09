@@ -5,28 +5,30 @@ exports.authenticationMiddle = async (req, res, next) => {
   const { token } = req.cookies;
 
   if (!token) {
-    return res.status(403).json({ message: "You are not logged in." });
+    return res.status(403).json({ message: "Giriş yapın." });
   }
 
   let decodedData;
   try {
     decodedData = jwt.verify(token, process.env.JWT_KEY);
   } catch (err) {
-    return res.status(403).json({ message: "Invalid or expired token." });
+    return res
+      .status(403)
+      .json({ message: "Geçersiz veya süresi bitmiş token." });
   }
 
   if (!decodedData) {
-    return res.status(403).json({ message: "Invalid token." });
+    return res.status(403).json({ message: "Geçersiz token." });
   }
 
   try {
     req.user = await User.findById(decodedData.id);
   } catch (err) {
-    return res.status(500).json({ message: "Database error." });
+    return res.status(500).json({ message: "Veritabanı hatası." });
   }
 
   if (!req.user) {
-    return res.status(401).json({ message: "User not found." });
+    return res.status(401).json({ message: "Kullanıcı bulunamadı." });
   }
   next();
 };
