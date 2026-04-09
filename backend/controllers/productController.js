@@ -2,10 +2,12 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const ProductFilter = require("../utils/productFilter");
 const cloudinary = require("cloudinary").v2;
+const mongoose = require("mongoose");
 
 async function getAllDescendantIds(categoryId) {
+  const objectId = new mongoose.Types.ObjectId(categoryId);
   const result = await Category.aggregate([
-    { $match: { _id: categoryId } },
+    { $match: { _id: objectId } },
     {
       $graphLookup: {
         from: "categories",
