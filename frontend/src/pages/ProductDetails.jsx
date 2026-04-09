@@ -164,7 +164,7 @@ function ProductDetails() {
 
         <div className="product-details-wrapper">
           <div className="row g-4">
-            <div className="col-lg-5">
+            <div className="col-lg-6">
               <div className="pd-timer-banner border">
                 <div className="d-flex">
                   <img src={starsIcon} alt="Stars" />
@@ -175,7 +175,7 @@ function ProductDetails() {
                     </span>
                   </div>
                 </div>
-                <span className="pd-timer-value border p-3 rounded">
+                <span className="pd-timer-value text-center  border p-3 rounded w-100">
                   {time.gun} Gün : {String(time.saat).padStart(2, "0")} Saat :{" "}
                   {String(time.dakika).padStart(2, "0")} Dakika :{" "}
                   {String(time.saniye).padStart(2, "0")} Saniye
@@ -203,7 +203,7 @@ function ProductDetails() {
               )}
             </div>
 
-            <div className="col-lg-7 d-flex flex-column gap-3">
+            <div className="col-lg-6 d-flex flex-column gap-3">
               <h1 className="pd-name">{product.name}</h1>
 
               <div className="pd-meta">
