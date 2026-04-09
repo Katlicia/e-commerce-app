@@ -43,6 +43,22 @@ export const createReview = createAsyncThunk(
   }
 );
 
+export const updateReview = createAsyncThunk(
+  "product/updateReview",
+  async ({ productId, comment, rating }) => {
+    const response = await axiosInstance.put(`/products/updateReview`, { productId, comment, rating });
+    return response.data;
+  }
+);
+
+export const deleteReview = createAsyncThunk(
+  "product/deleteReview",
+  async ({ productId }) => {
+    const response = await axiosInstance.delete(`/products/deleteReview`, { data: { productId } });
+    return response.data;
+  }
+);
+
 export const productSlice = createSlice({
   name: "product",
   initialState,
