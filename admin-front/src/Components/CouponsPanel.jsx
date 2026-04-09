@@ -11,6 +11,7 @@ import {
 import { addNotification } from "../redux/notificationSlice";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
+import ConfirmModal from "./ConfirmModal";
 
 const inputStyle = {
   border: "1px solid #eee",
@@ -87,6 +88,7 @@ function CouponsPanel() {
   const { coupons, loading } = useSelector((state) => state.admin);
   const [editId, setEditId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [confirm, setConfirm] = useState(null); // { message, onConfirm }
 
   useEffect(() => {
     if (coupons.length === 0) dispatch(adminGetCoupons());
@@ -146,13 +148,15 @@ function CouponsPanel() {
   };
 
   const handleDelete = (id, code) => {
-    if (!window.confirm(`"${code}" kuponunu silmek istediğinize emin misiniz?`))
-      return;
-    dispatch(adminDeleteCoupon(id)).then(() =>
-      dispatch(
-        addNotification({ message: `"${code}" silindi.`, type: "warning" }),
-      ),
-    );
+    setConfirm({
+      message: `"${code}" kuponunu silmek istediğinize emin misiniz?`,
+      onConfirm: () =>
+        dispatch(adminDeleteCoupon(id)).then(() =>
+          dispatch(
+            addNotification({ message: `"${code}" silindi.`, type: "warning" }),
+          ),
+        ),
+    });
   };
 
   const handleToggleActive = (coupon) => {
@@ -176,6 +180,13 @@ function CouponsPanel() {
 
   return (
     <div className="p-4">
+      {confirm && (
+        <ConfirmModal
+          message={confirm.message}
+          onConfirm={confirm.onConfirm}
+          onClose={() => setConfirm(null)}
+        />
+      )}
       <div
         style={{
           background: "#fff",
@@ -393,138 +404,141 @@ function CouponsPanel() {
           <div style={{ color: "#999", fontSize: "14px" }}>Yükleniyor...</div>
         ) : (
           <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "13px",
-            }}
-          >
-            <thead>
-              <tr
-                style={{
-                  borderBottom: "2px solid #f0f0f0",
-                  color: "#999",
-                  textAlign: "left",
-                }}
-              >
-                <th style={{ padding: "8px 12px" }}>#</th>
-                <th style={{ padding: "8px 12px" }}>Kod</th>
-                <th style={{ padding: "8px 12px" }}>İndirim</th>
-                <th style={{ padding: "8px 12px" }}>Min. Sipariş</th>
-                <th style={{ padding: "8px 12px" }}>Kullanım</th>
-                <th style={{ padding: "8px 12px" }}>Son Tarih</th>
-                <th style={{ padding: "8px 12px" }}>Durum</th>
-                <th style={{ padding: "8px 12px" }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupons.map((c, i) => {
-                const expired = new Date(c.expiryDate) < new Date();
-                const limitReached =
-                  c.usageLimit !== null && c.usedCount >= c.usageLimit;
-                return (
-                  <tr key={c._id} style={{ borderBottom: "1px solid #f5f5f5" }}>
-                    <td style={{ padding: "10px 12px", color: "#bbb" }}>
-                      {i + 1}
-                    </td>
-                    <td
-                      style={{
-                        padding: "10px 12px",
-                        fontWeight: 700,
-                        letterSpacing: 1,
-                      }}
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "13px",
+              }}
+            >
+              <thead>
+                <tr
+                  style={{
+                    borderBottom: "2px solid #f0f0f0",
+                    color: "#999",
+                    textAlign: "left",
+                  }}
+                >
+                  <th style={{ padding: "8px 12px" }}>#</th>
+                  <th style={{ padding: "8px 12px" }}>Kod</th>
+                  <th style={{ padding: "8px 12px" }}>İndirim</th>
+                  <th style={{ padding: "8px 12px" }}>Min. Sipariş</th>
+                  <th style={{ padding: "8px 12px" }}>Kullanım</th>
+                  <th style={{ padding: "8px 12px" }}>Son Tarih</th>
+                  <th style={{ padding: "8px 12px" }}>Durum</th>
+                  <th style={{ padding: "8px 12px" }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {coupons.map((c, i) => {
+                  const expired = new Date(c.expiryDate) < new Date();
+                  const limitReached =
+                    c.usageLimit !== null && c.usedCount >= c.usageLimit;
+                  return (
+                    <tr
+                      key={c._id}
+                      style={{ borderBottom: "1px solid #f5f5f5" }}
                     >
-                      {c.code}
-                    </td>
-                    <td style={{ padding: "10px 12px" }}>
-                      {formatDiscount(c)}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#444" }}>
-                      {c.minOrderAmount > 0
-                        ? `${Number(c.minOrderAmount).toLocaleString("tr-TR")}₺`
-                        : "—"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "10px 12px",
-                        color: limitReached ? "#ef4444" : "#444",
-                      }}
-                    >
-                      {c.usedCount}
-                      {c.usageLimit !== null ? ` / ${c.usageLimit}` : ""}
-                    </td>
-                    <td
-                      style={{
-                        padding: "10px 12px",
-                        color: expired ? "#ef4444" : "#444",
-                      }}
-                    >
-                      {new Date(c.expiryDate).toLocaleDateString("tr-TR")}
-                      {!expired && (
-                        <span style={{ color: "#999", marginLeft: 4 }}>
-                          ({daysLeft(c.expiryDate)} gün)
-                        </span>
-                      )}
-                    </td>
-                    <td style={{ padding: "10px 12px" }}>
-                      <button
-                        onClick={() => handleToggleActive(c)}
+                      <td style={{ padding: "10px 12px", color: "#bbb" }}>
+                        {i + 1}
+                      </td>
+                      <td
                         style={{
-                          padding: "2px 10px",
-                          borderRadius: "6px",
-                          fontSize: "11px",
-                          border: "none",
-                          cursor: "pointer",
-                          background: c.isActive ? "#d1fae5" : "#fee2e2",
-                          color: c.isActive ? "#065f46" : "#991b1b",
-                          fontWeight: 600,
+                          padding: "10px 12px",
+                          fontWeight: 700,
+                          letterSpacing: 1,
                         }}
                       >
-                        {c.isActive ? "Aktif" : "Pasif"}
-                      </button>
-                    </td>
-                    <td style={{ padding: "10px 12px" }}>
-                      <div className="d-flex gap-2">
+                        {c.code}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        {formatDiscount(c)}
+                      </td>
+                      <td style={{ padding: "10px 12px", color: "#444" }}>
+                        {c.minOrderAmount > 0
+                          ? `${Number(c.minOrderAmount).toLocaleString("tr-TR")}₺`
+                          : "—"}
+                      </td>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          color: limitReached ? "#ef4444" : "#444",
+                        }}
+                      >
+                        {c.usedCount}
+                        {c.usageLimit !== null ? ` / ${c.usageLimit}` : ""}
+                      </td>
+                      <td
+                        style={{
+                          padding: "10px 12px",
+                          color: expired ? "#ef4444" : "#444",
+                        }}
+                      >
+                        {new Date(c.expiryDate).toLocaleDateString("tr-TR")}
+                        {!expired && (
+                          <span style={{ color: "#999", marginLeft: 4 }}>
+                            ({daysLeft(c.expiryDate)} gün)
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
                         <button
-                          className="btn orange-btn"
-                          onClick={() => handleEdit(c)}
+                          onClick={() => handleToggleActive(c)}
                           style={{
-                            padding: "4px 12px",
+                            padding: "2px 10px",
                             borderRadius: "6px",
-                            fontSize: "12px",
+                            fontSize: "11px",
+                            border: "none",
+                            cursor: "pointer",
+                            background: c.isActive ? "#d1fae5" : "#fee2e2",
+                            color: c.isActive ? "#065f46" : "#991b1b",
+                            fontWeight: 600,
                           }}
                         >
-                          Düzenle
+                          {c.isActive ? "Aktif" : "Pasif"}
                         </button>
-                        <button
-                          className="btn orange-btn orange-text"
-                          onClick={() => handleDelete(c._id, c.code)}
-                          style={{ padding: "2px 12px" }}
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <div className="d-flex gap-2">
+                          <button
+                            className="btn orange-btn"
+                            onClick={() => handleEdit(c)}
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: "6px",
+                              fontSize: "12px",
+                            }}
+                          >
+                            Düzenle
+                          </button>
+                          <button
+                            className="btn orange-btn orange-text"
+                            onClick={() => handleDelete(c._id, c.code)}
+                            style={{ padding: "2px 12px" }}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {coupons.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      style={{
+                        padding: "20px",
+                        textAlign: "center",
+                        color: "#bbb",
+                      }}
+                    >
+                      Henüz kupon eklenmemiş.
                     </td>
                   </tr>
-                );
-              })}
-              {coupons.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={8}
-                    style={{
-                      padding: "20px",
-                      textAlign: "center",
-                      color: "#bbb",
-                    }}
-                  >
-                    Henüz kupon eklenmemiş.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
