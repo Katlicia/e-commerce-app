@@ -10,15 +10,16 @@ import "../styles/CartDrawer.css";
 import { PiShoppingCartLight } from "react-icons/pi";
 import CartProgress from "./CartProgress";
 
-const FREE_SHIPPING_THRESHOLD = 500;
-
 function CartDrawer() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { cart, totalAmount } = useSelector((state) => state.cart);
+  const freeShippingThreshold = useSelector(
+    (state) => state.taxSettings.freeShippingThreshold,
+  );
 
-  const remaining = Math.max(FREE_SHIPPING_THRESHOLD - totalAmount, 0);
-  const progress = Math.min((totalAmount / FREE_SHIPPING_THRESHOLD) * 100, 100);
+  const remaining = Math.max(freeShippingThreshold - totalAmount, 0);
+  const progress = Math.min((totalAmount / freeShippingThreshold) * 100, 100);
 
   return (
     <div
