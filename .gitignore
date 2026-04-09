@@ -1,13 +1,22 @@
-# backend
+# dependencies
 backend/node_modules
-backend/package-lock.json
-backend/.env
-
-# frontend
 frontend/node_modules
-frontend/package-lock.json
+admin-front/node_modules
+
+# environment variables
+backend/.env
+frontend/.env
+admin-front/.env
+
+# build output
+frontend/dist
+admin-front/dist
 
 # ide
 .vscode/
+
+# os
+.DS_Store
+Thumbs.db
 
 todo.txt
