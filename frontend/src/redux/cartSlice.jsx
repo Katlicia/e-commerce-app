@@ -63,6 +63,7 @@ export const syncClearCart = createAsyncThunk("cart/syncClear", async () => {
 const initialState = {
   cart: getCartFromStorage(),
   totalAmount: 0,
+  appliedCoupon: null, // { couponId, code, discount }
 };
 
 const cartSlice = createSlice({
@@ -70,7 +71,10 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const product = { ...action.payload, _id: action.payload._id || action.payload.id };
+      const product = {
+        ...action.payload,
+        _id: action.payload._id || action.payload.id,
+      };
       const id = product._id;
       const existing = state.cart.find((item) => (item._id || item.id) === id);
       if (existing) {
@@ -110,7 +114,16 @@ const cartSlice = createSlice({
     clearCartLocal: (state) => {
       state.cart = [];
       state.totalAmount = 0;
+      state.appliedCoupon = null;
       localStorage.removeItem("cart");
+    },
+
+    setAppliedCoupon: (state, action) => {
+      state.appliedCoupon = action.payload; // { couponId, code, discount }
+    },
+
+    clearAppliedCoupon: (state) => {
+      state.appliedCoupon = null;
     },
   },
   extraReducers: (builder) => {
@@ -135,6 +148,7 @@ const cartSlice = createSlice({
       .addCase(syncClearCart.fulfilled, (state) => {
         state.cart = [];
         state.totalAmount = 0;
+        state.appliedCoupon = null;
         localStorage.removeItem("cart");
       });
   },
@@ -146,9 +160,11 @@ export const {
   removeFromCart,
   calculateCart,
   clearCartLocal,
+  setAppliedCoupon,
+  clearAppliedCoupon,
 } = cartSlice.actions;
 
-// Wrapper thunk'lar: local state'i anında günceller + user login ise backend'e sync eder
+// Wrapper thunk's: update local state and if user is logged in sync on server
 export const addToCartWithSync = (product) => (dispatch, getState) => {
   const id = product._id || product.id;
   dispatch(addToCart(product));
@@ -173,16 +189,24 @@ export const mergeCartOnLogin = () => async (dispatch, getState) => {
     const id = localItem._id || localItem.id;
     const inBackend = backendCart.find((i) => (i._id || i.id) === id);
     if (inBackend) {
-      await dispatch(syncUpdateCart({ productId: id, quantity: inBackend.quantity + localItem.quantity }));
+      await dispatch(
+        syncUpdateCart({
+          productId: id,
+          quantity: inBackend.quantity + localItem.quantity,
+        }),
+      );
     } else {
-      await dispatch(syncAddToCart({ productId: id, quantity: localItem.quantity }));
+      await dispatch(
+        syncAddToCart({ productId: id, quantity: localItem.quantity }),
+      );
     }
   }
 };
 
 export const decreaseCartWithSync = (id) => (dispatch, getState) => {
   const currentQty =
-    getState().cart.cart.find((item) => (item._id || item.id) === id)?.quantity ?? 0;
+    getState().cart.cart.find((item) => (item._id || item.id) === id)
+      ?.quantity ?? 0;
   dispatch(decreaseCart(id));
   if (getState().auth.user) {
     if (currentQty <= 1) {
