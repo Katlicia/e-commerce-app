@@ -58,7 +58,6 @@ function DealOfDay() {
     stock,
     _id,
   } = featuredProduct;
-  const displayPrice = discountedPrice ?? price;
   const displayOldPrice = discountPercent ? price : null;
 
   return (
@@ -100,11 +99,14 @@ function DealOfDay() {
             </div>
             <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
               <span className="deal-price" style={{ fontSize: "26px" }}>
-                {displayPrice}₺
+                {discountedPrice
+                  ? discountedPrice.toFixed(2)
+                  : price.toFixed(2)}
+                ₺
               </span>
               {displayOldPrice && (
                 <span className="deal-old-price" style={{ fontSize: "26px" }}>
-                  {displayOldPrice}₺
+                  {displayOldPrice.toFixed(2)}₺
                 </span>
               )}
             </div>
