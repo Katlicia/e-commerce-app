@@ -26,6 +26,19 @@
   line-height: 1;
 }
 
+.timer-chances-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f05a28;
+  color: #fff;
+  border-radius: 6px;
+  width: 60px;
+  height: 60px;
+  line-height: 1;
+}
+
 .chances-value {
   font-size: 23px;
   font-weight: 700;
@@ -37,10 +50,26 @@
   margin-top: 2px;
 }
 
+.timer-chances-value {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.timer-chances-label {
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
 @media (max-width: 576px) {
   .chances-box {
     width: 80px;
     height: 80px;
+  }
+
+  .timer-chances-box {
+    width: 50px;
+    height: 50px;
   }
 
   .chances-label {
