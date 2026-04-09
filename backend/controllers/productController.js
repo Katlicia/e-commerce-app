@@ -34,9 +34,20 @@ exports.getProducts = async (req, res) => {
       delete queryCopy.maxPrice;
     }
 
-    let baseQuery = Product.find(
-      Object.keys(priceFilter).length ? { price: priceFilter } : {},
-    );
+    const stockFilter = {};
+    if (queryCopy.stockLte) {
+      stockFilter.$lte = Number(queryCopy.stockLte);
+      delete queryCopy.stockLte;
+    }
+    if (queryCopy.stockGte) {
+      stockFilter.$gte = Number(queryCopy.stockGte);
+      delete queryCopy.stockGte;
+    }
+
+    const baseFilter = {};
+    if (Object.keys(priceFilter).length) baseFilter.price = priceFilter;
+    if (Object.keys(stockFilter).length) baseFilter.stock = stockFilter;
+    let baseQuery = Product.find(baseFilter);
 
     if (queryCopy.category) {
       const catIds = queryCopy.category
