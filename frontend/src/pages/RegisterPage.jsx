@@ -21,7 +21,12 @@ function RegisterPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const result = await dispatch(registerUser(formData));
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    const result = await dispatch(registerUser({
+      ...formData,
+      name: capitalize(formData.name),
+      surname: capitalize(formData.surname),
+    }));
     if (result.meta.requestStatus === "fulfilled") {
       navigate("/");
     }
