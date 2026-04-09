@@ -6,14 +6,19 @@ exports.getCoupons = async (req, res) => {
   res.json(coupons);
 };
 
-// GET /coupons/active — public, aktif ve süresi dolmamış kuponlar (max 2)
+// GET /coupons/active — active coupons (return 2)
 exports.getActiveCoupons = async (req, res) => {
   const coupons = await Coupon.find({
     isActive: true,
     expiryDate: { $gt: new Date() },
-    $or: [{ usageLimit: null }, { $expr: { $lt: ["$usedCount", "$usageLimit"] } }],
+    $or: [
+      { usageLimit: null },
+      { $expr: { $lt: ["$usedCount", "$usageLimit"] } },
+    ],
   })
-    .select("code discountType discountValue minOrderAmount maxDiscount expiryDate")
+    .select(
+      "code discountType discountValue minOrderAmount maxDiscount expiryDate",
+    )
     .sort({ createdAt: -1 })
     .limit(2);
   res.json(coupons);
