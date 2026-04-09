@@ -1,4 +1,5 @@
 const Coupon = require("../models/Coupon");
+const Order = require("../models/Order");
 
 // GET /coupons — list all coupons (admin)
 exports.getCoupons = async (req, res) => {
@@ -37,6 +38,14 @@ exports.applyCoupon = async (req, res) => {
     return res.status(400).json({ message: "Kuponun süresi dolmuş." });
   if (coupon.usageLimit !== null && coupon.usedCount >= coupon.usageLimit)
     return res.status(400).json({ message: "Kupon kullanım limiti dolmuş." });
+
+  const alreadyUsed = await Order.exists({
+    user: req.user._id,
+    "coupon.couponId": coupon._id,
+    status: { $nin: ["İptal Edildi", "İade Edildi"] },
+  });
+  if (alreadyUsed)
+    return res.status(400).json({ message: "Bu kuponu daha önce kullandınız." });
   if (orderTotal < coupon.minOrderAmount)
     return res.status(400).json({
       message: `Bu kupon için minimum sipariş tutarı ${coupon.minOrderAmount}₺.`,
