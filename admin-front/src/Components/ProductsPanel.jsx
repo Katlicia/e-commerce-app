@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { adminGetProducts } from "../redux/adminSlice";
+import { adminGetProducts, adminDeleteProduct } from "../redux/adminSlice";
+import { addNotification } from "../redux/notificationSlice";
+import { FaTrash } from "react-icons/fa";
+import ConfirmModal from "./ConfirmModal";
 
 function ProductsPanel() {
   const dispatch = useDispatch();
@@ -10,6 +13,23 @@ function ProductsPanel() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [maxStock, setMaxStock] = useState("");
+  const [confirmConfig, setConfirmConfig] = useState(null);
+
+  const handleDelete = (item) => {
+    setConfirmConfig({
+      message: `"${item.name}" ürününü silmek istediğinize emin misiniz?`,
+      onConfirm: () => {
+        dispatch(adminDeleteProduct(item._id))
+          .unwrap()
+          .then(() =>
+            dispatch(addNotification({ message: `"${item.name}" silindi.`, type: "warning" })),
+          )
+          .catch(() =>
+            dispatch(addNotification({ message: "Ürün silinemedi.", type: "error" })),
+          );
+      },
+    });
+  };
 
   useEffect(() => {
     if (products.length === 0) dispatch(adminGetProducts());
@@ -28,6 +48,13 @@ function ProductsPanel() {
 
   return (
     <div className="p-4">
+      {confirmConfig && (
+        <ConfirmModal
+          message={confirmConfig.message}
+          onConfirm={confirmConfig.onConfirm}
+          onClose={() => setConfirmConfig(null)}
+        />
+      )}
       <div
         style={{
           background: "#fff",
@@ -72,7 +99,7 @@ function ProductsPanel() {
             }}
           />
           <button
-            className="orange-btn"
+            className="btn orange-btn"
             onClick={() => navigate("/admin/products/new")}
             style={{
               padding: "8px 16px",
@@ -195,19 +222,28 @@ function ProductsPanel() {
                       {item.createdAt.slice(0, 10)}
                     </td>
                     <td style={{ padding: "10px 12px" }}>
-                      <button
-                        className="orange-btn"
-                        onClick={() =>
-                          navigate(`/admin/products/${item._id}/edit`)
-                        }
-                        style={{
-                          padding: "4px 12px",
-                          borderRadius: "6px",
-                          fontSize: "12px",
-                        }}
-                      >
-                        Düzenle
-                      </button>
+                      <div className="d-flex gap-2">
+                        <button
+                          className="btn orange-btn"
+                          onClick={() =>
+                            navigate(`/admin/products/${item._id}/edit`)
+                          }
+                          style={{
+                            padding: "4px 12px",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          Düzenle
+                        </button>
+                        <button
+                          className="btn orange-btn orange-text"
+                          onClick={() => handleDelete(item)}
+                          style={{ padding: "2px 12px" }}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
