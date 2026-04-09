@@ -1,29 +1,20 @@
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
-import tempIcon from "../assets/temp.png";
 import firsatiBadge from "../assets/Products/gunun_firsati.svg";
 import { FaRegStar, FaStar } from "react-icons/fa6";
 import "../styles/DealOfDay.css";
 import "../styles/Chances.css";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { getProducts } from "../redux/productSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { getProducts, getDealOfDay } from "../redux/productSlice";
 
-const featuredProduct = {
-  id: 1,
-  image: tempIcon,
-  name: "Nescafe Gold 900 Gr Teneke + Nestle Coffee Mate Kahve Kreması 2 Kg Alana Çelik Termos 1.2 Lt HEDİYE",
-  rating: 5,
-  reviewCount: 29,
-  price: "128.00",
-  oldPrice: "12.00",
-  stock: 620,
-  totalStock: 896,
-};
+function getMidnight() {
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+  return midnight;
+}
 
-const TARGET = new Date(
-  Date.now() + 11 * 3600 * 1000 + 43 * 60 * 1000 + 35 * 1000,
-);
+const TARGET = getMidnight();
 
 function getTimeLeft() {
   const diff = Math.max(0, TARGET - Date.now());
@@ -38,30 +29,37 @@ function DealOfDay() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [gridProducts, setGridProducts] = useState([]);
+  const featuredProduct = useSelector((state) => state.product.dealOfDay);
 
   useEffect(() => {
+    dispatch(getDealOfDay());
     dispatch(getProducts({ limit: 8 })).then((res) => {
       if (res.payload?.products) setGridProducts(res.payload.products);
     });
   }, []);
 
   const [time, setTime] = useState(getTimeLeft());
-  const {
-    image,
-    name,
-    rating,
-    reviewCount,
-    price,
-    oldPrice,
-    stock,
-    totalStock,
-  } = featuredProduct;
-  const stockPercent = Math.round((stock / totalStock) * 100);
 
   useEffect(() => {
     const id = setInterval(() => setTime(getTimeLeft()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  if (!featuredProduct) return null;
+
+  const image = featuredProduct.images?.[0]?.url;
+  const {
+    name,
+    rating,
+    reviews,
+    price,
+    discountedPrice,
+    discountPercent,
+    stock,
+    _id,
+  } = featuredProduct;
+  const displayPrice = discountedPrice ?? price;
+  const displayOldPrice = discountPercent ? price : null;
 
   return (
     <div className="container my-4">
@@ -69,7 +67,7 @@ function DealOfDay() {
         <div className="col-12 col-lg-3">
           <div
             className="deal-featured-card"
-            onClick={() => navigate(`/${featuredProduct.id}`)}
+            onClick={() => navigate(`/${_id}`)}
           >
             <h2 className="chances-title mb-3">Günün Fırsatı</h2>
             <hr style={{ color: "#8f8f8f" }} />
@@ -77,10 +75,10 @@ function DealOfDay() {
               <img src={firsatiBadge} alt="badge" className="deal-badge w-50" />
               <img src={image} alt={name} className="w-100" />
             </div>
-            <p className="fw-semibold mt-2 mb-1" style={{ fontSize: "13px" }}>
+            <p className="fw-semibold mt-2 mb-1" style={{ fontSize: "26px" }}>
               {name}
             </p>
-            <div className="d-flex align-items-center gap-1 mb-1">
+            <div className="d-flex align-items-center justify-content-center gap-1 mb-1">
               {(() => {
                 const stars = [];
                 for (let i = 0; i < 5; i++) {
@@ -89,7 +87,7 @@ function DealOfDay() {
                       key={i}
                       style={{
                         color: i < rating ? "#ff7700" : "#dee2e6",
-                        fontSize: 13,
+                        fontSize: 26,
                       }}
                     >
                       {i < rating ? <FaStar /> : <FaRegStar />}
@@ -98,14 +96,22 @@ function DealOfDay() {
                 }
                 return stars;
               })()}
-              <span className="mute-string mt-1">({reviewCount})</span>
+              <span className="mute-string mt-2">({reviews?.length ?? 0})</span>
             </div>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span className="deal-price">{price}₺</span>
-              <span className="deal-old-price">{oldPrice}₺</span>
+            <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
+              <span className="deal-price" style={{ fontSize: "26px" }}>
+                {displayPrice}₺
+              </span>
+              {displayOldPrice && (
+                <span className="deal-old-price" style={{ fontSize: "26px" }}>
+                  {displayOldPrice}₺
+                </span>
+              )}
             </div>
-            <p className="deal-timer-label">Fırsatın bitişine kalan süre</p>
-            <div className="chances-timer mb-3">
+            <p className="deal-timer-label" style={{ fontSize: "20px" }}>
+              Fırsatın bitişine kalan süre
+            </p>
+            <div className="d-flex justify-content-center chances-timer mb-3">
               {[
                 { value: time.saat, label: "Saat" },
                 { value: time.dakika, label: "Dakika" },
@@ -119,14 +125,8 @@ function DealOfDay() {
                 </div>
               ))}
             </div>
-            <div className="progress mb-1" style={{ height: "6px" }}>
-              <div
-                className="progress-bar deal-progress-bar"
-                style={{ width: `${stockPercent}%` }}
-              />
-            </div>
-            <p className="deal-stock-text">
-              Stok: {stock}/{totalStock} kaldı
+            <p className="deal-stock-text" style={{ fontSize: "20px" }}>
+              Stok: {stock} kaldı
             </p>
           </div>
         </div>
