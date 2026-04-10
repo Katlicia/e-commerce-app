@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { getKeyword } from "../redux/generalSlice";
 import axiosInstance from "../utils/axiosInstance.js";
 import "../styles/Featured.css";
 import simsekLogo from "../assets/Featured/simsek.svg";
@@ -72,6 +74,8 @@ async function fetchCount(filter) {
 }
 
 function Featured() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [counts, setCounts] = useState({});
 
   useEffect(() => {
@@ -84,22 +88,28 @@ function Featured() {
     });
   }, []);
 
+  const handleCategory = (filter) => {
+    dispatch(getKeyword(""));
+    navigate(buildTo(filter));
+  };
+
   return (
     <div className="featured-wrapper">
       <div className="container">
         <div className="featured-list">
           {items.map((item, idx) => (
-            <Link
+            <a
               key={item.label}
-              to={buildTo(item.filter)}
+              onClick={() => handleCategory(item.filter)}
               className="featured-item"
+              style={{ cursor: "pointer" }}
             >
               <img src={item.icon} alt={item.label} className="featured-icon" />
               <span className="featured-label">{item.label}</span>
               <span className="featured-count">
                 {counts[idx] != null ? `${counts[idx]} Ürün` : "Çok Yakında"}
               </span>
-            </Link>
+            </a>
           ))}
         </div>
       </div>
