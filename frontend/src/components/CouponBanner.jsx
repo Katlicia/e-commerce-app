@@ -38,6 +38,7 @@ function CouponBanner() {
             <span className="pd-coupon-amount">{formatDiscount(c)}</span>
             <button
               className="pd-coupon-btn"
+              style={{ cursor: "copy" }}
               onClick={() => navigator.clipboard?.writeText(c.code)}
             >
               {c.code}
