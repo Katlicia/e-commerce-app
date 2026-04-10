@@ -13,14 +13,21 @@ function App() {
       <AdminToast />
       <Routes>
         <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
-        <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
+        <Route
+          path="/login"
+          element={user ? <Navigate to="/" /> : <LoginPage />}
+        />
         <Route
           path="/admin/products/new"
-          element={user?.isAdmin ? <AdminProductFormPage /> : <Navigate to="/" />}
+          element={
+            user?.isAdmin ? <AdminProductFormPage /> : <Navigate to="/" />
+          }
         />
         <Route
           path="/admin/products/:id/edit"
-          element={user?.isAdmin ? <AdminProductFormPage /> : <Navigate to="/" />}
+          element={
+            user?.isAdmin ? <AdminProductFormPage /> : <Navigate to="/" />
+          }
         />
         <Route path="*" element={user ? <Home /> : <Navigate to="/login" />} />
       </Routes>
