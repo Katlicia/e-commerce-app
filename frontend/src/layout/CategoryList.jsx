@@ -250,6 +250,7 @@ function CategoryList() {
         <button
           className="btn btn-sm orange-btn w-100 mt-2"
           onClick={handleApplyPrice}
+          data-bs-dismiss="offcanvas"
         >
           Uygula
         </button>
@@ -277,11 +278,6 @@ function CategoryList() {
           />
         </div>
         <div className="offcanvas-body">{filterContent}</div>
-        <div className="p-3 border-top">
-          <button className="btn orange-btn w-100" data-bs-dismiss="offcanvas">
-            Filtreleri Uygula
-          </button>
-        </div>
       </div>
 
       <div className="row">
