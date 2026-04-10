@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { cancelOrder, returnOrder } from "../redux/orderSlice";
 import {
   FiChevronDown,
@@ -13,7 +12,6 @@ import { useReorder } from "../hooks/useReorder";
 
 function ProfileOrderCard({ order, onDetailClick }) {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const { handleReorder } = useReorder();
