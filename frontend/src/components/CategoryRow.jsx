@@ -27,9 +27,14 @@ function CategorySection({ title, image, filterType, filterValue }) {
         }
         const prodRes = await axiosInstance.get(url);
         const data = prodRes.data;
-        setProducts(Array.isArray(data) ? data : Array.isArray(data.products) ? data.products : []);
+        setProducts(
+          Array.isArray(data)
+            ? data
+            : Array.isArray(data.products)
+              ? data.products
+              : [],
+        );
       } catch (err) {
-        console.error("CategorySection fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -73,7 +78,8 @@ function CategoryRow({ left, right }) {
 
   const getNavUrl = (side) => {
     if (!side?.filterValue) return "#";
-    if (side.filterType === "brand") return `/products?brand=${encodeURIComponent(side.filterValue)}`;
+    if (side.filterType === "brand")
+      return `/products?brand=${encodeURIComponent(side.filterValue)}`;
     return `/products?category=${side.filterValue}`;
   };
 
