@@ -239,11 +239,8 @@ function ProductsPanel() {
                         color: "#222",
                       }}
                     >
-                      {item.discountPercent
-                        ? (
-                            item.price -
-                            (item.price * item.discountPercent) / 100
-                          ).toFixed(2)
+                      {item.discountedPrice
+                        ? item.discountedPrice.toFixed(2)
                         : 0}
                       ₺
                     </td>
