@@ -13,6 +13,7 @@ function ProductsPanel() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [maxStock, setMaxStock] = useState("");
+  const [onlyDiscounted, setOnlyDiscounted] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
 
   const handleDelete = (item) => {
@@ -22,10 +23,17 @@ function ProductsPanel() {
         dispatch(adminDeleteProduct(item._id))
           .unwrap()
           .then(() =>
-            dispatch(addNotification({ message: `"${item.name}" silindi.`, type: "warning" })),
+            dispatch(
+              addNotification({
+                message: `"${item.name}" silindi.`,
+                type: "warning",
+              }),
+            ),
           )
           .catch(() =>
-            dispatch(addNotification({ message: "Ürün silinemedi.", type: "error" })),
+            dispatch(
+              addNotification({ message: "Ürün silinemedi.", type: "error" }),
+            ),
           );
       },
     });
@@ -43,7 +51,8 @@ function ProductsPanel() {
       item.code.toLowerCase().includes(q) ||
       item.category?.name.toLowerCase().includes(q);
     const matchesStock = maxStock === "" || item.stock <= Number(maxStock);
-    return matchesSearch && matchesStock;
+    const matchesDiscount = !onlyDiscounted || item.discountPercent > 0;
+    return matchesSearch && matchesStock && matchesDiscount;
   });
 
   return (
@@ -98,6 +107,25 @@ function ProductsPanel() {
               outline: "none",
             }}
           />
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "13px",
+              color: "#555",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={onlyDiscounted}
+              onChange={(e) => setOnlyDiscounted(e.target.checked)}
+              style={{ accentColor: "#f97316", width: 15, height: 15 }}
+            />
+            İndirimli ürünler
+          </label>
           <button
             className="btn orange-btn"
             onClick={() => navigate("/admin/products/new")}
@@ -137,6 +165,7 @@ function ProductsPanel() {
                   <th style={{ padding: "8px 12px" }}>Marka</th>
                   <th style={{ padding: "8px 12px" }}>Kategori</th>
                   <th style={{ padding: "8px 12px" }}>Fiyat</th>
+                  <th style={{ padding: "8px 12px" }}>İndirimli Fiyat</th>
                   <th style={{ padding: "8px 12px" }}>Stok</th>
                   <th style={{ padding: "8px 12px" }}>Eklenme Tarihi</th>
                 </tr>
@@ -201,7 +230,22 @@ function ProductsPanel() {
                         color: "#222",
                       }}
                     >
-                      {item.price}
+                      {item.price.toFixed(2)}₺
+                    </td>
+                    <td
+                      style={{
+                        padding: "10px 12px",
+                        fontWeight: 500,
+                        color: "#222",
+                      }}
+                    >
+                      {item.discountPercent
+                        ? (
+                            item.price -
+                            (item.price * item.discountPercent) / 100
+                          ).toFixed(2)
+                        : 0}
+                      ₺
                     </td>
                     <td
                       style={{
