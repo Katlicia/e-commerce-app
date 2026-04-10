@@ -281,13 +281,11 @@ function CategoryList() {
       </div>
 
       <div className="row">
-        {/* Masaüstü sidebar */}
         <aside className="col-lg-3 mb-4 d-none d-lg-block">
           <div className="border rounded-3 p-3">{filterContent}</div>
         </aside>
 
         <main className="col-12 col-lg-9">
-          {/* Mobil: Filtrele + Sırala çubuğu */}
           <div className="d-flex d-lg-none gap-2 mb-3">
             <button
               className="btn btn-outline-secondary d-flex align-items-center gap-2 flex-grow-1 justify-content-center"
@@ -342,7 +340,6 @@ function CategoryList() {
             </select>
           </div>
 
-          {/* Mobil: ürün sayısı */}
           <div className="d-lg-none mb-2">
             <span className="text-muted" style={{ fontSize: "0.875rem" }}>
               {keyword ? (
