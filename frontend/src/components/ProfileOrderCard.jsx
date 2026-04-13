@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { cancelOrder, returnOrder } from "../redux/orderSlice";
+import { cancelOrder, returnOrder, cancelPayment, refundPayment } from "../redux/orderSlice";
 import {
   FiChevronDown,
   FiChevronUp,
@@ -13,6 +13,21 @@ import { useReorder } from "../hooks/useReorder";
 function ProfileOrderCard({ order, onDetailClick }) {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const handleCancel = async () => {
+    setActionLoading(true);
+    const action = order.paymentId ? cancelPayment : cancelOrder;
+    await dispatch(action(order._id)).unwrap().catch(() => {});
+    setActionLoading(false);
+  };
+
+  const handleReturn = async () => {
+    setActionLoading(true);
+    const action = order.paymentTransactionId ? refundPayment : returnOrder;
+    await dispatch(action(order._id)).unwrap().catch(() => {});
+    setActionLoading(false);
+  };
 
   const { handleReorder } = useReorder();
 
@@ -90,16 +105,17 @@ function ProfileOrderCard({ order, onDetailClick }) {
                     backgroundColor: "#ff7700",
                     color: "white",
                   }}
-                  onClick={() =>
-                    order.status === "Hazırlanıyor"
-                      ? dispatch(cancelOrder(order._id))
-                      : dispatch(returnOrder(order._id))
+                  disabled={actionLoading}
+                  onClick={
+                    order.status === "Hazırlanıyor" ? handleCancel : handleReturn
                   }
                 >
                   <FiXCircle size={16} />
-                  {order.status === "Hazırlanıyor"
-                    ? "Siparişi İptal Et"
-                    : "Siparişi İade Et"}
+                  {actionLoading
+                    ? "İşleniyor..."
+                    : order.status === "Hazırlanıyor"
+                      ? "Siparişi İptal Et"
+                      : "Siparişi İade Et"}
                 </button>
               )}
               <div

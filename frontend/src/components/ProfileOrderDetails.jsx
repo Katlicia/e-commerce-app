@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "../styles/ProfileOrderDetails.css";
 import restockIcon from "../assets/Profile/restock.svg";
 import pdfIcon from "../assets/Profile/pdf.svg";
@@ -7,8 +8,8 @@ import paymentIcon from "../assets/Profile/payment.svg";
 import readyIcon from "../assets/Profile/ready.svg";
 import cargoIcon from "../assets/Profile/cargo.svg";
 import checkIcon from "../assets/Profile/check.svg";
-import { cancelOrder, returnOrder } from "../redux/orderSlice";
-import { useDispatch } from "react-redux";
+import { cancelOrder, returnOrder, cancelPayment, refundPayment } from "../redux/orderSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useReorder } from "../hooks/useReorder";
 
 const STEPS = [
@@ -28,44 +29,70 @@ const STATUS_INDEX = {
 };
 
 function ProfileOrderDetails({ order }) {
-  const currentIndex = STATUS_INDEX[order.status] ?? 2;
+  const dispatch = useDispatch();
+  const { handleReorder } = useReorder();
+
+  const liveOrder =
+    useSelector((state) => state.order.orders.find((o) => o._id === order._id)) ||
+    order;
+  const { error } = useSelector((state) => state.order);
+
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const currentIndex = STATUS_INDEX[liveOrder.status] ?? 2;
   const isActive = (i) => currentIndex !== -1 && i <= currentIndex;
 
-  const dispatch = useDispatch();
+  const handleCancel = async () => {
+    setActionLoading(true);
+    const action = liveOrder.paymentId ? cancelPayment : cancelOrder;
+    await dispatch(action(liveOrder._id)).unwrap().catch(() => {});
+    setActionLoading(false);
+  };
 
-  const { handleReorder } = useReorder();
+  const handleReturn = async () => {
+    setActionLoading(true);
+    const action = liveOrder.paymentTransactionId ? refundPayment : returnOrder;
+    await dispatch(action(liveOrder._id)).unwrap().catch(() => {});
+    setActionLoading(false);
+  };
 
   return (
     <div className="container">
       <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <h4 className="fw-bold mb-0">{order.orderNo} nolu siparişiniz</h4>
+        <h4 className="fw-bold mb-0">{liveOrder.orderNo} nolu siparişiniz</h4>
         <div className="d-flex gap-2">
           <button
             className="btn buttons flex-grow-1"
-            onClick={() => handleReorder(order)}
+            onClick={() => handleReorder(liveOrder)}
           >
             <div className="d-flex justify-content-center align-items-center gap-2">
               <img src={restockIcon} width={20} alt="Restock" />
               Siparişi Tekrarla
             </div>
           </button>
-          {(order.status === "Hazırlanıyor" ||
-            order.status === "Teslim Edildi") && (
+          {(liveOrder.status === "Hazırlanıyor" ||
+            liveOrder.status === "Teslim Edildi") && (
             <button
               className="btn buttons flex-grow-1"
-              onClick={() =>
-                order.status === "Hazırlanıyor"
-                  ? dispatch(cancelOrder(order._id))
-                  : dispatch(returnOrder(order._id))
+              disabled={actionLoading}
+              onClick={
+                liveOrder.status === "Hazırlanıyor" ? handleCancel : handleReturn
               }
             >
-              {order.status === "Hazırlanıyor"
-                ? "Siparişi İptal Et"
-                : "Siparişi İade Et"}
+              {actionLoading
+                ? "İşleniyor..."
+                : liveOrder.status === "Hazırlanıyor"
+                  ? "Siparişi İptal Et"
+                  : "Siparişi İade Et"}
             </button>
           )}
         </div>
       </div>
+      {error && (
+        <div className="alert alert-danger py-2 mb-3" role="alert">
+          {error}
+        </div>
+      )}
       <div className="mb-4 mt-2" style={{ overflowX: "auto" }}>
         <div
           className="d-flex align-items-center justify-content-between"
