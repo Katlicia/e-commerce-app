@@ -33,8 +33,13 @@ const addressSchema = Yup.object({
   address: Yup.string().required("Adres zorunludur"),
 });
 
-const emptyAddress = { fullName: "", phone: "", city: "", district: "", address: "" };
-
+const emptyAddress = {
+  fullName: "",
+  phone: "",
+  city: "",
+  district: "",
+  address: "",
+};
 
 function CheckoutPage() {
   useEffect(() => {
@@ -45,7 +50,9 @@ function CheckoutPage() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.user);
   const { addresses: apiAddresses } = useSelector((state) => state.user);
-  const { totalAmount, cart, appliedCoupon } = useSelector((state) => state.cart);
+  const { totalAmount, cart, appliedCoupon } = useSelector(
+    (state) => state.cart,
+  );
   const couponDiscount = appliedCoupon?.discount ?? 0;
   const finalAmount = Math.max(0, totalAmount - couponDiscount);
   const {
@@ -129,7 +136,9 @@ function CheckoutPage() {
 
       const selectedCargoData = cargos.find((c) => c._id === selectedKargo);
       const effectiveCargoPrice =
-        totalAmount >= freeShippingThreshold ? 0 : selectedCargoData?.cargoPrice;
+        totalAmount >= freeShippingThreshold
+          ? 0
+          : selectedCargoData?.cargoPrice;
 
       dispatch(
         createOrder({
@@ -138,7 +147,9 @@ function CheckoutPage() {
           address: addresses[selectedAddressIdx],
           cargoCompany: selectedCargoData?.companyName,
           cargoPrice: effectiveCargoPrice,
-          ...(!sameAsBilling && { billingAddress: addresses[selectedBillingIdx] }),
+          ...(!sameAsBilling && {
+            billingAddress: addresses[selectedBillingIdx],
+          }),
           ...(!user && { guestEmail: values.email }),
           ...(appliedCoupon && { coupon: appliedCoupon }),
         }),
@@ -259,7 +270,10 @@ function CheckoutPage() {
               <span
                 className="text-selected"
                 role="button"
-                onClick={() => { setShowAddressForm((v) => !v); setEditingIndex(null); }}
+                onClick={() => {
+                  setShowAddressForm((v) => !v);
+                  setEditingIndex(null);
+                }}
               >
                 {showAddressForm ? "İptal" : "Adres Ekle"}
               </span>
@@ -275,27 +289,78 @@ function CheckoutPage() {
                   <Form className="border rounded-3 p-3 mb-3 d-flex flex-column gap-2">
                     <div className="row g-2">
                       <div className="col-12 col-sm-6">
-                        <Field name="fullName" className="form-control form-control-sm" placeholder="Ad Soyad" />
-                        <ErrorMessage name="fullName" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                        <Field
+                          name="fullName"
+                          className="form-control form-control-sm"
+                          placeholder="Ad Soyad"
+                        />
+                        <ErrorMessage
+                          name="fullName"
+                          component="div"
+                          className="text-danger"
+                          style={{ fontSize: "0.78rem" }}
+                        />
                       </div>
                       <div className="col-12 col-sm-6">
-                        <Field name="phone" className="form-control form-control-sm" placeholder="Telefon" />
-                        <ErrorMessage name="phone" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                        <Field
+                          name="phone"
+                          className="form-control form-control-sm"
+                          placeholder="Telefon"
+                        />
+                        <ErrorMessage
+                          name="phone"
+                          component="div"
+                          className="text-danger"
+                          style={{ fontSize: "0.78rem" }}
+                        />
                       </div>
                       <div className="col-12 col-sm-6">
-                        <Field name="city" className="form-control form-control-sm" placeholder="Şehir" />
-                        <ErrorMessage name="city" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                        <Field
+                          name="city"
+                          className="form-control form-control-sm"
+                          placeholder="Şehir"
+                        />
+                        <ErrorMessage
+                          name="city"
+                          component="div"
+                          className="text-danger"
+                          style={{ fontSize: "0.78rem" }}
+                        />
                       </div>
                       <div className="col-12 col-sm-6">
-                        <Field name="district" className="form-control form-control-sm" placeholder="İlçe" />
-                        <ErrorMessage name="district" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                        <Field
+                          name="district"
+                          className="form-control form-control-sm"
+                          placeholder="İlçe"
+                        />
+                        <ErrorMessage
+                          name="district"
+                          component="div"
+                          className="text-danger"
+                          style={{ fontSize: "0.78rem" }}
+                        />
                       </div>
                       <div className="col-12">
-                        <Field name="address" as="textarea" rows={2} className="form-control form-control-sm" placeholder="Açık Adres" />
-                        <ErrorMessage name="address" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                        <Field
+                          name="address"
+                          as="textarea"
+                          rows={2}
+                          className="form-control form-control-sm"
+                          placeholder="Açık Adres"
+                        />
+                        <ErrorMessage
+                          name="address"
+                          component="div"
+                          className="text-danger"
+                          style={{ fontSize: "0.78rem" }}
+                        />
                       </div>
                     </div>
-                    <button type="submit" className="btn orange-btn rounded-pill" disabled={isSubmitting}>
+                    <button
+                      type="submit"
+                      className="btn orange-btn rounded-pill"
+                      disabled={isSubmitting}
+                    >
                       Kaydet
                     </button>
                   </Form>
@@ -326,36 +391,96 @@ function CheckoutPage() {
                           address: addr.address || "",
                         }}
                         validationSchema={addressSchema}
-                        onSubmit={(values, helpers) => handleEditSave(idx, values, helpers)}
+                        onSubmit={(values, helpers) =>
+                          handleEditSave(idx, values, helpers)
+                        }
                         enableReinitialize
                       >
                         {() => (
                           <Form className="border rounded-3 p-3 d-flex flex-column gap-2">
                             <div className="row g-2">
                               <div className="col-12 col-sm-6">
-                                <Field name="fullName" className="form-control form-control-sm" placeholder="Ad Soyad" />
-                                <ErrorMessage name="fullName" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                                <Field
+                                  name="fullName"
+                                  className="form-control form-control-sm"
+                                  placeholder="Ad Soyad"
+                                />
+                                <ErrorMessage
+                                  name="fullName"
+                                  component="div"
+                                  className="text-danger"
+                                  style={{ fontSize: "0.78rem" }}
+                                />
                               </div>
                               <div className="col-12 col-sm-6">
-                                <Field name="phone" className="form-control form-control-sm" placeholder="Telefon" />
-                                <ErrorMessage name="phone" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                                <Field
+                                  name="phone"
+                                  className="form-control form-control-sm"
+                                  placeholder="Telefon"
+                                />
+                                <ErrorMessage
+                                  name="phone"
+                                  component="div"
+                                  className="text-danger"
+                                  style={{ fontSize: "0.78rem" }}
+                                />
                               </div>
                               <div className="col-12 col-sm-6">
-                                <Field name="city" className="form-control form-control-sm" placeholder="Şehir" />
-                                <ErrorMessage name="city" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                                <Field
+                                  name="city"
+                                  className="form-control form-control-sm"
+                                  placeholder="Şehir"
+                                />
+                                <ErrorMessage
+                                  name="city"
+                                  component="div"
+                                  className="text-danger"
+                                  style={{ fontSize: "0.78rem" }}
+                                />
                               </div>
                               <div className="col-12 col-sm-6">
-                                <Field name="district" className="form-control form-control-sm" placeholder="İlçe" />
-                                <ErrorMessage name="district" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                                <Field
+                                  name="district"
+                                  className="form-control form-control-sm"
+                                  placeholder="İlçe"
+                                />
+                                <ErrorMessage
+                                  name="district"
+                                  component="div"
+                                  className="text-danger"
+                                  style={{ fontSize: "0.78rem" }}
+                                />
                               </div>
                               <div className="col-12">
-                                <Field name="address" as="textarea" rows={2} className="form-control form-control-sm" placeholder="Açık Adres" />
-                                <ErrorMessage name="address" component="div" className="text-danger" style={{ fontSize: "0.78rem" }} />
+                                <Field
+                                  name="address"
+                                  as="textarea"
+                                  rows={2}
+                                  className="form-control form-control-sm"
+                                  placeholder="Açık Adres"
+                                />
+                                <ErrorMessage
+                                  name="address"
+                                  component="div"
+                                  className="text-danger"
+                                  style={{ fontSize: "0.78rem" }}
+                                />
                               </div>
                             </div>
                             <div className="d-flex gap-2">
-                              <button type="submit" className="btn orange-btn rounded-pill px-3">Kaydet</button>
-                              <button type="button" className="btn btn-outline-secondary rounded-pill px-3" onClick={() => setEditingIndex(null)}>İptal</button>
+                              <button
+                                type="submit"
+                                className="btn orange-btn rounded-pill px-3"
+                              >
+                                Kaydet
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-outline-secondary rounded-pill px-3"
+                                onClick={() => setEditingIndex(null)}
+                              >
+                                İptal
+                              </button>
                             </div>
                           </Form>
                         )}
@@ -366,18 +491,31 @@ function CheckoutPage() {
                         onClick={() => setSelectedAddressIdx(idx)}
                       >
                         <div className="d-flex align-items-start gap-3">
-                          <span className={`checkout-radio-dot mt-1${selectedAddressIdx === idx ? " active" : ""}`} />
+                          <span
+                            className={`checkout-radio-dot mt-1${selectedAddressIdx === idx ? " active" : ""}`}
+                          />
                           <div style={{ fontSize: "0.875rem" }}>
-                            <p className="checkout-address-text mb-0 fw-semibold">{addr.fullName}</p>
-                            <p className="checkout-address-text mb-0 text-muted">{addr.city} / {addr.district}</p>
-                            <p className="checkout-address-text mb-0">{addr.address}</p>
-                            <p className="checkout-address-text mb-0 text-muted">{addr.phone}</p>
+                            <p className="checkout-address-text mb-0 fw-semibold">
+                              {addr.fullName}
+                            </p>
+                            <p className="checkout-address-text mb-0 text-muted">
+                              {addr.city} / {addr.district}
+                            </p>
+                            <p className="checkout-address-text mb-0">
+                              {addr.address}
+                            </p>
+                            <p className="checkout-address-text mb-0 text-muted">
+                              {addr.phone}
+                            </p>
                           </div>
                         </div>
                         <button
                           type="button"
                           className="btn p-0 text-muted flex-shrink-0"
-                          onClick={(e) => { e.stopPropagation(); setEditingIndex(idx); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingIndex(idx);
+                          }}
                         >
                           <FiEdit2 size={16} />
                         </button>
@@ -395,20 +533,30 @@ function CheckoutPage() {
                 onClick={() => setSameAsBilling(true)}
                 role="button"
               >
-                <span className={`checkout-radio-dot${sameAsBilling ? " active" : ""}`} />
-                <span style={{ fontSize: "0.875rem" }}>Teslimat adresiyle aynı</span>
+                <span
+                  className={`checkout-radio-dot${sameAsBilling ? " active" : ""}`}
+                />
+                <span style={{ fontSize: "0.875rem" }}>
+                  Teslimat adresiyle aynı
+                </span>
               </div>
               <div
                 className="checkout-address-item border rounded-3 px-3 py-2 d-flex align-items-center gap-3"
                 onClick={() => setSameAsBilling(false)}
                 role="button"
               >
-                <span className={`checkout-radio-dot${!sameAsBilling ? " active" : ""}`} />
-                <span style={{ fontSize: "0.875rem" }}>Farklı fatura adresi kullan</span>
+                <span
+                  className={`checkout-radio-dot${!sameAsBilling ? " active" : ""}`}
+                />
+                <span style={{ fontSize: "0.875rem" }}>
+                  Farklı fatura adresi kullan
+                </span>
               </div>
-              {!sameAsBilling && (
-                addresses.length === 0 ? (
-                  <p className="checkout-hint text-muted">Kayıtlı adresiniz yok.</p>
+              {!sameAsBilling &&
+                (addresses.length === 0 ? (
+                  <p className="checkout-hint text-muted">
+                    Kayıtlı adresiniz yok.
+                  </p>
                 ) : (
                   addresses.map((addr, idx) => (
                     <div
@@ -417,17 +565,20 @@ function CheckoutPage() {
                       onClick={() => setSelectedBillingIdx(idx)}
                       role="button"
                     >
-                      <span className={`checkout-radio-dot mt-1${selectedBillingIdx === idx ? " active" : ""}`} />
+                      <span
+                        className={`checkout-radio-dot mt-1${selectedBillingIdx === idx ? " active" : ""}`}
+                      />
                       <div style={{ fontSize: "0.875rem" }}>
                         <p className="mb-0 fw-semibold">{addr.fullName}</p>
-                        <p className="mb-0 text-muted">{addr.city} / {addr.district}</p>
+                        <p className="mb-0 text-muted">
+                          {addr.city} / {addr.district}
+                        </p>
                         <p className="mb-0">{addr.address}</p>
                         <p className="mb-0 text-muted">{addr.phone}</p>
                       </div>
                     </div>
                   ))
-                )
-              )}
+                ))}
             </div>
 
             <h5 className="fw-bold mb-3">KARGO</h5>
@@ -729,7 +880,9 @@ function CheckoutPage() {
             </div>
             <hr />
             <CartSummary
-              cargoPrice={cargos.find((c) => c._id === selectedKargo)?.cargoPrice}
+              cargoPrice={
+                cargos.find((c) => c._id === selectedKargo)?.cargoPrice
+              }
             />
           </div>
         </div>
