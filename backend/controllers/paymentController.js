@@ -1,0 +1,237 @@
+const Iyzipay = require("iyzipay");
+const Order = require("../models/Order");
+const User = require("../models/User");
+const Product = require("../models/Product");
+const Coupon = require("../models/Coupon");
+
+const iyzipay = new Iyzipay({
+  apiKey: process.env.IYZICO_API_KEY,
+  secretKey: process.env.IYZICO_SECRET_KEY,
+  uri: process.env.IYZICO_BASE_URL,
+});
+
+const INSTALLMENT_MULTIPLIERS = { 1: 1, 2: 1.077, 3: 1.1 };
+
+exports.createPayment = async (req, res) => {
+  try {
+    const {
+      items,
+      totalAmount,
+      address,
+      billingAddress,
+      guestEmail,
+      cargoCompany,
+      cargoPrice,
+      coupon,
+      cardNumber,
+      cardHolder,
+      expirationDate, // "MM/YY"
+      cvv,
+      installment = 1,
+    } = req.body;
+
+    if (!items?.length) {
+      return res.status(400).json({ message: "Sipariş öğeleri boş olamaz." });
+    }
+    if (
+      !address?.fullName ||
+      !address?.phone ||
+      !address?.city ||
+      !address?.district ||
+      !address?.address
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Teslimat adresi eksik veya hatalı." });
+    }
+    if (!req.user && !guestEmail) {
+      return res
+        .status(400)
+        .json({ message: "Misafir siparişi için mail adresi zorunludur." });
+    }
+    if (!req.user && guestEmail) {
+      const existing = await User.findOne({ email: guestEmail });
+      if (existing) {
+        return res.status(400).json({
+          message:
+            "Bu mail adresiyle kayıtlı bir hesabınız var. Lütfen giriş yaparak devam edin.",
+        });
+      }
+    }
+
+    const effectiveCargoPrice = cargoPrice ?? 0;
+    const price = +(totalAmount + effectiveCargoPrice).toFixed(2);
+    const multiplier = INSTALLMENT_MULTIPLIERS[installment] ?? 1;
+    const paidPrice = +(price * multiplier).toFixed(2);
+
+    const basketItems = [
+      {
+        id: "order",
+        name: "Sipariş",
+        category1: "Genel",
+        itemType: Iyzipay.BASKET_ITEM_TYPE.PHYSICAL,
+        price: price.toFixed(2),
+      },
+    ];
+
+    const [expMonth, expYear] = expirationDate.split("/");
+    const conversationId = Date.now().toString();
+
+    const rawIp = req.headers["x-forwarded-for"] || req.ip || "85.34.78.112";
+    const ip =
+      rawIp === "::1" || rawIp.startsWith("::ffff:")
+        ? "85.34.78.112"
+        : rawIp.split(",")[0].trim();
+
+    const formatPhone = (phone) => {
+      if (phone.startsWith("+")) return phone;
+      return `+90${phone.replace(/^0/, "")}`;
+    };
+
+    const buyer = req.user
+      ? {
+          id: req.user._id.toString(),
+          name: req.user.name,
+          surname: req.user.surname,
+          gsmNumber: formatPhone(address.phone),
+          email: req.user.email,
+          identityNumber: "11111111111",
+          lastLoginDate: new Date()
+            .toISOString()
+            .replace("T", " ")
+            .substring(0, 19),
+          registrationDate: new Date(req.user.createdAt)
+            .toISOString()
+            .replace("T", " ")
+            .substring(0, 19),
+          registrationAddress: address.address,
+          ip,
+          city: address.city,
+          country: "Turkey",
+          zipCode: "34000",
+        }
+      : {
+          id: "guest",
+          name: address.fullName.split(" ")[0] || "Misafir",
+          surname:
+            address.fullName.split(" ").slice(1).join(" ") || "Kullanici",
+          gsmNumber: formatPhone(address.phone),
+          email: guestEmail,
+          identityNumber: "11111111111",
+          lastLoginDate: new Date()
+            .toISOString()
+            .replace("T", " ")
+            .substring(0, 19),
+          registrationDate: new Date()
+            .toISOString()
+            .replace("T", " ")
+            .substring(0, 19),
+          registrationAddress: address.address,
+          ip,
+          city: address.city,
+          country: "Turkey",
+          zipCode: "34000",
+        };
+
+    const shippingAddress = {
+      contactName: address.fullName,
+      city: address.city,
+      country: "Turkey",
+      address: `${address.district}, ${address.address}`,
+      zipCode: "34000",
+    };
+
+    const billingAddr = billingAddress || address;
+    const billingAddressObj = {
+      contactName: billingAddr.fullName,
+      city: billingAddr.city,
+      country: "Turkey",
+      address: `${billingAddr.district}, ${billingAddr.address}`,
+      zipCode: "34000",
+    };
+
+    const paymentRequest = {
+      locale: Iyzipay.LOCALE.TR,
+      conversationId,
+      price: price.toFixed(2),
+      paidPrice: paidPrice.toFixed(2),
+      currency: Iyzipay.CURRENCY.TRY,
+      installment,
+      basketId: conversationId,
+      paymentChannel: Iyzipay.PAYMENT_CHANNEL.WEB,
+      paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+      paymentCard: {
+        cardHolderName: cardHolder,
+        cardNumber,
+        expireMonth: expMonth,
+        expireYear: `20${expYear}`,
+        cvc: cvv,
+        registerCard: "0",
+      },
+      buyer,
+      shippingAddress,
+      billingAddress: billingAddressObj,
+      basketItems,
+    };
+
+    iyzipay.payment.create(paymentRequest, async (err, result) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ message: "Ödeme servisine ulaşılamadı." });
+      }
+      if (result.status !== "success") {
+        return res
+          .status(400)
+          .json({ message: result.errorMessage || "Ödeme reddedildi." });
+      }
+
+      try {
+        let orderNo;
+        let exists = true;
+        while (exists) {
+          orderNo = "#" + Math.floor(100000 + Math.random() * 900000);
+          exists = await Order.exists({ orderNo });
+        }
+
+        const order = await Order.create({
+          ...(req.user ? { user: req.user._id } : { guestEmail }),
+          orderNo,
+          items,
+          totalAmount,
+          address,
+          cargoCompany,
+          cargoPrice: effectiveCargoPrice,
+          ...(billingAddress && { billingAddress }),
+          ...(coupon?.couponId && { coupon }),
+        });
+
+        if (coupon?.couponId) {
+          await Coupon.findByIdAndUpdate(coupon.couponId, {
+            $inc: { usedCount: 1 },
+          });
+        }
+        if (req.user) {
+          await User.findByIdAndUpdate(req.user._id, {
+            cart: [],
+            $inc: { orderCount: 1 },
+          });
+        }
+        for (const item of items) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { stock: -item.quantity, soldCount: item.quantity },
+          });
+        }
+
+        res.status(201).json({ success: true, order });
+      } catch (orderErr) {
+        res.status(500).json({
+          message:
+            "Ödeme alındı fakat sipariş oluşturulamadı. Lütfen destek ile iletişime geçin.",
+        });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
