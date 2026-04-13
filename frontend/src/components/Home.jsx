@@ -8,10 +8,12 @@ import AdBar from "./AdBar";
 import DealOfDay from "./DealOfDay";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { getHomeSections } from "../redux/homeSectionSlice";
 
 function Home() {
   const dispatch = useDispatch();
+  const location = useLocation();
   const sections = useSelector((state) => state.homeSection.sections);
 
   const getSection = (key) => sections.find((s) => s.key === key) || {};
@@ -20,6 +22,15 @@ function Home() {
     window.scrollTo(0, 0);
     dispatch(getHomeSections());
   }, []);
+
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const el = document.getElementById(location.state.scrollTo);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+      }
+    }
+  }, [location.state]);
 
   return (
     <>
@@ -63,6 +74,7 @@ function Home() {
       ) : null}
       <AdBar />
       <ProductList
+        id="recently-viewed"
         title={getSection("recent").title || "Son Gezdiğin Ürünler"}
         settings={{
           showTimer: getSection("recent").showTimer ?? false,
