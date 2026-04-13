@@ -1,6 +1,20 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../utils/axiosInstance";
 
+export const createPayment = createAsyncThunk(
+  "order/createPayment",
+  async (paymentData, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.post("/api/payment", paymentData);
+      return data.order;
+    } catch (err) {
+      return rejectWithValue(
+        err.response?.data?.message || "Ödeme işlemi başarısız."
+      );
+    }
+  }
+);
+
 export const createOrder = createAsyncThunk(
   "order/createOrder",
   async (orderData, { rejectWithValue }) => {
@@ -71,6 +85,21 @@ const orderSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(createPayment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(createPayment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.currentOrder = action.payload;
+        state.orders.unshift(action.payload);
+      })
+      .addCase(createPayment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(createOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
