@@ -5,6 +5,7 @@ import Loading from "../components/Loading";
 import CampaignList from "../components/CampaignList";
 import { IoCopyOutline, IoCheckmarkOutline } from "react-icons/io5";
 import clockIcon from "../assets/Campaigns/clock.svg";
+import HeaderLinks from "../components/HeaderLinks";
 
 function CampaignDetailPage() {
   const { id } = useParams();
@@ -42,6 +43,7 @@ function CampaignDetailPage() {
 
   return (
     <>
+      <HeaderLinks />
       <div className="container py-4">
         <nav style={{ fontSize: "13px", color: "#999", marginBottom: "20px" }}>
           <Link to="/" style={{ color: "#999", textDecoration: "none" }}>
