@@ -12,6 +12,8 @@ const initialState = {
   taxSettings: null,
   banners: {},
   homeSections: [],
+  featuredLists: {},
+  campaigns: [],
   loading: false,
   error: null,
 };
@@ -204,6 +206,56 @@ export const adminDeleteCoupon = createAsyncThunk(
   },
 );
 
+export const adminGetCampaigns = createAsyncThunk(
+  "admin/getCampaigns",
+  async () => {
+    const { data } = await axiosInstance.get("/campaigns");
+    return data;
+  },
+);
+
+export const adminCreateCampaign = createAsyncThunk(
+  "admin/createCampaign",
+  async (campaignData) => {
+    const { data } = await axiosInstance.post("/campaigns/new", campaignData);
+    return data;
+  },
+);
+
+export const adminUpdateCampaign = createAsyncThunk(
+  "admin/updateCampaign",
+  async ({ id, campaignData }) => {
+    const { data } = await axiosInstance.put(`/campaigns/${id}`, campaignData);
+    return data;
+  },
+);
+
+export const adminDeleteCampaign = createAsyncThunk(
+  "admin/deleteCampaign",
+  async (id) => {
+    await axiosInstance.delete(`/campaigns/${id}`);
+    return id;
+  },
+);
+
+export const adminGetFeaturedList = createAsyncThunk(
+  "admin/getFeaturedList",
+  async (key) => {
+    const { data } = await axiosInstance.get(`/featured-lists/${key}`);
+    return data;
+  },
+);
+
+export const adminUpdateFeaturedList = createAsyncThunk(
+  "admin/updateFeaturedList",
+  async ({ key, products }) => {
+    const { data } = await axiosInstance.put(`/featured-lists/${key}`, {
+      products,
+    });
+    return data;
+  },
+);
+
 export const adminGetTaxSettings = createAsyncThunk(
   "admin/getTaxSettings",
   async () => {
@@ -343,6 +395,25 @@ const adminSlice = createSlice({
       .addCase(adminUpdateHomeSection.fulfilled, (state, action) => {
         const idx = state.homeSections.findIndex((s) => s.key === action.payload.key);
         if (idx !== -1) state.homeSections[idx] = action.payload;
+      })
+      .addCase(adminGetCampaigns.fulfilled, (state, action) => {
+        state.campaigns = action.payload;
+      })
+      .addCase(adminCreateCampaign.fulfilled, (state, action) => {
+        state.campaigns.unshift(action.payload);
+      })
+      .addCase(adminUpdateCampaign.fulfilled, (state, action) => {
+        const idx = state.campaigns.findIndex((c) => c._id === action.payload._id);
+        if (idx !== -1) state.campaigns[idx] = action.payload;
+      })
+      .addCase(adminDeleteCampaign.fulfilled, (state, action) => {
+        state.campaigns = state.campaigns.filter((c) => c._id !== action.payload);
+      })
+      .addCase(adminGetFeaturedList.fulfilled, (state, action) => {
+        state.featuredLists[action.payload.key] = action.payload;
+      })
+      .addCase(adminUpdateFeaturedList.fulfilled, (state, action) => {
+        state.featuredLists[action.payload.key] = action.payload;
       });
   },
 });
