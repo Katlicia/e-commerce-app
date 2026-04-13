@@ -10,6 +10,8 @@ import TaxSettingsPanel from "./TaxSettingsPanel";
 import BannersPanel from "./BannersPanel";
 import ProductListsPanel from "./ProductListsPanel";
 import CouponsPanel from "./CouponsPanel";
+import FeaturedListsPanel from "./FeaturedListsPanel";
+import CampaignsPanel from "./CampaignsPanel";
 
 const PAGES = {
   analytics: <Analytics />,
@@ -22,6 +24,8 @@ const PAGES = {
   banners: <BannersPanel />,
   productLists: <ProductListsPanel />,
   coupons: <CouponsPanel />,
+  featuredLists: <FeaturedListsPanel />,
+  campaigns: <CampaignsPanel />,
 };
 
 function Home() {
