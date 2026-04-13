@@ -17,7 +17,7 @@ function getTimeLeft(target) {
   };
 }
 
-function ProductList({ title, settings = {} }) {
+function ProductList({ title, settings = {}, id }) {
   const { showTimer, timerEnd, banner, badge, recentlyViewed, bestSellers } =
     settings;
   const rowRef = useRef(null);
@@ -70,7 +70,7 @@ function ProductList({ title, settings = {} }) {
   if (recentlyViewed && !loading && products.length === 0) return null;
 
   return (
-    <div className="container my-4">
+    <div className="container my-4" id={id}>
       {title && (
         <div className="chances-bar d-flex justify-content-between align-items-center px-2 mb-2">
           <h2 className="chances-title">{title}</h2>
