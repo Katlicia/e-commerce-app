@@ -56,6 +56,9 @@ const orderSchema = new mongoose.Schema(
       district: { type: String },
       address: { type: String },
     },
+    paymentId: { type: String },
+    conversationId: { type: String },
+    paymentTransactionId: { type: String },
     status: {
       type: String,
       enum: ["Hazırlanıyor", "Kargoya Verildi", "Teslim Edildi", "İptal Edildi", "İade Edildi"],
