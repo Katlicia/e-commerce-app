@@ -53,6 +53,30 @@ export const cancelOrder = createAsyncThunk(
   }
 );
 
+export const cancelPayment = createAsyncThunk(
+  "order/cancelPayment",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(`/api/payment/orders/${orderId}/cancel`);
+      return data.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Ödeme iptali başarısız.");
+    }
+  }
+);
+
+export const refundPayment = createAsyncThunk(
+  "order/refundPayment",
+  async (orderId, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(`/api/payment/orders/${orderId}/refund`);
+      return data.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Ödeme iadesi başarısız.");
+    }
+  }
+);
+
 export const getUserOrders = createAsyncThunk(
   "order/getUserOrders",
   async (_, { rejectWithValue }) => {
@@ -127,6 +151,26 @@ const orderSlice = createSlice({
         if (idx !== -1) state.orders[idx] = action.payload;
       })
       .addCase(cancelOrder.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(cancelPayment.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(cancelPayment.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(cancelPayment.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(refundPayment.pending, (state) => {
+        state.error = null;
+      })
+      .addCase(refundPayment.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(refundPayment.rejected, (state, action) => {
         state.error = action.payload;
       })
       .addCase(getUserOrders.pending, (state) => {
