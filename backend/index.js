@@ -19,6 +19,7 @@ const couponRoutes = require("./routes/couponRoutes");
 const featuredListRoutes = require("./routes/featuredListRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const cloudinary = require("cloudinary").v2;
+const Iyzipay = require("iyzipay");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -38,6 +39,12 @@ app.use(
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ limit: "20mb", extended: true }));
 app.use(cookieParser());
+
+const iyzipay = new IyziPay({
+  apiKey: process.env.IYZICO_API_KEY,
+  secretKey: process.env.IYZICO_SECRET_KEY,
+  uri: process.env.IYZICO_BASE_URL,
+});
 
 db();
 
