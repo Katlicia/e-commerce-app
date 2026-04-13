@@ -19,7 +19,7 @@ import coinsLogo from "../assets/Checkout/coins.png";
 import "../styles/CheckoutPage.css";
 import { useFormik, Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { createOrder, resetOrderState } from "../redux/orderSlice";
+import { createOrder, createPayment, resetOrderState } from "../redux/orderSlice";
 import { getCargos } from "../redux/cargoSlice";
 import OrderModal from "../components/OrderModal";
 
@@ -140,20 +140,33 @@ function CheckoutPage() {
           ? 0
           : selectedCargoData?.cargoPrice;
 
-      dispatch(
-        createOrder({
-          items,
-          totalAmount: finalAmount,
-          address: addresses[selectedAddressIdx],
-          cargoCompany: selectedCargoData?.companyName,
-          cargoPrice: effectiveCargoPrice,
-          ...(!sameAsBilling && {
-            billingAddress: addresses[selectedBillingIdx],
-          }),
-          ...(!user && { guestEmail: values.email }),
-          ...(appliedCoupon && { coupon: appliedCoupon }),
+      const orderPayload = {
+        items,
+        totalAmount: finalAmount,
+        address: addresses[selectedAddressIdx],
+        cargoCompany: selectedCargoData?.companyName,
+        cargoPrice: effectiveCargoPrice,
+        ...(!sameAsBilling && {
+          billingAddress: addresses[selectedBillingIdx],
         }),
-      );
+        ...(!user && { guestEmail: values.email }),
+        ...(appliedCoupon && { coupon: appliedCoupon }),
+      };
+
+      if (selectedPayment === "kredi") {
+        dispatch(
+          createPayment({
+            ...orderPayload,
+            cardNumber: values.cardNumber,
+            cardHolder: values.cardHolder,
+            expirationDate: values.expirationDate,
+            cvv: values.cvv,
+            installment: selectedInstallment + 1,
+          }),
+        );
+      } else {
+        dispatch(createOrder(orderPayload));
+      }
     },
   });
 
