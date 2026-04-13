@@ -18,6 +18,8 @@ import FavouritesPage from "./pages/FavouritesPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import ResetPasswordPage from "./pages/ResetPasswordPage.jsx";
+import CampaignPage from "./pages/CampaignPage.jsx";
+import CampaignDetailPage from "./pages/CampaignDetailPage.jsx";
 
 function App() {
   const dispatch = useDispatch();
@@ -51,7 +53,9 @@ function App() {
         <Route path="/favourites" element={<FavouritesPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/reset/:token" element={<ResetPasswordPage />} />
-<Route path="/:id" element={<ProductDetails />} />
+        <Route path="/campaigns" element={<CampaignPage />} />
+        <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+        <Route path="/:id" element={<ProductDetails />} />
         <Route path="*" element={<Home />} />
       </Routes>
       <Footer />
