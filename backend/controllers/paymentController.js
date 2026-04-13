@@ -4,6 +4,13 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 
+const formatIp = (req) => {
+  const rawIp = req.headers["x-forwarded-for"] || req.ip || "85.34.78.112";
+  return rawIp === "::1" || rawIp.startsWith("::ffff:")
+    ? "85.34.78.112"
+    : rawIp.split(",")[0].trim();
+};
+
 const iyzipay = new Iyzipay({
   apiKey: process.env.IYZICO_API_KEY,
   secretKey: process.env.IYZICO_SECRET_KEY,
@@ -77,11 +84,7 @@ exports.createPayment = async (req, res) => {
     const [expMonth, expYear] = expirationDate.split("/");
     const conversationId = Date.now().toString();
 
-    const rawIp = req.headers["x-forwarded-for"] || req.ip || "85.34.78.112";
-    const ip =
-      rawIp === "::1" || rawIp.startsWith("::ffff:")
-        ? "85.34.78.112"
-        : rawIp.split(",")[0].trim();
+    const ip = formatIp(req);
 
     const formatPhone = (phone) => {
       if (phone.startsWith("+")) return phone;
@@ -194,6 +197,9 @@ exports.createPayment = async (req, res) => {
           exists = await Order.exists({ orderNo });
         }
 
+        const paymentTransactionId =
+          result.itemTransactions?.[0]?.paymentTransactionId;
+
         const order = await Order.create({
           ...(req.user ? { user: req.user._id } : { guestEmail }),
           orderNo,
@@ -204,6 +210,9 @@ exports.createPayment = async (req, res) => {
           cargoPrice: effectiveCargoPrice,
           ...(billingAddress && { billingAddress }),
           ...(coupon?.couponId && { coupon }),
+          paymentId: result.paymentId,
+          conversationId,
+          ...(paymentTransactionId && { paymentTransactionId }),
         });
 
         if (coupon?.couponId) {
@@ -228,6 +237,126 @@ exports.createPayment = async (req, res) => {
         res.status(500).json({
           message:
             "Ödeme alındı fakat sipariş oluşturulamadı. Lütfen destek ile iletişime geçin.",
+        });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.cancelPayment = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+    if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
+    if (order.status !== "Hazırlanıyor") {
+      return res
+        .status(400)
+        .json({ message: "Yalnızca hazırlanmakta olan siparişler iptal edilebilir." });
+    }
+    if (!order.paymentId) {
+      return res
+        .status(400)
+        .json({ message: "Bu sipariş için ödeme iptali mevcut değil." });
+    }
+
+    const cancelRequest = {
+      locale: Iyzipay.LOCALE.TR,
+      conversationId: order.conversationId || Date.now().toString(),
+      paymentId: order.paymentId,
+      ip: formatIp(req),
+    };
+
+    iyzipay.cancel.create(cancelRequest, async (err, result) => {
+      if (err) {
+        return res.status(500).json({ message: "Ödeme servisine ulaşılamadı." });
+      }
+      if (result.status !== "success") {
+        return res
+          .status(400)
+          .json({ message: result.errorMessage || "İptal işlemi başarısız." });
+      }
+
+      try {
+        order.status = "İptal Edildi";
+        await order.save();
+        await User.findByIdAndUpdate(req.user._id, { $inc: { cancelCount: 1 } });
+        for (const item of order.items) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { stock: item.quantity, soldCount: -item.quantity },
+          });
+        }
+        await order.populate("items.product", "name images price discountedPrice stock");
+        res.status(200).json({ success: true, order });
+      } catch (updateErr) {
+        res.status(500).json({
+          message:
+            "İptal işlemi gerçekleşti fakat sipariş güncellenemedi. Lütfen destek ile iletişime geçin.",
+        });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.refundPayment = async (req, res) => {
+  try {
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id,
+    });
+    if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
+    if (order.status !== "Teslim Edildi") {
+      return res
+        .status(400)
+        .json({ message: "Yalnızca teslim edilen siparişler iade edilebilir." });
+    }
+    if (!order.paymentTransactionId) {
+      return res
+        .status(400)
+        .json({ message: "Bu sipariş için ödeme iadesi mevcut değil." });
+    }
+
+    const refundAmount = +(order.totalAmount + order.cargoPrice).toFixed(2);
+
+    const refundRequest = {
+      locale: Iyzipay.LOCALE.TR,
+      conversationId: order.conversationId || Date.now().toString(),
+      paymentTransactionId: order.paymentTransactionId,
+      price: refundAmount.toFixed(2),
+      currency: Iyzipay.CURRENCY.TRY,
+      ip: formatIp(req),
+    };
+
+    iyzipay.refund.create(refundRequest, async (err, result) => {
+      if (err) {
+        return res.status(500).json({ message: "Ödeme servisine ulaşılamadı." });
+      }
+      if (result.status !== "success") {
+        return res
+          .status(400)
+          .json({ message: result.errorMessage || "İade işlemi başarısız." });
+      }
+
+      try {
+        order.status = "İade Edildi";
+        await order.save();
+        await User.findByIdAndUpdate(req.user._id, { $inc: { returnCount: 1 } });
+        for (const item of order.items) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { returnCount: item.quantity },
+          });
+        }
+        await order.populate("items.product", "name images price discountedPrice stock");
+        res.status(200).json({ success: true, order });
+      } catch (updateErr) {
+        res.status(500).json({
+          message:
+            "İade işlemi gerçekleşti fakat sipariş güncellenemedi. Lütfen destek ile iletişime geçin.",
         });
       }
     });
