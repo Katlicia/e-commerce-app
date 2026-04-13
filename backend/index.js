@@ -19,7 +19,7 @@ const couponRoutes = require("./routes/couponRoutes");
 const featuredListRoutes = require("./routes/featuredListRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const cloudinary = require("cloudinary").v2;
-const Iyzipay = require("iyzipay");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -40,12 +40,6 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ limit: "20mb", extended: true }));
 app.use(cookieParser());
 
-const iyzipay = new IyziPay({
-  apiKey: process.env.IYZICO_API_KEY,
-  secretKey: process.env.IYZICO_SECRET_KEY,
-  uri: process.env.IYZICO_BASE_URL,
-});
-
 db();
 
 app.use("/", authRoutes);
@@ -62,6 +56,7 @@ app.use("/", homeSectionRoutes);
 app.use("/", couponRoutes);
 app.use("/", featuredListRoutes);
 app.use("/", campaignRoutes);
+app.use("/", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("API working.");
