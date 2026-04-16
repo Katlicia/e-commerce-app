@@ -53,7 +53,12 @@ exports.getProducts = async (req, res) => {
 
     const baseFilter = {};
     if (Object.keys(priceFilter).length) baseFilter.price = priceFilter;
-    if (Object.keys(stockFilter).length) baseFilter.stock = stockFilter;
+    if (Object.keys(stockFilter).length) {
+      baseFilter.$or = [
+        { hasVariants: { $ne: true }, stock: stockFilter },
+        { hasVariants: true, "skus.stock": stockFilter },
+      ];
+    }
     let baseQuery = Product.find(baseFilter);
 
     if (queryCopy.category) {
@@ -118,7 +123,10 @@ exports.getProducts = async (req, res) => {
 };
 
 exports.adminProducts = async (req, res) => {
-  const products = await Product.find().populate("category", "name");
+  const products = await Product.find()
+    .populate("category", "name")
+    .sort({ createdAt: -1 });
+
   res.json(products);
 };
 
@@ -159,7 +167,7 @@ exports.getProductByBadge = async (req, res) => {
     badge === "yeni"
       ? { badge: "yeni", newUntil: { $gt: new Date() } }
       : { badge };
-  const products = await Product.find(query);
+  const products = await Product.find(query).sort({ createdAt: -1 });
   res.json(products);
 };
 
@@ -250,93 +258,104 @@ exports.deleteProduct = async (req, res) => {
 };
 
 exports.updateProduct = async (req, res) => {
-  const keepImages = req.body.keepImages || [];
-  const rawNewImages = req.body.newImages || [];
-  const keepDescriptionImages = req.body.keepDescriptionImages || [];
-  const rawNewDescImages = req.body.newDescriptionImages || [];
-  delete req.body.keepImages;
-  delete req.body.newImages;
-  delete req.body.keepDescriptionImages;
-  delete req.body.newDescriptionImages;
+  try {
+    const keepImages = req.body.keepImages || [];
+    const rawNewImages = req.body.newImages || [];
+    const keepDescriptionImages = req.body.keepDescriptionImages || [];
+    const rawNewDescImages = req.body.newDescriptionImages || [];
+    delete req.body.keepImages;
+    delete req.body.newImages;
+    delete req.body.keepDescriptionImages;
+    delete req.body.newDescriptionImages;
 
-  // Remove deleted images from cloudinary
-  const current = await Product.findById(req.params.id);
-  if (current) {
-    const keepIds = new Set(keepImages.map((img) => img.public_id));
-    for (const img of current.images) {
-      if (!keepIds.has(img.public_id)) {
-        await cloudinary.uploader.destroy(img.public_id);
+    // Remove deleted images from cloudinary
+    const current = await Product.findById(req.params.id);
+    if (current) {
+      const keepIds = new Set(keepImages.map((img) => img.public_id));
+      for (const img of current.images) {
+        if (!keepIds.has(img.public_id)) {
+          await cloudinary.uploader.destroy(img.public_id);
+        }
+      }
+      const keepDescIds = new Set(
+        keepDescriptionImages.map((img) => img.public_id),
+      );
+      for (const img of current.descriptionImages || []) {
+        if (!keepDescIds.has(img.public_id)) {
+          await cloudinary.uploader.destroy(img.public_id);
+        }
       }
     }
-    const keepDescIds = new Set(
-      keepDescriptionImages.map((img) => img.public_id),
-    );
-    for (const img of current.descriptionImages || []) {
-      if (!keepDescIds.has(img.public_id)) {
-        await cloudinary.uploader.destroy(img.public_id);
-      }
+
+    // Upload new images
+    const uploadedNew = [];
+    for (const img of rawNewImages) {
+      const result = await cloudinary.uploader.upload(img, {
+        folder: "products",
+      });
+      uploadedNew.push({ public_id: result.public_id, url: result.secure_url });
     }
-  }
+    req.body.images = [...keepImages, ...uploadedNew];
 
-  // Upload new images
-  const uploadedNew = [];
-  for (const img of rawNewImages) {
-    const result = await cloudinary.uploader.upload(img, {
-      folder: "products",
+    // Upload new description images
+    const uploadedNewDesc = [];
+    for (const img of rawNewDescImages) {
+      const result = await cloudinary.uploader.upload(img, {
+        folder: "products",
+      });
+      uploadedNewDesc.push({
+        public_id: result.public_id,
+        url: result.secure_url,
+      });
+    }
+    req.body.descriptionImages = [...keepDescriptionImages, ...uploadedNewDesc];
+
+    const updateFields = { ...req.body };
+    let unsetFields = {};
+
+    if ("badge" in updateFields && !updateFields.badge) {
+      delete updateFields.badge;
+      unsetFields.badge = 1;
+    }
+
+    if ("hasVariants" in updateFields && !updateFields.hasVariants) {
+      delete updateFields.variantOptions;
+      delete updateFields.skus;
+      unsetFields.variantOptions = 1;
+      unsetFields.skus = 1;
+    }
+
+    const price = Number(updateFields.price);
+    const discountPercent = Number(updateFields.discountPercent);
+
+    if (price && discountPercent) {
+      updateFields.discountedPrice = +(
+        price *
+        (1 - discountPercent / 100)
+      ).toFixed(2);
+    } else {
+      delete updateFields.discountedPrice;
+      unsetFields.discountedPrice = 1;
+    }
+
+    if (!discountPercent) {
+      delete updateFields.discountPercent;
+      unsetFields.discountPercent = 1;
+    }
+
+    const updateQuery = Object.keys(unsetFields).length
+      ? { $set: updateFields, $unset: unsetFields }
+      : updateFields;
+
+    await Product.findByIdAndUpdate(req.params.id, updateQuery, {
+      returnDocument: "after",
+      runValidators: true,
     });
-    uploadedNew.push({ public_id: result.public_id, url: result.secure_url });
+
+    res.json({ message: "Ürün güncellendi" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  req.body.images = [...keepImages, ...uploadedNew];
-
-  // Upload new description images
-  const uploadedNewDesc = [];
-  for (const img of rawNewDescImages) {
-    const result = await cloudinary.uploader.upload(img, {
-      folder: "products",
-    });
-    uploadedNewDesc.push({
-      public_id: result.public_id,
-      url: result.secure_url,
-    });
-  }
-  req.body.descriptionImages = [...keepDescriptionImages, ...uploadedNewDesc];
-
-  const updateFields = { ...req.body };
-  let unsetFields = {};
-
-  if ("badge" in updateFields && !updateFields.badge) {
-    delete updateFields.badge;
-    unsetFields.badge = 1;
-  }
-
-  const price = Number(updateFields.price);
-  const discountPercent = Number(updateFields.discountPercent);
-
-  if (price && discountPercent) {
-    updateFields.discountedPrice = +(
-      price *
-      (1 - discountPercent / 100)
-    ).toFixed(2);
-  } else {
-    delete updateFields.discountedPrice;
-    unsetFields.discountedPrice = 1;
-  }
-
-  if (!discountPercent) {
-    delete updateFields.discountPercent;
-    unsetFields.discountPercent = 1;
-  }
-
-  const updateQuery = Object.keys(unsetFields).length
-    ? { $set: updateFields, $unset: unsetFields }
-    : updateFields;
-
-  await Product.findByIdAndUpdate(req.params.id, updateQuery, {
-    returnDocument: "after",
-    runValidators: true,
-  });
-
-  res.json({ message: "Ürün güncellendi" });
 };
 
 exports.createReview = async (req, res) => {
@@ -345,7 +364,7 @@ exports.createReview = async (req, res) => {
   const product = await Product.findById(productId);
 
   const alreadyReviewed = product.reviews.find(
-    (r) => r.user?.toString() === req.user._id.toString()
+    (r) => r.user?.toString() === req.user._id.toString(),
   );
 
   if (alreadyReviewed) {
@@ -378,7 +397,7 @@ exports.updateReview = async (req, res) => {
   const product = await Product.findById(productId);
 
   const review = product.reviews.find(
-    (r) => r.user?.toString() === req.user._id.toString()
+    (r) => r.user?.toString() === req.user._id.toString(),
   );
 
   if (!review) {
@@ -405,14 +424,15 @@ exports.deleteReview = async (req, res) => {
   const product = await Product.findById(productId);
 
   product.reviews = product.reviews.filter(
-    (r) => r.user?.toString() !== req.user._id.toString()
+    (r) => r.user?.toString() !== req.user._id.toString(),
   );
 
   let avg = 0;
   product.reviews.forEach((rev) => {
     avg += rev.rating;
   });
-  product.rating = product.reviews.length > 0 ? avg / product.reviews.length : 0;
+  product.rating =
+    product.reviews.length > 0 ? avg / product.reviews.length : 0;
 
   await product.save({ validateBeforeSave: false });
 

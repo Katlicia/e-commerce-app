@@ -77,6 +77,30 @@ const productSchema = new mongoose.Schema(
         },
       },
     ],
+    hasVariants: {
+      type: Boolean,
+      default: false,
+    },
+    variantOptions: {
+      type: Map,
+      of: [String],
+    },
+    skus: [
+      {
+        attributes: {
+          type: Map,
+          of: String,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+        stock: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
