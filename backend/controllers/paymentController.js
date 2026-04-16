@@ -227,9 +227,16 @@ exports.createPayment = async (req, res) => {
           });
         }
         for (const item of items) {
-          await Product.findByIdAndUpdate(item.product, {
-            $inc: { stock: -item.quantity, soldCount: item.quantity },
-          });
+          if (item.skuId) {
+            await Product.findOneAndUpdate(
+              { _id: item.product, "skus._id": item.skuId },
+              { $inc: { "skus.$.stock": -item.quantity, soldCount: item.quantity } },
+            );
+          } else {
+            await Product.findByIdAndUpdate(item.product, {
+              $inc: { stock: -item.quantity, soldCount: item.quantity },
+            });
+          }
         }
 
         res.status(201).json({ success: true, order });
@@ -285,9 +292,16 @@ exports.cancelPayment = async (req, res) => {
         await order.save();
         await User.findByIdAndUpdate(req.user._id, { $inc: { cancelCount: 1 } });
         for (const item of order.items) {
-          await Product.findByIdAndUpdate(item.product, {
-            $inc: { stock: item.quantity, soldCount: -item.quantity },
-          });
+          if (item.skuId) {
+            await Product.findOneAndUpdate(
+              { _id: item.product, "skus._id": item.skuId },
+              { $inc: { "skus.$.stock": item.quantity, soldCount: -item.quantity } },
+            );
+          } else {
+            await Product.findByIdAndUpdate(item.product, {
+              $inc: { stock: item.quantity, soldCount: -item.quantity },
+            });
+          }
         }
         await order.populate("items.product", "name images price discountedPrice stock");
         res.status(200).json({ success: true, order });

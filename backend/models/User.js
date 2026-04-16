@@ -50,6 +50,13 @@ const userSchema = new mongoose.Schema(
           type: Number,
           default: 1,
         },
+        skuId: {
+          type: mongoose.Schema.Types.ObjectId,
+        },
+        selectedVariants: {
+          type: Map,
+          of: String,
+        },
       },
     ],
     favourites: [

@@ -23,6 +23,11 @@ const orderSchema = new mongoose.Schema(
         },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },
+        skuId: { type: mongoose.Schema.Types.ObjectId },
+        selectedVariants: {
+          type: Map,
+          of: String,
+        },
       },
     ],
     totalAmount: {

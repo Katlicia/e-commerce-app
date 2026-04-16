@@ -79,9 +79,16 @@ exports.createOrder = async (req, res) => {
     }
 
     for (const item of items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.quantity, soldCount: item.quantity },
-      });
+      if (item.skuId) {
+        await Product.findOneAndUpdate(
+          { _id: item.product, "skus._id": item.skuId },
+          { $inc: { "skus.$.stock": -item.quantity, soldCount: item.quantity } },
+        );
+      } else {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: -item.quantity, soldCount: item.quantity },
+        });
+      }
     }
 
     res.status(201).json({ success: true, order });
@@ -107,7 +114,19 @@ exports.cancelOrder = async (req, res) => {
     order.status = "İptal Edildi";
     await order.save();
     await User.findByIdAndUpdate(req.user._id, { $inc: { cancelCount: 1 } });
-    await order.populate("items.product", "name images price discountedPrice stock");
+    for (const item of order.items) {
+      if (item.skuId) {
+        await Product.findOneAndUpdate(
+          { _id: item.product, "skus._id": item.skuId },
+          { $inc: { "skus.$.stock": item.quantity, soldCount: -item.quantity } },
+        );
+      } else {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity, soldCount: -item.quantity },
+        });
+      }
+    }
+    await order.populate("items.product", "name images price discountedPrice stock skus hasVariants");
     res.status(200).json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: "Bir hata oluştu." });
@@ -132,11 +151,18 @@ exports.returnOrder = async (req, res) => {
     await order.save();
     await User.findByIdAndUpdate(req.user._id, { $inc: { returnCount: 1 } });
     for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { returnCount: item.quantity },
-      });
+      if (item.skuId) {
+        await Product.findOneAndUpdate(
+          { _id: item.product, "skus._id": item.skuId },
+          { $inc: { "skus.$.stock": item.quantity, soldCount: -item.quantity } },
+        );
+      } else {
+        await Product.findByIdAndUpdate(item.product, {
+          $inc: { stock: item.quantity, soldCount: -item.quantity, returnCount: item.quantity },
+        });
+      }
     }
-    await order.populate("items.product", "name images price discountedPrice stock");
+    await order.populate("items.product", "name images price discountedPrice stock skus hasVariants");
     res.status(200).json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -175,7 +201,7 @@ exports.adminUpdateOrderStatus = async (req, res) => {
 exports.getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })
-      .populate("items.product", "name images price discountedPrice stock")
+      .populate("items.product", "name images price discountedPrice discountPercent stock skus hasVariants")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, orders });
