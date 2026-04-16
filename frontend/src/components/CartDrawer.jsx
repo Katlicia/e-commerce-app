@@ -50,9 +50,12 @@ function CartDrawer() {
           <div className="cart-items flex-grow-1 overflow-auto px-3 py-2">
             {cart.map((item) => {
               const itemId = item._id || item.id;
+              const availableStock = item.skuId && Array.isArray(item.skus)
+                ? (item.skus.find((s) => s._id?.toString() === item.skuId?.toString())?.stock ?? 0)
+                : (item.stock ?? 0);
               return (
                 <div
-                  key={itemId}
+                  key={`${itemId}-${item.skuId ?? "no-sku"}`}
                   className="cart-item d-flex gap-3 py-3 border-bottom"
                 >
                   <img
@@ -62,6 +65,27 @@ function CartDrawer() {
                   />
                   <div className="flex-grow-1 d-flex flex-column justify-content-between">
                     <p className="cart-item-name mb-1">{item.name}</p>
+                    {item.selectedVariants &&
+                      Object.keys(item.selectedVariants).length > 0 && (
+                        <div className="d-flex flex-wrap gap-1 mb-1">
+                          {Object.entries(item.selectedVariants).map(
+                            ([label, value]) => (
+                              <span
+                                key={label}
+                                className="badge"
+                                style={{
+                                  backgroundColor: "#f1f5f6",
+                                  color: "#555",
+                                  fontWeight: 500,
+                                  fontSize: "0.7rem",
+                                }}
+                              >
+                                {label}: {value}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      )}
                     {item.discountedPrice ? (
                       <div className="d-flex justify-content-between">
                         <div className="d-flex align-items-center gap-1">
@@ -100,19 +124,19 @@ function CartDrawer() {
                           className="btn cart-qty-btn"
                           onClick={() =>
                             item.quantity === 1
-                              ? dispatch(removeFromCartWithSync(itemId))
-                              : dispatch(decreaseCartWithSync(itemId))
+                              ? dispatch(removeFromCartWithSync(itemId, item.skuId))
+                              : dispatch(decreaseCartWithSync(itemId, item.skuId))
                           }
                         >
                           {item.quantity === 1 ? <FaTrash size={12} /> : "−"}
                         </button>
                         <span className="cart-qty-num">{item.quantity}</span>
-                        {item.quantity >= item.stock ? (
+                        {item.quantity >= availableStock ? (
                           <span></span>
                         ) : (
                           <button
                             className="btn cart-qty-btn"
-                            onClick={() => dispatch(addToCartWithSync(item))}
+                            onClick={() => dispatch(addToCartWithSync(item, item.selectedVariants, item.skuId))}
                           >
                             +
                           </button>

@@ -132,6 +132,8 @@ function CheckoutPage() {
         product: item._id || item.id,
         price: item.discountedPrice || item.price,
         quantity: item.quantity,
+        selectedVariants: item.selectedVariants ?? {},
+        ...(item.skuId ? { skuId: item.skuId } : {}),
       }));
 
       const selectedCargoData = cargos.find((c) => c._id === selectedKargo);
@@ -861,7 +863,7 @@ function CheckoutPage() {
               {cart.flatMap((item) =>
                 Array.from({ length: item.quantity }, (_, i) => (
                   <div
-                    key={`${item._id || item.id}-${i}`}
+                    key={`${item._id || item.id}-${item.skuId ?? "no-sku"}-${i}`}
                     className="d-flex align-items-center justify-content-between gap-3"
                   >
                     <img
@@ -875,12 +877,32 @@ function CheckoutPage() {
                       }}
                       className="rounded-2 border"
                     />
-                    <p
-                      className="mb-0 flex-grow-1"
-                      style={{ fontSize: "0.875rem" }}
-                    >
-                      {item.name}
-                    </p>
+                    <div className="flex-grow-1 min-w-0">
+                      <p className="mb-0" style={{ fontSize: "0.875rem" }}>
+                        {item.name}
+                      </p>
+                      {item.selectedVariants &&
+                        Object.keys(item.selectedVariants).length > 0 && (
+                          <div className="d-flex flex-wrap gap-1 mt-1">
+                            {Object.entries(item.selectedVariants).map(
+                              ([label, value]) => (
+                                <span
+                                  key={label}
+                                  className="badge"
+                                  style={{
+                                    backgroundColor: "#f1f5f6",
+                                    color: "#555",
+                                    fontWeight: 500,
+                                    fontSize: "0.7rem",
+                                  }}
+                                >
+                                  {label}: {value}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        )}
+                    </div>
                     <p
                       className="mb-0 fw-semibold"
                       style={{ fontSize: "0.875rem", flexShrink: 0 }}

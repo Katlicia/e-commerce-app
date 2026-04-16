@@ -179,6 +179,36 @@ function OrderDetailModal({ order, onClose }) {
                       <div style={{ fontSize: "13px", fontWeight: 600 }}>
                         {item.product?.name || "Ürün silinmiş"}
                       </div>
+                      {item.selectedVariants &&
+                        Object.keys(item.selectedVariants).length > 0 && (
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "4px",
+                              marginTop: "4px",
+                            }}
+                          >
+                            {Object.entries(item.selectedVariants).map(
+                              ([label, value]) => (
+                                <span
+                                  key={label}
+                                  style={{
+                                    fontSize: "11px",
+                                    padding: "1px 7px",
+                                    borderRadius: "4px",
+                                    background: "#f5f5f5",
+                                    border: "1px solid #e0e0e0",
+                                    color: "#555",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {label}: {value}
+                                </span>
+                              ),
+                            )}
+                          </div>
+                        )}
                       <div style={{ fontSize: "12px", color: "#999" }}>
                         {item.quantity} adet × {Number(item.price).toFixed(2)}₺
                       </div>

@@ -203,17 +203,42 @@ function ProfileOrderDetails({ order }) {
                     flexShrink: 0,
                   }}
                 />
-                <p
-                  className="mb-0 fw-semibold"
-                  style={{
-                    fontSize: "0.9rem",
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {item.product?.name}
-                </p>
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    className="mb-1 fw-semibold"
+                    style={{
+                      fontSize: "0.9rem",
+                      overflow: "hidden",
+                      whiteSpace: "nowrap",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {item.product?.name}
+                  </p>
+                  {item.selectedVariants &&
+                    Object.keys(item.selectedVariants).length > 0 && (
+                      <div className="d-flex flex-wrap gap-1">
+                        {Object.entries(item.selectedVariants).map(
+                          ([label, value]) => (
+                            <span
+                              key={label}
+                              style={{
+                                fontSize: "0.72rem",
+                                padding: "2px 8px",
+                                borderRadius: 4,
+                                background: "#f5f5f5",
+                                border: "1px solid #e0e0e0",
+                                color: "#555",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {label}: {value}
+                            </span>
+                          ),
+                        )}
+                      </div>
+                    )}
+                </div>
               </div>
               <p
                 className="mb-0 fw-semibold text-center"

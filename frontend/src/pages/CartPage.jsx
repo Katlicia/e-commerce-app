@@ -135,9 +135,12 @@ function CartPage() {
               <div className="border rounded-3 overflow-hidden">
                 {cart.map((item, idx) => {
                   const itemId = item._id || item.id;
+                  const availableStock = item.skuId && Array.isArray(item.skus)
+                    ? (item.skus.find((s) => s._id?.toString() === item.skuId?.toString())?.stock ?? 0)
+                    : (item.stock ?? 0);
                   return (
                     <div
-                      key={itemId}
+                      key={`${itemId}-${item.skuId ?? "no-sku"}`}
                       className={`cart-item-row d-flex align-items-center justify-content-between gap-3 p-3 ${idx !== cart.length - 1 ? "border-bottom" : ""}`}
                     >
                       <img
@@ -165,7 +168,28 @@ function CartPage() {
                         >
                           {item.name}
                         </p>
-                        <div className="d-flex gap-3">
+                        {item.selectedVariants &&
+                          Object.keys(item.selectedVariants).length > 0 && (
+                            <div className="d-flex flex-wrap gap-1 mt-1">
+                              {Object.entries(item.selectedVariants).map(
+                                ([label, value]) => (
+                                  <span
+                                    key={label}
+                                    className="badge"
+                                    style={{
+                                      backgroundColor: "#f1f5f6",
+                                      color: "#555",
+                                      fontWeight: 500,
+                                      fontSize: "0.72rem",
+                                    }}
+                                  >
+                                    {label}: {value}
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                          )}
+                        <div className="d-flex gap-3 mt-1">
                           <p
                             className="mb-0 text-muted"
                             style={{ fontSize: "0.8rem" }}
@@ -198,8 +222,8 @@ function CartPage() {
                           className="btn btn-sm px-2 py-1"
                           onClick={() =>
                             item.quantity === 1
-                              ? dispatch(removeFromCartWithSync(itemId))
-                              : dispatch(decreaseCartWithSync(itemId))
+                              ? dispatch(removeFromCartWithSync(itemId, item.skuId))
+                              : dispatch(decreaseCartWithSync(itemId, item.skuId))
                           }
                         >
                           {item.quantity === 1 ? <FaTrash size={11} /> : "−"}
@@ -214,12 +238,12 @@ function CartPage() {
                         >
                           {item.quantity}
                         </span>
-                        {item.quantity >= item.stock ? (
+                        {item.quantity >= availableStock ? (
                           <span></span>
                         ) : (
                           <button
                             className="btn btn-sm px-2 py-1"
-                            onClick={() => dispatch(addToCartWithSync(item))}
+                            onClick={() => dispatch(addToCartWithSync(item, item.selectedVariants, item.skuId))}
                           >
                             +
                           </button>
@@ -255,7 +279,7 @@ function CartPage() {
 
                         <button
                           className="btn text-muted p-0"
-                          onClick={() => dispatch(removeFromCart(itemId))}
+                          onClick={() => dispatch(removeFromCartWithSync(itemId, item.skuId))}
                         >
                           ✕
                         </button>

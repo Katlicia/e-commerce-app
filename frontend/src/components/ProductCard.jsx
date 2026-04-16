@@ -60,10 +60,31 @@ function ProductCard({ product, overrideBadge }) {
 
   const badgeIcon = BADGES[overrideBadge || badge];
 
+  const skus = product.skus || [];
+  const defaultSku = product.hasVariants
+    ? (skus.find((s) => (s.stock ?? 0) > 0) ?? skus[0] ?? null)
+    : null;
+  const defaultSkuDiscounted =
+    defaultSku && discountPercent
+      ? +(defaultSku.price * (1 - discountPercent / 100)).toFixed(2)
+      : null;
+  const displayPrice = defaultSku
+    ? (defaultSkuDiscounted ?? defaultSku.price)
+    : (discountedPrice || price);
+  const displayOriginalPrice = defaultSku
+    ? (defaultSkuDiscounted ? defaultSku.price : null)
+    : (discountedPrice ? price : null);
+  const outOfStock = product.hasVariants
+    ? skus.every((s) => (s.stock ?? 0) <= 0)
+    : (product.stock ?? 0) <= 0;
+
   return (
     <div
       className="card h-100 border rounded-3 p-2"
-      onClick={() => navigate(`/${_id}`)}
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate(`/${_id}`);
+      }}
     >
       <div className="position-relative">
         {badgeIcon && (
@@ -126,26 +147,39 @@ function ProductCard({ product, overrideBadge }) {
             })()}
             <span className="mute-string mt-1">({reviewCount})</span>
           </div>
-          {discountedPrice ? (
+          {displayOriginalPrice ? (
             <div className="d-flex align-items-center gap-2 orange-text">
               <p
                 className="card-text fw-bold mb-0"
                 style={{ fontSize: "1.2rem" }}
               >
-                {Number(discountedPrice).toFixed(2)}₺
+                {Number(displayPrice).toFixed(2)}₺
               </p>
-              <del className="text-muted">{Number(price).toFixed(2)}₺</del>
+              <del className="text-muted">
+                {Number(displayOriginalPrice).toFixed(2)}₺
+              </del>
             </div>
           ) : (
             <p
               className="card-text fw-bold mb-0"
               style={{ fontSize: "1.2rem" }}
             >
-              {Number(price).toFixed(2)}₺
+              {Number(displayPrice).toFixed(2)}₺
             </p>
           )}
         </div>
-        {cartItem ? (
+        {product.hasVariants ? (
+          <button
+            className="btn card-button w-100 mt-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/${_id}`);
+            }}
+            disabled={outOfStock}
+          >
+            {outOfStock ? "Stokta Yok" : "Seçenek Seç"}
+          </button>
+        ) : cartItem ? (
           <div
             className="d-flex align-items-center justify-content-between card-button rounded-2 px-1"
             style={{ height: "38px" }}
@@ -189,9 +223,9 @@ function ProductCard({ product, overrideBadge }) {
               e.stopPropagation();
               dispatch(addToCartWithSync(product));
             }}
-            disabled={product.stock <= 0}
+            disabled={outOfStock}
           >
-            {product.stock <= 0 ? "Stokta Yok" : "Sepete Ekle"}
+            {outOfStock ? "Stokta Yok" : "Sepete Ekle"}
           </button>
         )}
       </div>

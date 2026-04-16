@@ -67,6 +67,7 @@ function ProductDetails() {
   const { cart } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
 
+  const [selectedVariants, setSelectedVariants] = useState({});
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -80,10 +81,20 @@ function ProductDetails() {
   useEffect(() => {
     dispatch(getProductDetail(id));
     setActiveImg(0);
+    setSelectedVariants({});
     if (user) {
       axiosInstance.post(`/users/me/visited/${id}`).catch(() => {});
     }
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (!product || product._id !== id) return;
+    if (!product.hasVariants || !product.skus?.length) return;
+    const firstAvailable = product.skus.find((s) => s.stock > 0);
+    if (!firstAvailable) return;
+    const attrs = firstAvailable.attributes || {};
+    setSelectedVariants(attrs instanceof Map ? Object.fromEntries(attrs) : { ...attrs });
+  }, [product?._id]);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(getTimeLeft()), 1000);
@@ -94,16 +105,56 @@ function ProductDetails() {
   if (!product || !product._id) return null;
 
   const productId = product._id;
-  const cartItem = cart.find((item) => (item._id || item.id) === productId);
   const images = product.images || [];
   const currentImg = images[activeImg]?.url || "";
   const isFavourite = favourites.some((f) => (f._id || f.id) === productId);
   const features = product.features
     ? product.features.map((s) => s.trim()).filter(Boolean)
     : [];
-  const price = product.price || 0;
-  const discountedPrice = product.discountedPrice || null;
+  const skus = product.skus || [];
+  const variantOptionEntries = product.hasVariants && product.variantOptions
+    ? Object.entries(product.variantOptions)
+    : [];
+
+  const matchedSku = variantOptionEntries.length > 0
+    ? skus.find((sku) => {
+        const attrs = sku.attributes || {};
+        return variantOptionEntries.every(([k]) => attrs[k] === selectedVariants[k]);
+      }) ?? null
+    : null;
+
+  function isOptionAvailable(label, optValue) {
+    return skus.some((sku) => {
+      const attrs = sku.attributes || {};
+      if (attrs[label] !== optValue) return false;
+      for (const [k, v] of Object.entries(selectedVariants)) {
+        if (k === label) continue;
+        if (v && attrs[k] !== v) return false;
+      }
+      return sku.stock > 0;
+    });
+  }
+
+  const allGroupsSelected = variantOptionEntries.every(([k]) => selectedVariants[k]);
+  const price = product.hasVariants
+    ? (matchedSku ? matchedSku.price : product.price || 0)
+    : product.price || 0;
   const discountPercent = product.discountPercent || null;
+  const discountedPrice = discountPercent && price
+    ? +(price * (1 - discountPercent / 100)).toFixed(2)
+    : null;
+  const activeStock = product.hasVariants
+    ? (matchedSku ? matchedSku.stock : 0)
+    : product.stock;
+  const addToCartDisabled = product.hasVariants
+    ? !allGroupsSelected || !matchedSku || matchedSku.stock <= 0
+    : product.stock <= 0;
+  const skuId = matchedSku?._id?.toString() ?? null;
+  const cartItem = cart.find((item) => {
+    if ((item._id || item.id) !== productId) return false;
+    if (skuId) return item.skuId === skuId;
+    return !item.skuId;
+  });
 
   const myReview = user
     ? product.reviews?.find(
@@ -161,7 +212,13 @@ function ProductDetails() {
 
   function handleAddToCart() {
     for (let i = 0; i < quantity; i++) {
-      dispatch(addToCartWithSync({ ...product, image: currentImg }));
+      dispatch(
+        addToCartWithSync(
+          { ...product, price, discountedPrice, image: currentImg },
+          selectedVariants,
+          skuId,
+        ),
+      );
     }
   }
 
@@ -312,6 +369,52 @@ function ProductDetails() {
                 )}
               </div>
 
+              {product.hasVariants &&
+                variantOptionEntries.map(([label, options]) => (
+                  <div key={label}>
+                    <p className="mb-2" style={{ fontSize: 14, fontWeight: 600 }}>
+                      {label}:{" "}
+                      {selectedVariants[label] && (
+                        <span style={{ fontWeight: 400, color: "#555" }}>
+                          {selectedVariants[label]}
+                        </span>
+                      )}
+                    </p>
+                    <div className="d-flex flex-wrap gap-2">
+                      {options.map((optValue) => {
+                        const available = isOptionAvailable(label, optValue);
+                        const isSelected = selectedVariants[label] === optValue;
+                        return (
+                          <button
+                            key={optValue}
+                            type="button"
+                            disabled={!available}
+                            onClick={() =>
+                              setSelectedVariants((prev) => ({
+                                ...prev,
+                                [label]: prev[label] === optValue ? undefined : optValue,
+                              }))
+                            }
+                            style={{
+                              padding: "5px 14px",
+                              fontSize: 13,
+                              borderRadius: 6,
+                              border: isSelected ? "2px solid #ff7700" : "1px solid #dee2e6",
+                              background: isSelected ? "#fff3e0" : available ? "#fff" : "#f5f5f5",
+                              color: isSelected ? "#ff7700" : available ? "#333" : "#bbb",
+                              cursor: available ? "pointer" : "not-allowed",
+                              fontWeight: isSelected ? 600 : 400,
+                              textDecoration: !available ? "line-through" : "none",
+                            }}
+                          >
+                            {optValue}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
               {features.length > 0 && (
                 <ul className="pd-features mb-0">
                   {features.map((f, i) => (
@@ -328,12 +431,12 @@ function ProductDetails() {
                 </span>
               </div>
 
-              {product.stock <= 20 && (
+              {activeStock > 0 && activeStock <= 20 && (
                 <div className="d-flex justify-content-between align-items-center">
                   <span className="pd-stock-warning">
                     Acele Edin! Sadece{" "}
                     <span className="pd-stock-count">
-                      {String(product.stock).padStart(2, "0")} adet
+                      {String(activeStock).padStart(2, "0")} adet
                     </span>{" "}
                     stok kaldı.
                   </span>
@@ -354,8 +457,8 @@ function ProductDetails() {
                       style={{ color: "inherit" }}
                       onClick={() =>
                         cartItem.quantity === 1
-                          ? dispatch(removeFromCartWithSync(productId))
-                          : dispatch(decreaseCartWithSync(productId))
+                          ? dispatch(removeFromCartWithSync(productId, skuId))
+                          : dispatch(decreaseCartWithSync(productId, skuId))
                       }
                     >
                       {cartItem.quantity === 1 ? (
@@ -365,13 +468,13 @@ function ProductDetails() {
                       )}
                     </button>
                     <span className="fw-semibold">{cartItem.quantity}</span>
-                    {cartItem.quantity >= product.stock ? (
+                    {cartItem.quantity >= activeStock ? (
                       <span></span>
                     ) : (
                       <button
                         className="btn p-0 px-2 h-100"
                         style={{ color: "inherit", fontSize: 20 }}
-                        onClick={() => dispatch(addToCartWithSync(product))}
+                        onClick={() => dispatch(addToCartWithSync({ ...product, price, discountedPrice }, selectedVariants, skuId))}
                       >
                         +
                       </button>
@@ -390,7 +493,7 @@ function ProductDetails() {
                       <button
                         className="pd-qty-btn"
                         onClick={() => setQuantity((q) => q + 1)}
-                        disabled={quantity >= product.stock}
+                        disabled={quantity >= activeStock}
                       >
                         +
                       </button>
@@ -398,9 +501,9 @@ function ProductDetails() {
                     <button
                       className="pd-add-btn rounded-pill"
                       onClick={handleAddToCart}
-                      disabled={product.stock <= 0}
+                      disabled={addToCartDisabled}
                     >
-                      {product.stock <= 0 ? "STOKTA YOK" : "SEPETE EKLE"}
+                      {addToCartDisabled ? "STOKTA YOK" : "SEPETE EKLE"}
                     </button>
                   </>
                 )}
