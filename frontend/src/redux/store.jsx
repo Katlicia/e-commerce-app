@@ -10,6 +10,7 @@ import cargoReducer from "./cargoSlice";
 import taxSettingsReducer from "./taxSettingsSlice";
 import bannerReducer from "./bannerSlice";
 import homeSectionReducer from "./homeSectionSlice";
+import homeLayoutReducer from "./homeLayoutSlice";
 
 export const store = configureStore({
   reducer: {
@@ -24,5 +25,6 @@ export const store = configureStore({
     taxSettings: taxSettingsReducer,
     banner: bannerReducer,
     homeSection: homeSectionReducer,
+    homeLayout: homeLayoutReducer,
   },
 });
