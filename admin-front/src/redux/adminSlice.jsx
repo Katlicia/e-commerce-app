@@ -11,7 +11,9 @@ const initialState = {
   coupons: [],
   taxSettings: null,
   banners: {},
+  adBanners: [],
   homeSections: [],
+  homeLayout: [],
   featuredLists: {},
   campaigns: [],
   loading: false,
@@ -143,8 +145,41 @@ export const adminUpdateOrderStatus = createAsyncThunk(
   },
 );
 
+export const adminCancelPayment = createAsyncThunk(
+  "admin/cancelPayment",
+  async (id, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(`/api/payment/admin/orders/${id}/cancel`);
+      return data.order;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Ödeme iptali başarısız.");
+    }
+  },
+);
+
+export const adminRefundPayment = createAsyncThunk(
+  "admin/refundPayment",
+  async (id, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.patch(`/api/payment/admin/orders/${id}/refund`);
+      return data.order;
+    } catch (err) {
+      const d = err.response?.data;
+      const msg = d?.iyzicoErrorCode
+        ? `${d.message} (Kod: ${d.iyzicoErrorCode})`
+        : d?.message || "Ödeme iadesi başarısız.";
+      return rejectWithValue(msg);
+    }
+  },
+);
+
 export const adminGetBrands = createAsyncThunk("admin/getBrands", async () => {
   const { data } = await axiosInstance.get("/products/brands");
+  return data;
+});
+
+export const adminGetAllAdBanners = createAsyncThunk("admin/getAllAdBanners", async () => {
+  const { data } = await axiosInstance.get("/banners");
   return data;
 });
 
@@ -161,11 +196,32 @@ export const adminUpdateBanner = createAsyncThunk(
   },
 );
 
+export const adminDeleteBanner = createAsyncThunk("admin/deleteBanner", async (type) => {
+  await axiosInstance.delete(`/banners/${type}`);
+  return type;
+});
+
 export const adminGetHomeSections = createAsyncThunk(
   "admin/getHomeSections",
   async () => {
     const { data } = await axiosInstance.get("/home-sections");
     return data;
+  },
+);
+
+export const adminCreateHomeSection = createAsyncThunk(
+  "admin/createHomeSection",
+  async ({ title, type = "product-list" }) => {
+    const { data } = await axiosInstance.post("/home-sections", { title, type });
+    return data;
+  },
+);
+
+export const adminDeleteHomeSection = createAsyncThunk(
+  "admin/deleteHomeSection",
+  async (key) => {
+    await axiosInstance.delete(`/home-sections/${key}`);
+    return key;
   },
 );
 
@@ -252,6 +308,22 @@ export const adminUpdateFeaturedList = createAsyncThunk(
     const { data } = await axiosInstance.put(`/featured-lists/${key}`, {
       products,
     });
+    return data;
+  },
+);
+
+export const adminGetHomeLayout = createAsyncThunk(
+  "admin/getHomeLayout",
+  async () => {
+    const { data } = await axiosInstance.get("/home-layout");
+    return data;
+  },
+);
+
+export const adminUpdateHomeLayout = createAsyncThunk(
+  "admin/updateHomeLayout",
+  async (sections) => {
+    const { data } = await axiosInstance.put("/home-layout", { sections });
     return data;
   },
 );
@@ -361,6 +433,14 @@ const adminSlice = createSlice({
         const idx = state.orders.findIndex((o) => o._id === action.payload._id);
         if (idx !== -1) state.orders[idx] = action.payload;
       })
+      .addCase(adminCancelPayment.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
+      .addCase(adminRefundPayment.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        if (idx !== -1) state.orders[idx] = action.payload;
+      })
       .addCase(adminGetCoupons.fulfilled, (state, action) => {
         state.coupons = action.payload;
       })
@@ -383,14 +463,31 @@ const adminSlice = createSlice({
       .addCase(adminGetBrands.fulfilled, (state, action) => {
         state.brands = action.payload;
       })
+      .addCase(adminGetAllAdBanners.fulfilled, (state, action) => {
+        state.adBanners = action.payload;
+      })
       .addCase(adminGetBanner.fulfilled, (state, action) => {
-        state.banners[action.payload.type] = action.payload.data.images || [];
+        state.banners[action.payload.type] = action.payload.data;
       })
       .addCase(adminUpdateBanner.fulfilled, (state, action) => {
-        state.banners[action.payload.type] = action.payload.data.images || [];
+        state.banners[action.payload.type] = action.payload.data;
+        const idx = state.adBanners.findIndex((b) => b.type === action.payload.type);
+        if (idx !== -1) {
+          state.adBanners[idx] = { ...state.adBanners[idx], label: action.payload.data.label };
+        }
+      })
+      .addCase(adminDeleteBanner.fulfilled, (state, action) => {
+        state.adBanners = state.adBanners.filter((b) => b.type !== action.payload);
+        delete state.banners[action.payload];
       })
       .addCase(adminGetHomeSections.fulfilled, (state, action) => {
         state.homeSections = action.payload;
+      })
+      .addCase(adminCreateHomeSection.fulfilled, (state, action) => {
+        state.homeSections.push(action.payload);
+      })
+      .addCase(adminDeleteHomeSection.fulfilled, (state, action) => {
+        state.homeSections = state.homeSections.filter((s) => s.key !== action.payload);
       })
       .addCase(adminUpdateHomeSection.fulfilled, (state, action) => {
         const idx = state.homeSections.findIndex((s) => s.key === action.payload.key);
@@ -414,6 +511,12 @@ const adminSlice = createSlice({
       })
       .addCase(adminUpdateFeaturedList.fulfilled, (state, action) => {
         state.featuredLists[action.payload.key] = action.payload;
+      })
+      .addCase(adminGetHomeLayout.fulfilled, (state, action) => {
+        state.homeLayout = action.payload.sections;
+      })
+      .addCase(adminUpdateHomeLayout.fulfilled, (state, action) => {
+        state.homeLayout = action.payload.sections;
       });
   },
 });
