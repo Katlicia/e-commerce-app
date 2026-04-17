@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { adminGetOrders, adminUpdateOrderStatus } from "../redux/adminSlice";
+import { adminGetOrders, adminUpdateOrderStatus, adminCancelPayment, adminRefundPayment } from "../redux/adminSlice";
 import { addNotification } from "../redux/notificationSlice";
 
 const STATUS_OPTIONS = [
@@ -27,20 +27,21 @@ function OrderDetailModal({ order, onClose }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await dispatch(
-        adminUpdateOrderStatus({ id: order._id, status: editStatus }),
-      ).unwrap();
-      dispatch(addNotification({ message: "Sipariş durumu güncellendi." }));
-    } catch {
-      dispatch(
-        addNotification({
-          message: "Sipariş durumu güncellenemedi.",
-          type: "error",
-        }),
-      );
+      if (editStatus === "İptal Edildi" && order.paymentId) {
+        await dispatch(adminCancelPayment(order._id)).unwrap();
+        dispatch(addNotification({ message: "Sipariş iptal edildi, ödeme iadesi yapıldı." }));
+      } else if (editStatus === "İade Edildi" && order.paymentTransactionId) {
+        await dispatch(adminRefundPayment(order._id)).unwrap();
+        dispatch(addNotification({ message: "Sipariş iade edildi, para iadesi yapıldı." }));
+      } else {
+        await dispatch(adminUpdateOrderStatus({ id: order._id, status: editStatus })).unwrap();
+        dispatch(addNotification({ message: "Sipariş durumu güncellendi." }));
+      }
+      onClose();
+    } catch (err) {
+      dispatch(addNotification({ message: err || "İşlem başarısız.", type: "error" }));
     }
     setSaving(false);
-    onClose();
   };
 
   const itemsTotal = order.items.reduce(
@@ -446,6 +447,7 @@ function OrderDetailModal({ order, onClose }) {
                 {saving ? "Kaydediliyor..." : "Güncelle"}
               </button>
             </div>
+
           </div>
         </div>
       </div>
