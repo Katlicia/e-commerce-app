@@ -10,17 +10,75 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { getHomeSections } from "../redux/homeSectionSlice";
+import { getHomeLayout } from "../redux/homeLayoutSlice";
+
+function renderSection(section, homeSections) {
+  if (!section.visible) return null;
+
+  const getSection = (key) => homeSections.find((s) => s.key === key) || {};
+
+  switch (section.type) {
+    case "featured-shortcuts":
+      return <Featured key={section._id} />;
+
+    case "product-list": {
+      const sec = getSection(section.sectionKey);
+      if (section.sectionKey?.startsWith("categoryRow")) {
+        if (!sec.left && !sec.right) return null;
+        return <CategoryRow key={section._id} left={sec.left} right={sec.right} />;
+      }
+      return (
+        <ProductList
+          key={section._id}
+          title={sec.title || "Ürün Listesi"}
+          settings={{
+            showTimer: sec.showTimer ?? false,
+            timerEnd: sec.timerEnd,
+            banner: sec.banner?.url || null,
+            badge: sec.badge || "",
+            bestSellers: section.sectionKey === "featured",
+            recentlyViewed: section.sectionKey === "recent",
+          }}
+        />
+      );
+    }
+
+    case "ad-banners":
+      return <AdBanners key={section._id} type={section.bannerType} />;
+
+    case "category-row": {
+      const sec = getSection(section.sectionKey);
+      if (!sec.left && !sec.right) return null;
+      return (
+        <CategoryRow
+          key={section._id}
+          left={sec.left}
+          right={sec.right}
+        />
+      );
+    }
+
+    case "ad-bar":
+      return <AdBar key={section._id} />;
+
+    case "deal-of-day":
+      return <DealOfDay key={section._id} />;
+
+    default:
+      return null;
+  }
+}
 
 function Home() {
   const dispatch = useDispatch();
   const location = useLocation();
   const sections = useSelector((state) => state.homeSection.sections);
-
-  const getSection = (key) => sections.find((s) => s.key === key) || {};
+  const layoutSections = useSelector((state) => state.homeLayout.sections);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     dispatch(getHomeSections());
+    dispatch(getHomeLayout());
   }, []);
 
   useEffect(() => {
@@ -36,57 +94,7 @@ function Home() {
     <>
       <HeaderLinks />
       <Carousel />
-      <Featured />
-      <ProductList
-        title={getSection("deals").title || "Kaçırılmayacak Fırsatlar"}
-        settings={{
-          showTimer: getSection("deals").showTimer ?? false,
-          timerEnd: getSection("deals").timerEnd,
-          banner: getSection("deals").banner?.url || null,
-          badge: getSection("deals").badge || "indirimli",
-        }}
-      />
-      <ProductList
-        title={getSection("new").title || "Yeni Gelenler"}
-        settings={{
-          showTimer: getSection("new").showTimer ?? false,
-          timerEnd: getSection("new").timerEnd,
-          banner: getSection("new").banner?.url || null,
-          badge: getSection("new").badge || "yeni",
-        }}
-      />
-      <AdBanners type="adbanner-1" />
-      <ProductList
-        title={getSection("featured").title || "En Çok Satanlar"}
-        settings={{
-          showTimer: getSection("featured").showTimer ?? false,
-          timerEnd: getSection("featured").timerEnd,
-          banner: getSection("featured").banner?.url || null,
-          badge: getSection("featured").badge || "en-cok-satan",
-          bestSellers: true,
-        }}
-      />
-      {getSection("categoryRow-1").left && getSection("categoryRow-1").right ? (
-        <CategoryRow
-          left={getSection("categoryRow-1").left}
-          right={getSection("categoryRow-1").right}
-        />
-      ) : null}
-      <AdBar />
-      <ProductList
-        id="recently-viewed"
-        title={getSection("recent").title || "Son Gezdiğin Ürünler"}
-        settings={{
-          showTimer: getSection("recent").showTimer ?? false,
-          timerEnd: getSection("recent").timerEnd,
-          banner: getSection("recent").banner?.url || null,
-          badge: getSection("recent").badge || "",
-          recentlyViewed: true,
-        }}
-      />
-
-      <AdBanners type="adbanner-2" />
-      <DealOfDay />
+      {layoutSections.map((section) => renderSection(section, sections))}
     </>
   );
 }
