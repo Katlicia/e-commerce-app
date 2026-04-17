@@ -7,6 +7,10 @@ const bannerSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    label: {
+      type: String,
+      default: "",
+    },
     images: [
       {
         public_id: { type: String, required: true },
