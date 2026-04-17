@@ -252,6 +252,113 @@ exports.createPayment = async (req, res) => {
   }
 };
 
+exports.adminCancelPayment = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
+    if (!["Hazırlanıyor", "Kargoya Verildi"].includes(order.status)) {
+      return res.status(400).json({ message: "Bu sipariş iptal edilemez." });
+    }
+    if (!order.paymentId) {
+      return res.status(400).json({ message: "Bu sipariş için ödeme iptali mevcut değil." });
+    }
+
+    const cancelRequest = {
+      locale: Iyzipay.LOCALE.TR,
+      conversationId: order.conversationId || Date.now().toString(),
+      paymentId: order.paymentId,
+      ip: formatIp(req),
+    };
+
+    iyzipay.cancel.create(cancelRequest, async (err, result) => {
+      if (err) return res.status(500).json({ message: "Ödeme servisine ulaşılamadı." });
+      if (result.status !== "success") {
+        return res.status(400).json({ message: result.errorMessage || "İptal işlemi başarısız." });
+      }
+      try {
+        order.status = "İptal Edildi";
+        await order.save();
+        if (order.user) {
+          await User.findByIdAndUpdate(order.user, { $inc: { cancelCount: 1 } });
+        }
+        for (const item of order.items) {
+          if (item.skuId) {
+            await Product.findOneAndUpdate(
+              { _id: item.product, "skus._id": item.skuId },
+              { $inc: { "skus.$.stock": item.quantity, soldCount: -item.quantity } },
+            );
+          } else {
+            await Product.findByIdAndUpdate(item.product, {
+              $inc: { stock: item.quantity, soldCount: -item.quantity },
+            });
+          }
+        }
+        await order.populate("items.product", "name images price discountedPrice stock");
+        res.status(200).json({ success: true, order });
+      } catch (updateErr) {
+        res.status(500).json({ message: "İptal işlemi gerçekleşti fakat sipariş güncellenemedi." });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.adminRefundPayment = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
+    if (!["Teslim Edildi", "İade Talebi"].includes(order.status)) {
+      return res.status(400).json({ message: "Bu sipariş iade edilemez." });
+    }
+    if (!order.paymentTransactionId) {
+      return res.status(400).json({ message: "Bu sipariş için ödeme iadesi mevcut değil." });
+    }
+
+    const refundAmount = +(order.totalAmount + order.cargoPrice).toFixed(2);
+
+    const refundRequest = {
+      locale: Iyzipay.LOCALE.TR,
+      conversationId: order.conversationId || Date.now().toString(),
+      paymentTransactionId: order.paymentTransactionId,
+      price: refundAmount.toFixed(2),
+      currency: Iyzipay.CURRENCY.TRY,
+      ip: formatIp(req),
+    };
+
+    iyzipay.refund.create(refundRequest, async (err, result) => {
+      console.log("[adminRefundPayment] Iyzico result:", JSON.stringify(result));
+      if (err) return res.status(500).json({ message: "Ödeme servisine ulaşılamadı." });
+      if (result.status !== "success") {
+        console.error("[adminRefundPayment] Iyzico error:", JSON.stringify(result));
+        return res.status(400).json({
+          message: result.errorMessage || "İade işlemi başarısız.",
+          iyzicoErrorCode: result.errorCode,
+          iyzicoErrorGroup: result.errorGroup,
+        });
+      }
+      try {
+        order.status = "İade Edildi";
+        await order.save();
+        if (order.user) {
+          await User.findByIdAndUpdate(order.user, { $inc: { returnCount: 1 } });
+        }
+        for (const item of order.items) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { returnCount: item.quantity },
+          });
+        }
+        await order.populate("items.product", "name images price discountedPrice stock");
+        res.status(200).json({ success: true, order });
+      } catch (updateErr) {
+        res.status(500).json({ message: "İade işlemi gerçekleşti fakat sipariş güncellenemedi." });
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.cancelPayment = async (req, res) => {
   try {
     const order = await Order.findOne({
