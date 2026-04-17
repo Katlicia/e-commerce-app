@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   adminGetHomeSections,
+  adminCreateHomeSection,
+  adminDeleteHomeSection,
   adminUpdateHomeSection,
   adminGetCategories,
   adminGetBrands,
+  adminGetHomeLayout,
 } from "../redux/adminSlice";
 import { addNotification } from "../redux/notificationSlice";
 import CategorySelect from "./CategorySelect";
@@ -287,6 +290,65 @@ function SectionEditor({ section, onSaved }) {
   );
 }
 
+function SideEditor({ label, side, setSide, categories, brands }) {
+  const makeBannerHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const b64 = await toBase64(file);
+    setSide({ ...side, newBanner: b64, keepBanner: false, bannerPreview: b64 });
+  };
+
+  const removeBanner = () => {
+    setSide({
+      ...side,
+      newBanner: null,
+      keepBanner: false,
+      bannerPreview: null,
+    });
+  };
+
+  return (
+    <div
+      style={{
+        flex: "1 1 220px",
+        border: "1px solid #f0f0f0",
+        borderRadius: "8px",
+        padding: "16px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "12px",
+      }}
+    >
+      <div style={{ fontWeight: 600, fontSize: "13px", color: "#555" }}>
+        {label}
+      </div>
+      <div>
+        <label style={labelStyle}>Başlık</label>
+        <input
+          style={inputStyle}
+          value={side.title || ""}
+          onChange={(e) => setSide({ ...side, title: e.target.value })}
+          placeholder="Bölüm başlığı"
+        />
+      </div>
+      <div>
+        <label style={labelStyle}>Kategori / Marka</label>
+        <CategorySelect
+          categories={categories}
+          brands={brands}
+          value={sideToSelectValue(side)}
+          onChange={(val) => setSide({ ...side, ...selectValueToFilter(val) })}
+        />
+      </div>
+      <BannerField
+        preview={side.bannerPreview ?? side.banner?.url ?? null}
+        onChange={makeBannerHandler}
+        onRemove={removeBanner}
+      />
+    </div>
+  );
+}
+
 function CategoryRowEditor({ section, onSaved, categories, brands }) {
   const dispatch = useDispatch();
   const [title, setTitle] = useState(section.title || "");
@@ -301,22 +363,6 @@ function CategoryRowEditor({ section, onSaved, categories, brands }) {
     bannerPreview: section.right?.banner?.url || null,
   });
   const [saving, setSaving] = useState(false);
-
-  const makeBannerHandler = (side, setSide) => async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const b64 = await toBase64(file);
-    setSide({ ...side, newBanner: b64, keepBanner: false, bannerPreview: b64 });
-  };
-
-  const makeRemoveHandler = (side, setSide) => () => {
-    setSide({
-      ...side,
-      newBanner: null,
-      keepBanner: false,
-      bannerPreview: null,
-    });
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -355,47 +401,6 @@ function CategoryRowEditor({ section, onSaved, categories, brands }) {
     }
   };
 
-  const SideEditor = ({ label, side, setSide }) => (
-    <div
-      style={{
-        flex: "1 1 220px",
-        border: "1px solid #f0f0f0",
-        borderRadius: "8px",
-        padding: "16px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-      }}
-    >
-      <div style={{ fontWeight: 600, fontSize: "13px", color: "#555" }}>
-        {label}
-      </div>
-      <div>
-        <label style={labelStyle}>Başlık</label>
-        <input
-          style={inputStyle}
-          value={side.title || ""}
-          onChange={(e) => setSide({ ...side, title: e.target.value })}
-          placeholder="Bölüm başlığı"
-        />
-      </div>
-      <div>
-        <label style={labelStyle}>Kategori / Marka</label>
-        <CategorySelect
-          categories={categories}
-          brands={brands}
-          value={sideToSelectValue(side)}
-          onChange={(val) => setSide({ ...side, ...selectValueToFilter(val) })}
-        />
-      </div>
-      <BannerField
-        preview={side.bannerPreview ?? side.banner?.url ?? null}
-        onChange={makeBannerHandler(side, setSide)}
-        onRemove={makeRemoveHandler(side, setSide)}
-      />
-    </div>
-  );
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <div>
@@ -408,8 +413,20 @@ function CategoryRowEditor({ section, onSaved, categories, brands }) {
         />
       </div>
       <div className="d-flex gap-3 flex-wrap">
-        <SideEditor label="Sol Taraf" side={left} setSide={setLeft} />
-        <SideEditor label="Sağ Taraf" side={right} setSide={setRight} />
+        <SideEditor
+          label="Sol Taraf"
+          side={left}
+          setSide={setLeft}
+          categories={categories}
+          brands={brands}
+        />
+        <SideEditor
+          label="Sağ Taraf"
+          side={right}
+          setSide={setRight}
+          categories={categories}
+          brands={brands}
+        />
       </div>
       <div>
         <button
@@ -436,12 +453,59 @@ function ProductListsPanel() {
     (state) => state.admin,
   );
   const [openKey, setOpenKey] = useState(null);
+  const [showNewForm, setShowNewForm] = useState(null);
+  const [newTitle, setNewTitle] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [deletingKey, setDeletingKey] = useState(null);
+
+  const PROTECTED_KEYS = new Set(["deals", "new", "featured", "recent"]);
+
+  const handleDelete = (e, key) => {
+    e.stopPropagation();
+    setDeletingKey(key);
+    dispatch(adminDeleteHomeSection(key))
+      .unwrap()
+      .then(() => {
+        dispatch(addNotification({ message: "Liste silindi." }));
+        dispatch(adminGetHomeLayout());
+        if (openKey === key) setOpenKey(null);
+      })
+      .catch(() =>
+        dispatch(
+          addNotification({ message: "Liste silinemedi.", type: "error" }),
+        ),
+      )
+      .finally(() => setDeletingKey(null));
+  };
 
   useEffect(() => {
     dispatch(adminGetHomeSections());
     dispatch(adminGetCategories());
     dispatch(adminGetBrands());
   }, []);
+
+  const handleCreate = () => {
+    if (!newTitle.trim()) return;
+    setCreating(true);
+    const type = showNewForm === "vitrin" ? "category-row" : "product-list";
+    dispatch(adminCreateHomeSection({ title: newTitle.trim(), type }))
+      .unwrap()
+      .then((section) => {
+        dispatch(addNotification({ message: "Liste oluşturuldu." }));
+        setNewTitle("");
+        setShowNewForm(null);
+        setOpenKey(section.key);
+      })
+      .catch((err) =>
+        dispatch(
+          addNotification({
+            message: err?.message || "Liste oluşturulamadı.",
+            type: "error",
+          }),
+        ),
+      )
+      .finally(() => setCreating(false));
+  };
 
   return (
     <div className="p-4">
@@ -453,7 +517,91 @@ function ProductListsPanel() {
           boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
         }}
       >
-        <div className="fw-bold mb-4 h3">Ürün Listeleri</div>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div className="fw-bold h3 mb-0">Ürün Listeleri</div>
+          {showNewForm ? (
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <input
+                autoFocus
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreate();
+                  if (e.key === "Escape") {
+                    setShowNewForm(null);
+                    setNewTitle("");
+                  }
+                }}
+                placeholder={
+                  showNewForm === "vitrin" ? "Vitrin adı" : "Liste adı"
+                }
+                style={{ ...inputStyle, width: 200 }}
+              />
+              <button
+                onClick={handleCreate}
+                disabled={creating || !newTitle.trim()}
+                className="btn orange-btn"
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {creating ? "..." : "Oluştur"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowNewForm(null);
+                  setNewTitle("");
+                }}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  border: "1px solid #eee",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                İptal
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => setShowNewForm("list")}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  border: "1px solid #ff6a00",
+                  background: "#fff8f4",
+                  color: "#ff6a00",
+                  cursor: "pointer",
+                }}
+              >
+                + Yeni Liste
+              </button>
+              <button
+                onClick={() => setShowNewForm("vitrin")}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  border: "1px solid #6366f1",
+                  background: "#f5f3ff",
+                  color: "#6366f1",
+                  cursor: "pointer",
+                }}
+              >
+                + Yeni Vitrin
+              </button>
+            </div>
+          )}
+        </div>
 
         {loading && homeSections.length === 0 ? (
           <div style={{ color: "#999", fontSize: "14px" }}>Yükleniyor...</div>
@@ -462,7 +610,8 @@ function ProductListsPanel() {
             style={{ display: "flex", flexDirection: "column", gap: "10px" }}
           >
             {homeSections.map((section) => {
-              const label = SECTION_LABELS[section.key] || section.key;
+              const label =
+                SECTION_LABELS[section.key] || section.title || section.key;
               const isOpen = openKey === section.key;
               const isCategoryRow = section.key.startsWith("categoryRow");
 
@@ -500,15 +649,41 @@ function ProductListsPanel() {
                         </span>
                       )}
                     </div>
-                    <span
+                    <div
                       style={{
-                        fontSize: "20px",
-                        color: "#ff6a00",
-                        lineHeight: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
                       }}
                     >
-                      {isOpen ? "−" : "+"}
-                    </span>
+                      {!PROTECTED_KEYS.has(section.key) && (
+                        <button
+                          onClick={(e) => handleDelete(e, section.key)}
+                          disabled={deletingKey === section.key}
+                          title="Sil"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: "16px",
+                            color: "#f87171",
+                            padding: "2px 4px",
+                            lineHeight: 1,
+                          }}
+                        >
+                          {deletingKey === section.key ? "..." : "×"}
+                        </button>
+                      )}
+                      <span
+                        style={{
+                          fontSize: "20px",
+                          color: "#ff6a00",
+                          lineHeight: 1,
+                        }}
+                      >
+                        {isOpen ? "−" : "+"}
+                      </span>
+                    </div>
                   </div>
 
                   {isOpen && (
