@@ -15,6 +15,7 @@ import {
   TbTicket,
   TbStar,
   TbSpeakerphone,
+  TbLayoutDashboard,
 } from "react-icons/tb";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -39,13 +40,6 @@ const MENU_ITEMS = [
     icon: <TbReceiptTax />,
     path: "/",
   },
-  { key: "banners", label: "Bannerlar", icon: <TbPhoto />, path: "/" },
-  {
-    key: "productLists",
-    label: "Ürün Listeleri",
-    icon: <TbLayoutList />,
-    path: "/",
-  },
   {
     key: "featuredLists",
     label: "Ayın Ürünleri",
@@ -56,6 +50,19 @@ const MENU_ITEMS = [
     key: "campaigns",
     label: "Kampanyalar",
     icon: <TbSpeakerphone />,
+    path: "/",
+  },
+  { key: "banners", label: "Bannerlar", icon: <TbPhoto />, path: "/" },
+  {
+    key: "productLists",
+    label: "Ürün Listeleri",
+    icon: <TbLayoutList />,
+    path: "/",
+  },
+  {
+    key: "homeLayout",
+    label: "Ana Sayfa Düzeni",
+    icon: <TbLayoutDashboard />,
     path: "/",
   },
 ];
