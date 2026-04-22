@@ -2,10 +2,10 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../utils/axiosInstance";
 import { storage } from "../utils/storage";
 
-const storedUser = (() => {
-  const raw = storage.getItem("user");
+export const hydrateAuth = createAsyncThunk("auth/hydrate", async () => {
+  const raw = await storage.getItem("user");
   return raw ? JSON.parse(raw) : null;
-})();
+});
 
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -65,13 +65,21 @@ export const forgetPassword = createAsyncThunk(
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: storedUser,
+    user: null,
+    initialized: false,
     loading: false,
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(hydrateAuth.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.initialized = true;
+      })
+      .addCase(hydrateAuth.rejected, (state) => {
+        state.initialized = true;
+      })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
