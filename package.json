@@ -1,5 +1,8 @@
 {
   "devDependencies": {
     "babel-preset-expo": "^55.0.18"
+  },
+  "dependencies": {
+    "@react-navigation/bottom-tabs": "^7.15.9"
   }
 }
