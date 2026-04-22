@@ -1,0 +1,46 @@
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import MainTabs from "./MainTabs";
+import ProductDetailScreen from "../screens/ProductDetailScreen";
+import CheckoutScreen from "../screens/CheckoutScreen";
+import OrderDetailScreen from "../screens/OrderDetailScreen";
+import FavouritesScreen from "../screens/FavouritesScreen";
+import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+
+const Stack = createNativeStackNavigator();
+
+export default function AppNavigator() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: "#ffffff" },
+        animation: "slide_from_right",
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+      <Stack.Screen name="Checkout" component={CheckoutScreen} />
+      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+      <Stack.Screen name="Favourites" component={FavouritesScreen} />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ animation: "slide_from_bottom" }}
+      />
+      <Stack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{ animation: "slide_from_bottom" }}
+      />
+      <Stack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+        options={{ animation: "slide_from_bottom" }}
+      />
+    </Stack.Navigator>
+  );
+}
