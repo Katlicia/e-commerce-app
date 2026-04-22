@@ -7,8 +7,10 @@ const workspaceRoot = path.resolve(projectRoot, "..");
 
 const config = getDefaultConfig(projectRoot);
 
-// Include shared/ folder in Metro's watch list
-config.watchFolders = [workspaceRoot];
+// Only watch the shared/ folder, not the entire workspace root
+config.watchFolders = [
+  path.resolve(workspaceRoot, "shared"),
+];
 
 // Resolve @mobile/shared imports to ../shared
 config.resolver.extraNodeModules = {
