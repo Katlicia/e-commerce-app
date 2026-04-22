@@ -32,7 +32,19 @@ const app = express();
 
 app.use(
   cors({
-    origin: [process.env.CLIENT_URL, process.env.CLIENT_URL2],
+    origin: (origin, callback) => {
+      const allowed = [
+        process.env.CLIENT_URL,
+        process.env.CLIENT_URL2,
+        "http://localhost:8081", // Expo web
+      ];
+      // React Native isteklerinde origin yoktur (undefined/null)
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS: izin verilmeyen origin: " + origin));
+      }
+    },
     credentials: true,
   }),
 );

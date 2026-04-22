@@ -1,0 +1,11 @@
+{
+  "name": "@dedica/shared",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.11.2",
+    "axios": "^1.13.6",
+    "react-redux": "^9.2.0"
+  }
+}
