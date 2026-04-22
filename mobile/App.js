@@ -1,7 +1,8 @@
 import "./global.css";
 
-import React from "react";
-import { Provider } from "react-redux";
+import React, { useEffect } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -9,10 +10,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { configureAxios } from "@mobile/shared/utils/axiosInstance";
 import { configureStorage } from "@mobile/shared/utils/storage";
+import { hydrateAuth } from "@mobile/shared/redux/authSlice";
 import { store } from "./redux/store";
-import { View, Text } from "react-native";
+import AppNavigator from "./navigation/AppNavigator";
 
-// Bootstrap platform-specific implementations
 configureAxios(process.env.EXPO_PUBLIC_API_URL);
 configureStorage({
   getItem: (key) => AsyncStorage.getItem(key),
@@ -20,22 +21,38 @@ configureStorage({
   removeItem: (key) => AsyncStorage.removeItem(key),
 });
 
+function AppContent() {
+  const dispatch = useDispatch();
+  const initialized = useSelector((state) => state.auth.initialized);
+
+  useEffect(() => {
+    dispatch(hydrateAuth());
+  }, [dispatch]);
+
+  if (!initialized) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+      <Toast />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <Provider store={store}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <View className="flex-1 items-center justify-center bg-white">
-            <Text className="text-2xl font-bold text-blue-600">
-              Setup Complete!
-            </Text>
-            <Text className="text-gray-500 mt-2">
-              NativeWind + Redux + Navigation ready.
-            </Text>
-          </View>
-        </NavigationContainer>
+        <AppContent />
       </SafeAreaProvider>
-      <Toast />
     </Provider>
   );
 }
