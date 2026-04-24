@@ -39,15 +39,24 @@ const mapBackendItem = (item) => {
     discountedPrice,
     quantity: item.quantity,
     skuId,
-    selectedVariants: item.selectedVariants
+    selectedVariants: item.selectedVariants instanceof Map
       ? Object.fromEntries(item.selectedVariants)
-      : {},
+      : (item.selectedVariants ?? {}),
   };
 };
 
 export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
   const { data } = await axiosInstance.get("/users/me/cart");
   return data.map(mapBackendItem);
+});
+
+export const hydrateCartFromStorage = createAsyncThunk("cart/hydrate", async () => {
+  try {
+    const raw = await storage.getItem("cart");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 });
 
 export const syncAddToCart = createAsyncThunk(
@@ -89,9 +98,10 @@ export const syncClearCart = createAsyncThunk("cart/syncClear", async () => {
   return [];
 });
 
+const _initialCart = getCartFromStorage();
 const initialState = {
-  cart: getCartFromStorage(),
-  totalAmount: 0,
+  cart: _initialCart,
+  totalAmount: calcTotal(_initialCart),
   appliedCoupon: null, // { couponId, code, discount }
 };
 
@@ -191,6 +201,11 @@ const cartSlice = createSlice({
 
     builder
       .addCase(fetchCart.fulfilled, applyCart)
+      .addCase(hydrateCartFromStorage.fulfilled, (state, action) => {
+        if (action.payload.length > 0 && state.cart.length === 0) {
+          applyCart(state, action);
+        }
+      })
       .addCase(syncAddToCart.fulfilled, applyCart)
       .addCase(syncUpdateCart.fulfilled, applyCart)
       .addCase(syncRemoveFromCart.fulfilled, applyCart)
