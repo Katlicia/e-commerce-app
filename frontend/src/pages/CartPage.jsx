@@ -24,13 +24,12 @@ import { CiSearch, CiShoppingBasket } from "react-icons/ci";
 import CartProgress from "../components/CartProgress";
 import CartSummary from "../components/CartSummary";
 
-const FREE_SHIPPING_THRESHOLD = 500;
-
 function CartPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { cart, totalAmount, appliedCoupon } = useSelector((state) => state.cart);
+  const FREE_SHIPPING_THRESHOLD = useSelector((state) => state.taxSettings.freeShippingThreshold);
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
