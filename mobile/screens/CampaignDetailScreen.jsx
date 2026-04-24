@@ -40,9 +40,7 @@ export default function CampaignDetailScreen() {
 
   const handleCopy = async () => {
     if (!campaign?.coupon?.code) return;
-    await Share.share({ message: campaign.coupon.code });
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
   };
 
   const descriptionLines = campaign?.description
@@ -239,7 +237,14 @@ export default function CampaignDetailScreen() {
             {/* Coupon usage instructions */}
             {campaign.coupon?.code && (
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 14, fontWeight: "700", color: "#212529", marginBottom: 10 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "700",
+                    color: "#212529",
+                    marginBottom: 10,
+                  }}
+                >
                   Kupon Kullanımı
                 </Text>
                 {[
@@ -248,11 +253,32 @@ export default function CampaignDetailScreen() {
                   "Sepetinizin üst kısmındaki alandan indirimi uygula butonuna basın.",
                   "İndirimin toplam tutardan düştüğünü göreceksiniz.",
                 ].map((step, i) => (
-                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 6 }}>
-                    <Text style={{ color: "#555", fontSize: 13, marginRight: 6, marginTop: 1 }}>
+                  <View
+                    key={i}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#555",
+                        fontSize: 13,
+                        marginRight: 6,
+                        marginTop: 1,
+                      }}
+                    >
                       •
                     </Text>
-                    <Text style={{ color: "#555", fontSize: 13, lineHeight: 20, flex: 1 }}>
+                    <Text
+                      style={{
+                        color: "#555",
+                        fontSize: 13,
+                        lineHeight: 20,
+                        flex: 1,
+                      }}
+                    >
                       {step}
                     </Text>
                   </View>
