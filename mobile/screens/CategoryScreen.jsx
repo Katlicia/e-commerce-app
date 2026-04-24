@@ -34,6 +34,7 @@ const BADGE_LABELS = {
   "gunun-firsati": "Günün Fırsatı",
   yeni: "Yeni Ürünler",
   "ayin-urunleri": "Ayın Ürünleri",
+  "monthly-featured": "Ayın Ürünleri",
   kampanyalar: "Kampanyalar",
   "listeli-urunler": "Listeli Ürünler",
 };
@@ -109,7 +110,10 @@ export default function CategoryScreen() {
         setResolved({});
         return;
       }
-      if (filter.badge) {
+      if (filter.featuredList) {
+        setTitle(BADGE_LABELS[filter.featuredList] || filter.featuredList);
+        setResolved({ featuredList: filter.featuredList });
+      } else if (filter.badge) {
         setTitle(BADGE_LABELS[filter.badge] || filter.badge);
         setResolved({ badge: filter.badge });
       } else if (filter.category) {
@@ -143,16 +147,25 @@ export default function CategoryScreen() {
 
       const activeFp = fp ?? filterParams;
       try {
-        const url = buildUrl(resolved, activeFp, q, s, pg);
-        const res = await axiosInstance.get(url);
-        const data = res.data;
-        const list = Array.isArray(data) ? data : (data.products ?? []);
-        const tot = typeof data.total === "number" ? data.total : list.length;
+        if (resolved.featuredList) {
+          const res = await axiosInstance.get(`/featured-lists/${resolved.featuredList}`);
+          const list = res.data.products || [];
+          setProducts(list);
+          setTotal(list.length);
+          setHasMore(false);
+          setPage(1);
+        } else {
+          const url = buildUrl(resolved, activeFp, q, s, pg);
+          const res = await axiosInstance.get(url);
+          const data = res.data;
+          const list = Array.isArray(data) ? data : (data.products ?? []);
+          const tot = typeof data.total === "number" ? data.total : list.length;
 
-        setTotal(tot);
-        setProducts((prev) => (pg === 1 ? list : [...prev, ...list]));
-        setHasMore(list.length === PAGE_LIMIT);
-        setPage(pg);
+          setTotal(tot);
+          setProducts((prev) => (pg === 1 ? list : [...prev, ...list]));
+          setHasMore(list.length === PAGE_LIMIT);
+          setPage(pg);
+        }
       } catch {
         if (pg === 1) setProducts([]);
       } finally {

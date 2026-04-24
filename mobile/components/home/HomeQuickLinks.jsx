@@ -13,7 +13,7 @@ const LINKS = [
     bg: "#d9f7dd",
     iconColor: "#3DB860",
     textColor: "#2A9046",
-    filter: { badge: "ayin-urunleri" },
+    filter: { featuredList: "monthly-featured" },
     size: 28,
   },
   {
