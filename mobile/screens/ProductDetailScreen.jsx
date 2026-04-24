@@ -30,6 +30,8 @@ import {
   addToFavouritesWithSync,
   removeFromFavouritesWithSync,
 } from "@mobile/shared/redux/favouriteSlice";
+import { ProductCard } from "../components/home/HomeProductList";
+import axiosInstance from "@mobile/shared/utils/axiosInstance";
 
 function maskName(name, surname) {
   const parts = [name, surname].filter(Boolean);
@@ -54,6 +56,7 @@ export default function ProductDetailScreen() {
   const [selectedVariants, setSelectedVariants] = useState({});
   const [showDesc, setShowDesc] = useState(false);
   const [showSpecs, setShowSpecs] = useState(false);
+  const [related, setRelated] = useState([]);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -66,8 +69,22 @@ export default function ProductDetailScreen() {
       setActiveImg(0);
       setSelectedVariants({});
       setQuantity(1);
+      setRelated([]);
     }
   }, [productId]);
+
+  useEffect(() => {
+    if (!product?._id || product._id !== productId) return;
+    const categoryId = product.category?._id || product.category;
+    if (!categoryId) return;
+    axiosInstance
+      .get(`/products?category=${categoryId}&limit=10`)
+      .then((res) => {
+        const list = res.data.products || res.data || [];
+        setRelated(list.filter((p) => p._id !== productId));
+      })
+      .catch(() => {});
+  }, [product?._id]);
 
   const isReady =
     !loading && product && product._id && product._id === productId;
@@ -284,7 +301,7 @@ export default function ProductDetailScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Image area */}
-        <View className="relative bg-white px-4 pt-3">
+        <View className="relative bg-white px-4 pt-3 pb-5">
           {product.badge && (
             <View
               className="absolute top-3 left-4 z-10 px-2 py-1 rounded-sm"
@@ -374,7 +391,14 @@ export default function ProductDetailScreen() {
           {product.brand && (
             <Text style={{ fontSize: 12, color: "#6c757d" }}>
               Marka:{" "}
-              <Text style={{ fontWeight: "600", color: "#ff7700" }}>
+              <Text
+                style={{ fontWeight: "600", color: "#ff7700" }}
+                onPress={() =>
+                  navigation.navigate("ProductList", {
+                    filter: { brand: product.brand },
+                  })
+                }
+              >
                 {product.brand}
               </Text>
             </Text>
@@ -548,7 +572,7 @@ export default function ProductDetailScreen() {
         {/* Accordion rows */}
         <View style={{ borderTopWidth: 1, borderColor: "#f0f0f0" }}>
           {/* Ürün Açıklaması */}
-          {product.description && (
+          {(product.description || product.descriptionImages?.length > 0) && (
             <>
               <TouchableOpacity
                 className="flex-row items-center justify-between px-4 py-4"
@@ -572,18 +596,30 @@ export default function ProductDetailScreen() {
               </TouchableOpacity>
               {showDesc && (
                 <View
-                  className="px-4 pb-4"
                   style={{
                     borderBottomWidth: 1,
                     borderColor: "#f0f0f0",
+                    paddingHorizontal: 16,
                     paddingTop: 12,
+                    paddingBottom: 16,
+                    gap: 12,
                   }}
                 >
-                  <Text
-                    style={{ fontSize: 13, color: "#424040", lineHeight: 20 }}
-                  >
-                    {product.description}
-                  </Text>
+                  {product.description && (
+                    <Text
+                      style={{ fontSize: 13, color: "#424040", lineHeight: 20 }}
+                    >
+                      {product.description}
+                    </Text>
+                  )}
+                  {product.descriptionImages?.map((img, i) => (
+                    <Image
+                      key={i}
+                      source={{ uri: img.url }}
+                      style={{ width: "100%", height: 200, borderRadius: 8 }}
+                      resizeMode="cover"
+                    />
+                  ))}
                 </View>
               )}
             </>
@@ -635,6 +671,43 @@ export default function ProductDetailScreen() {
             </>
           )}
         </View>
+
+        {/* Lazım Olabilir */}
+        {related.length > 0 && (
+          <View className="pt-5">
+            <View className="flex-row items-center justify-between px-4 mb-3">
+              <Text
+                style={{ fontSize: 16, fontWeight: "700", color: "#212529" }}
+              >
+                Lazım Olabilir
+              </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("ProductList", {
+                    filter: {
+                      category: product.category?.slug || product.category,
+                    },
+                  })
+                }
+              >
+                <Text
+                  style={{ fontSize: 13, color: "#ff7700", fontWeight: "600" }}
+                >
+                  Tümü
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 12 }}
+            >
+              {related.map((item) => (
+                <ProductCard key={item._id} product={item} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Değerlendirmeler */}
         <View className="pt-5 pb-6">
