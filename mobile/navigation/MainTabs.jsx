@@ -14,9 +14,7 @@ import ProfileScreen from "../screens/ProfileScreen";
 const Tab = createBottomTabNavigator();
 
 function CartTabIcon({ color, size }) {
-  const count = useSelector((state) =>
-    (state.cart.cart ?? []).reduce((sum, item) => sum + item.quantity, 0),
-  );
+  const count = useSelector((state) => (state.cart.cart ?? []).length);
 
   return (
     <View>
@@ -91,7 +89,11 @@ export default function MainTabs() {
         options={{
           tabBarLabel: "Kampanyalar",
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="ticket-percent-outline" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="ticket-percent-outline"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
