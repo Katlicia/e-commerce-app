@@ -13,7 +13,8 @@ const LINKS = [
     bg: "#d9f7dd",
     iconColor: "#3DB860",
     textColor: "#2A9046",
-    filter: { featuredList: "monthly-featured" },
+    screen: "ProductList",
+    params: { filter: { featuredList: "monthly-featured" } },
     size: 28,
   },
   {
@@ -24,7 +25,8 @@ const LINKS = [
     bg: "#ffe4de",
     iconColor: "#E05C35",
     textColor: "#C44820",
-    filter: { badge: "kampanyalar" },
+    screen: "Kampanyalar",
+    params: {},
     size: 40,
   },
 ];
@@ -39,9 +41,7 @@ export default function HomeQuickLinks() {
           key={link.title}
           activeOpacity={0.75}
           style={[styles.card, { backgroundColor: link.bg }]}
-          onPress={() =>
-            navigation.navigate("ProductList", { filter: link.filter })
-          }
+          onPress={() => navigation.navigate(link.screen, link.params)}
         >
           <link.IconComponent
             name={link.icon}
