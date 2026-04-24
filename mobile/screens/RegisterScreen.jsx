@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { registerUser } from "@mobile/shared/redux/authSlice";
+import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
 const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
@@ -39,6 +40,7 @@ export default function RegisterScreen({ navigation }) {
       })
     );
     if (result.meta.requestStatus === "fulfilled") {
+      setBearerToken(result.payload?.token ?? null);
       navigation.goBack();
     }
   }
