@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getTaxSettings } from "./redux/taxSettingsSlice";
 import { fetchMe } from "./redux/authSlice";
+import { fetchCart } from "./redux/cartSlice";
+import { fetchFavourites } from "./redux/favouriteSlice";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
@@ -27,7 +29,12 @@ function App() {
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    dispatch(fetchMe());
+    dispatch(fetchMe()).then((action) => {
+      if (action.payload) {
+        dispatch(fetchCart());
+        dispatch(fetchFavourites());
+      }
+    });
     dispatch(getTaxSettings());
   }, []);
 
