@@ -2,15 +2,18 @@ import "./global.css";
 
 import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
+import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from "@expo-google-fonts/inter";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { configureAxios } from "@mobile/shared/utils/axiosInstance";
+import { configureAxios, setBearerToken } from "@mobile/shared/utils/axiosInstance";
 import { configureStorage } from "@mobile/shared/utils/storage";
 import { hydrateAuth } from "@mobile/shared/redux/authSlice";
+import { fetchFavourites, hydrateFavouritesFromStorage } from "@mobile/shared/redux/favouriteSlice";
+import { fetchCart, hydrateCartFromStorage } from "@mobile/shared/redux/cartSlice";
 import { store } from "./redux/store";
 import AppNavigator from "./navigation/AppNavigator";
 
@@ -26,7 +29,17 @@ function AppContent() {
   const initialized = useSelector((state) => state.auth.initialized);
 
   useEffect(() => {
-    dispatch(hydrateAuth());
+    dispatch(hydrateAuth()).then((action) => {
+      const user = action.payload;
+      if (user) {
+        setBearerToken(user.token ?? null);
+        dispatch(fetchFavourites());
+        dispatch(fetchCart());
+      } else {
+        dispatch(hydrateFavouritesFromStorage());
+        dispatch(hydrateCartFromStorage());
+      }
+    });
   }, [dispatch]);
 
   if (!initialized) {
@@ -48,6 +61,22 @@ function AppContent() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
   return (
     <Provider store={store}>
       <SafeAreaProvider>
