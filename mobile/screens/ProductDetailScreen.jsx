@@ -571,7 +571,7 @@ export default function ProductDetailScreen() {
 
         {/* Accordion rows */}
         <View style={{ borderTopWidth: 1, borderColor: "#f0f0f0" }}>
-          {/* Ürün Açıklaması */}
+          {/* Product Description */}
           {(product.description || product.descriptionImages?.length > 0) && (
             <>
               <TouchableOpacity
@@ -625,7 +625,7 @@ export default function ProductDetailScreen() {
             </>
           )}
 
-          {/* Ürün Özellikleri */}
+          {/* Product Features */}
           {features.length > 0 && (
             <>
               <TouchableOpacity
@@ -672,7 +672,7 @@ export default function ProductDetailScreen() {
           )}
         </View>
 
-        {/* Lazım Olabilir */}
+        {/* Suggested Products */}
         {related.length > 0 && (
           <View className="pt-5">
             <View className="flex-row items-center justify-between px-4 mb-3">
@@ -709,7 +709,7 @@ export default function ProductDetailScreen() {
           </View>
         )}
 
-        {/* Değerlendirmeler */}
+        {/* Ratings */}
         <View className="pt-5 pb-6">
           {/* Section header */}
           <View className="flex-row items-center gap-2 px-4 mb-4">
