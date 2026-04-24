@@ -171,6 +171,16 @@ exports.forgetPassword = async (req, res) => {
   }
 };
 
+exports.getMe = async (req, res) => {
+  res.status(200).json({
+    _id: req.user._id,
+    name: req.user.name,
+    surname: req.user.surname,
+    email: req.user.email,
+    isAdmin: req.user.isAdmin,
+  });
+};
+
 exports.resetPassword = async (req, res) => {
   const resetPasswordToken = crypto
     .createHash("sha256")
