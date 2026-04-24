@@ -6,6 +6,7 @@ import { getHomeSections } from "@mobile/shared/redux/homeSectionSlice";
 import { getHomeLayout } from "@mobile/shared/redux/homeLayoutSlice";
 
 import HomeCarousel from "../components/home/HomeCarousel";
+import HomeQuickLinks from "../components/home/HomeQuickLinks";
 import FeaturedShortcuts from "../components/home/FeaturedShortcuts";
 import HomeAdBanners from "../components/home/HomeAdBanners";
 import HomeProductList from "../components/home/HomeProductList";
@@ -72,6 +73,7 @@ export default function HomeScreen() {
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         <FeaturedShortcuts />
         <HomeCarousel />
+        <HomeQuickLinks />
         {layoutSections.map((section) => renderSection(section, homeSections))}
         <View className="h-4" />
       </ScrollView>
