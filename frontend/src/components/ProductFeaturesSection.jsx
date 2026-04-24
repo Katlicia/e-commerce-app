@@ -1,6 +1,12 @@
 import { useState } from "react";
 import "../styles/ProductFeaturesSection.css";
 
+function maskName(name, surname) {
+  const parts = [name, surname].filter(Boolean);
+  if (parts.length === 0) return "Kullanıcı";
+  return parts.map((part) => (part[0] || "") + "**").join(" ");
+}
+
 const TABS = ["Açıklama", "Özellikler", "Yorumlar", "Taksit Seçenekleri"];
 
 function ProductFeaturesSection({ product }) {
@@ -80,12 +86,29 @@ function ProductFeaturesSection({ product }) {
             {reviews && reviews.length > 0 ? (
               reviews.map((r, i) => (
                 <div key={i} className="pfs-review">
-                  <div className="pfs-review-header">
-                    <strong>{r.name}</strong>
-                    <span className="pfs-review-rating">
-                      {"★".repeat(r.rating)}
-                      {"☆".repeat(5 - r.rating)}
-                    </span>
+                  <div className="pfs-review-header justify-content-between">
+                    <div className="d-flex flex-column">
+                      <strong>{maskName(r.name, r.surname)}</strong>
+                      <span className="pfs-review-rating">
+                        {"★".repeat(r.rating)}
+                        {"☆".repeat(5 - r.rating)}
+                      </span>
+                    </div>
+                    {r.createdAt && (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: "#adb5bd",
+                          marginTop: "5px",
+                        }}
+                      >
+                        {new Date(r.createdAt).toLocaleDateString("tr-TR", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                    )}
                   </div>
                   <p className="pfs-review-comment">{r.comment}</p>
                 </div>

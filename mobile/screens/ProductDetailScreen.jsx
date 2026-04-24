@@ -31,12 +31,10 @@ import {
   removeFromFavouritesWithSync,
 } from "@mobile/shared/redux/favouriteSlice";
 
-function maskName(name) {
-  if (!name) return "Kullanıcı";
-  return name
-    .split(" ")
-    .map((part) => (part[0] || "") + "**")
-    .join(" ");
+function maskName(name, surname) {
+  const parts = [name, surname].filter(Boolean);
+  if (parts.length === 0) return "Kullanıcı";
+  return parts.map((part) => (part[0] || "") + "**").join(" ");
 }
 
 export default function ProductDetailScreen() {
@@ -687,7 +685,7 @@ export default function ProductDetailScreen() {
                     borderColor: "#f0f0f0",
                     borderRadius: 12,
                     padding: 14,
-                    backgroundColor: "#fafafa",
+                    backgroundColor: "#FFFAED",
                   }}
                 >
                   <View className="flex-row items-center justify-between mb-2">
@@ -695,10 +693,10 @@ export default function ProductDetailScreen() {
                       style={{
                         fontSize: 13,
                         fontWeight: "600",
-                        color: "#212529",
+                        color: "#adb5bd",
                       }}
                     >
-                      {maskName(review.name)}
+                      {maskName(review.name, review.surname)}
                     </Text>
                     {review.createdAt && (
                       <Text style={{ fontSize: 10, color: "#adb5bd" }}>
