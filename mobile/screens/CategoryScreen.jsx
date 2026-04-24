@@ -72,13 +72,14 @@ export default function CategoryScreen() {
   const route = useRoute();
   const { width } = useWindowDimensions();
   const filter = route.params?.filter ?? null;
+  const initialKeyword = route.params?.initialKeyword ?? "";
   const canGoBack = navigation.canGoBack();
 
   const cardWidth = Math.floor((width - GUTTER * 2 - GAP) / 2);
 
   const [resolved, setResolved] = useState(null);
   const [title, setTitle] = useState("");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialKeyword);
   const [sort, setSort] = useState("");
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -97,7 +98,7 @@ export default function CategoryScreen() {
   });
 
   const debounceRef = useRef(null);
-  const queryRef = useRef("");
+  const queryRef = useRef(initialKeyword);
   const sortRef = useRef("");
 
   // Resolve filter params once on mount
