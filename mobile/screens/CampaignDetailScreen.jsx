@@ -1,0 +1,322 @@
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Share,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import axiosInstance from "@mobile/shared/utils/axiosInstance";
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export default function CampaignDetailScreen() {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { campaignId } = route.params;
+
+  const [campaign, setCampaign] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    axiosInstance
+      .get(`/campaigns/${campaignId}`)
+      .then((res) => setCampaign(res.data))
+      .catch(() => navigation.goBack())
+      .finally(() => setLoading(false));
+  }, [campaignId]);
+
+  const handleCopy = async () => {
+    if (!campaign?.coupon?.code) return;
+    await Share.share({ message: campaign.coupon.code });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  const descriptionLines = campaign?.description
+    ? campaign.description
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+    : [];
+
+  return (
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#f8f9fa" }}
+      edges={["top"]}
+    >
+      {/* Header */}
+      <View
+        style={{
+          backgroundColor: "#fff",
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: "#f1f3f5",
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          style={{ marginRight: 8 }}
+        >
+          <Ionicons name="arrow-back" size={22} color="#212529" />
+        </TouchableOpacity>
+        <Text
+          style={{
+            flex: 1,
+            fontSize: 16,
+            fontWeight: "700",
+            color: "#212529",
+            textAlign: "center",
+          }}
+        >
+          Kampanya Detayı
+        </Text>
+        <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="notifications-outline" size={22} color="#212529" />
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <ActivityIndicator color="#ff7700" size="large" />
+        </View>
+      ) : !campaign ? null : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          {/* Banner image */}
+          <View style={{ position: "relative" }}>
+            {campaign.image?.url ? (
+              <Image
+                source={{ uri: campaign.image.url }}
+                style={{ width: "100%", height: 220 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View
+                style={{
+                  width: "100%",
+                  height: 220,
+                  backgroundColor: "#dee2e6",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons name="image-outline" size={48} color="#adb5bd" />
+              </View>
+            )}
+            {campaign.coupon?.code && (
+              <View
+                style={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  backgroundColor: "rgba(0,0,0,0.55)",
+                  borderRadius: 6,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text
+                  style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}
+                >
+                  Kampanya Kodu: {campaign.coupon.code}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+            {/* Title + CTA */}
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "800",
+                color: "#212529",
+                lineHeight: 24,
+                marginBottom: 14,
+              }}
+            >
+              {campaign.title}
+            </Text>
+
+            {campaign.products?.length > 0 && (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("ProductList", {
+                    filter: { campaignId: campaign._id },
+                  })
+                }
+                style={{
+                  backgroundColor: "#ff6a00",
+                  borderRadius: 8,
+                  paddingVertical: 12,
+                  paddingHorizontal: 24,
+                  alignSelf: "flex-start",
+                  marginBottom: 20,
+                }}
+                activeOpacity={0.85}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "700",
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  HEMEN AL →
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Description */}
+            {descriptionLines.length > 0 && (
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "700",
+                    color: "#212529",
+                    marginBottom: 10,
+                  }}
+                >
+                  Kampanya Koşulları:
+                </Text>
+                {descriptionLines.map((line, i) => (
+                  <View
+                    key={i}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#555",
+                        fontSize: 13,
+                        marginRight: 6,
+                        marginTop: 1,
+                      }}
+                    >
+                      •
+                    </Text>
+                    <Text
+                      style={{
+                        color: "#555",
+                        fontSize: 13,
+                        lineHeight: 20,
+                        flex: 1,
+                      }}
+                    >
+                      {line}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Coupon usage instructions */}
+            {campaign.coupon?.code && (
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 14, fontWeight: "700", color: "#212529", marginBottom: 10 }}>
+                  Kupon Kullanımı
+                </Text>
+                {[
+                  "Üye girişi yapın.",
+                  `Sepetinize ${campaign.coupon.minOrderAmount ? campaign.coupon.minOrderAmount + " TL ve üzeri" : ""} ürün ekleyin.`,
+                  "Sepetinizin üst kısmındaki alandan indirimi uygula butonuna basın.",
+                  "İndirimin toplam tutardan düştüğünü göreceksiniz.",
+                ].map((step, i) => (
+                  <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", marginBottom: 6 }}>
+                    <Text style={{ color: "#555", fontSize: 13, marginRight: 6, marginTop: 1 }}>
+                      •
+                    </Text>
+                    <Text style={{ color: "#555", fontSize: 13, lineHeight: 20, flex: 1 }}>
+                      {step}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Coupon code */}
+            {campaign.coupon?.code && (
+              <View style={{ marginBottom: 20 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "700",
+                    color: "#212529",
+                    marginBottom: 10,
+                  }}
+                >
+                  Kampanya Kodu
+                </Text>
+                <TouchableOpacity
+                  onPress={handleCopy}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    alignSelf: "flex-start",
+                    borderWidth: 1.5,
+                    borderColor: copied ? "#2e7d32" : "#212529",
+                    borderRadius: 8,
+                    paddingVertical: 12,
+                    paddingHorizontal: 20,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: copied ? "#2e7d32" : "#F83B0A",
+                      fontSize: 18,
+                      fontWeight: "800",
+                      letterSpacing: 1.5,
+                    }}
+                  >
+                    {campaign.coupon.code}
+                  </Text>
+                  <MaterialCommunityIcons
+                    name={copied ? "check" : "content-copy"}
+                    size={18}
+                    color={copied ? "#2e7d32" : "#555"}
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Date range */}
+            {campaign.startDate && campaign.endDate && (
+              <Text style={{ fontSize: 13, color: "#888", marginTop: 4 }}>
+                {formatDate(campaign.startDate)} —{" "}
+                {formatDate(campaign.endDate)} tarihlerinde geçerlidir.
+              </Text>
+            )}
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+}
