@@ -75,6 +75,11 @@ export default function ProductDetailScreen() {
 
   useEffect(() => {
     if (!product?._id || product._id !== productId) return;
+
+    if (user) {
+      axiosInstance.post(`/users/me/visited/${productId}`).catch(() => {});
+    }
+
     const categoryId = product.category?._id || product.category;
     if (!categoryId) return;
     axiosInstance
