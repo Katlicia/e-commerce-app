@@ -41,6 +41,7 @@ exports.register = async (req, res) => {
     name: user.name,
     surname: user.surname,
     email: user.email,
+    token,
   });
 };
 
@@ -62,6 +63,7 @@ exports.login = async (req, res) => {
         name: user.name,
         surname: user.surname,
         email: user.email,
+        token,
       });
     } else {
       return res.status(401).json({ message: "Hatalı parola." });
@@ -217,6 +219,7 @@ exports.resetPassword = async (req, res) => {
     .status(200)
     .cookie("token", token, cookieOptions)
     .json({
+      token,
       user: {
         _id: user._id,
         name: user.name,
