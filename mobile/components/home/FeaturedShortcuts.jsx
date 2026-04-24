@@ -109,7 +109,7 @@ export default function FeaturedShortcuts() {
           key={item.label}
           style={{ alignItems: "center", width: 72 }}
           onPress={() =>
-            navigation.navigate("Category", { filter: item.filter })
+            navigation.navigate("ProductList", { filter: item.filter })
           }
           activeOpacity={0.75}
         >
