@@ -7,6 +7,15 @@ export const hydrateAuth = createAsyncThunk("auth/hydrate", async () => {
   return raw ? JSON.parse(raw) : null;
 });
 
+export const fetchMe = createAsyncThunk("auth/fetchMe", async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await axiosInstance.get("/me");
+    return data;
+  } catch {
+    return rejectWithValue(null);
+  }
+});
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (formData, { rejectWithValue }) => {
@@ -78,6 +87,14 @@ const authSlice = createSlice({
         state.initialized = true;
       })
       .addCase(hydrateAuth.rejected, (state) => {
+        state.initialized = true;
+      })
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.initialized = true;
+      })
+      .addCase(fetchMe.rejected, (state) => {
+        state.user = null;
         state.initialized = true;
       })
       .addCase(loginUser.pending, (state) => {
