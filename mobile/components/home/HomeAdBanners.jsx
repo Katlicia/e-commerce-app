@@ -41,11 +41,11 @@ export default function HomeAdBanners({ type }) {
   const handlePress = (link) => {
     if (!link) return;
     if (link.startsWith("cat:")) {
-      navigation.navigate("Category", { filter: { category: link.slice(4) } });
+      navigation.navigate("ProductList", { filter: { category: link.slice(4) } });
     } else if (link.startsWith("brand:")) {
-      navigation.navigate("Category", { filter: { brand: link.slice(6) } });
+      navigation.navigate("ProductList", { filter: { brand: link.slice(6) } });
     } else {
-      navigation.navigate("Category", { filter: { category: link } });
+      navigation.navigate("ProductList", { filter: { category: link } });
     }
   };
 
