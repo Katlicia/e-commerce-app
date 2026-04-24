@@ -72,7 +72,7 @@ function CategorySection({ title, image, filterType, filterValue }) {
       <View className="flex-row items-center justify-between px-4 mb-2">
         <Text className="text-md font-bold text-text-primary">{title}</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate("Category", { filter: navFilter })}
+          onPress={() => navigation.navigate("ProductList", { filter: navFilter })}
         >
           <Text className="text-sm text-text-subtle font-semibold">Tümü</Text>
         </TouchableOpacity>
