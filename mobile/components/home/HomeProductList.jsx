@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
@@ -222,7 +222,7 @@ function ProductCard({ product, overrideBadge, cardWidth: cardW, noMargin, gridM
         {/* Cart button */}
         {product.hasVariants ? (
           <TouchableOpacity
-            className={`rounded-sm items-center mt-3 ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
+            className={`rounded-sm items-center ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
             onPress={() => navigation.navigate("ProductDetail", { productId })}
             disabled={outOfStock}
             activeOpacity={0.85}
@@ -234,9 +234,12 @@ function ProductCard({ product, overrideBadge, cardWidth: cardW, noMargin, gridM
             </Text>
           </TouchableOpacity>
         ) : cartItem ? (
-          <View className="flex-row items-center border border-border-input rounded-lg overflow-hidden mt-3">
+          <View
+            className="flex-row items-center border border-border-input rounded-sm overflow-hidden"
+            style={{ height: gridMode ? 40 : 32 }}
+          >
             <TouchableOpacity
-              className={`flex-1 items-center ${gridMode ? "py-2" : "py-1"}`}
+              className="flex-1 items-center justify-center h-full"
               onPress={handleDecrease}
             >
               {cartItem.quantity === 1 ? (
@@ -252,7 +255,7 @@ function ProductCard({ product, overrideBadge, cardWidth: cardW, noMargin, gridM
               <View className="flex-1" />
             ) : (
               <TouchableOpacity
-                className={`flex-1 items-center ${gridMode ? "py-2" : "py-1"}`}
+                className="flex-1 items-center justify-center h-full"
                 onPress={handleIncrease}
               >
                 <Text className={`text-price-red font-bold ${gridMode ? "text-lg" : "text-md"}`}>+</Text>
@@ -261,7 +264,7 @@ function ProductCard({ product, overrideBadge, cardWidth: cardW, noMargin, gridM
           </View>
         ) : (
           <TouchableOpacity
-            className={`rounded-sm items-center mt-3 ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
+            className={`rounded-sm items-center ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
             onPress={handleAddToCart}
             disabled={outOfStock}
             activeOpacity={0.85}
@@ -351,14 +354,23 @@ function TimerDisplay({ endTime }) {
 
 export default function HomeProductList({ title, settings = {} }) {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (settings.recentlyViewed) return;
     fetchProducts(settings)
       .then(setProducts)
       .finally(() => setLoading(false));
-  }, [settings.badge, settings.bestSellers, settings.recentlyViewed]);
+  }, [settings.badge, settings.bestSellers]);
+
+  useEffect(() => {
+    if (!settings.recentlyViewed || !isFocused) return;
+    fetchProducts(settings)
+      .then(setProducts)
+      .finally(() => setLoading(false));
+  }, [isFocused]);
 
   if (loading) {
     return (
