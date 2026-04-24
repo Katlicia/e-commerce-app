@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser, forgetPassword } from "@mobile/shared/redux/authSlice";
 import { mergeCartOnLogin } from "@mobile/shared/redux/cartSlice";
 import { fetchFavourites } from "@mobile/shared/redux/favouriteSlice";
+import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ export default function LoginScreen({ navigation }) {
   async function handleLogin() {
     const result = await dispatch(loginUser(formData));
     if (result.meta.requestStatus === "fulfilled") {
+      setBearerToken(result.payload?.token ?? null);
       dispatch(mergeCartOnLogin());
       dispatch(fetchFavourites());
       navigation.goBack();
