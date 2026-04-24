@@ -47,9 +47,12 @@ function BannerCard({ image }) {
   );
 }
 
-function ProductCard({ product, overrideBadge }) {
+function ProductCard({ product, overrideBadge, cardWidth: cardW, noMargin, gridMode }) {
   const navigation = useNavigation();
   const dispatch = useDispatch();
+
+  const w = cardW ?? CARD_WIDTH;
+  const imgH = gridMode ? Math.round(w * (IMAGE_HEIGHT / CARD_WIDTH)) : IMAGE_HEIGHT;
 
   const productId = product._id || product.id;
   const image = product.images?.[0]?.url;
@@ -100,8 +103,8 @@ function ProductCard({ product, overrideBadge }) {
 
   return (
     <TouchableOpacity
-      className="bg-white border border-border-light rounded-md mr-3 pt-1 overflow-hidden"
-      style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+      className={`bg-white border border-border-light rounded-md pt-1 overflow-hidden${noMargin ? "" : " mr-3"}`}
+      style={{ width: w, height: gridMode ? CARD_HEIGHT + 60 : CARD_HEIGHT }}
       onPress={() => navigation.navigate("ProductDetail", { productId })}
       activeOpacity={0.85}
     >
@@ -109,7 +112,7 @@ function ProductCard({ product, overrideBadge }) {
       <View>
         <Image
           source={{ uri: image }}
-          style={{ width: CARD_WIDTH, height: IMAGE_HEIGHT }}
+          style={{ width: w, height: imgH }}
           resizeMode="contain"
           className="bg-bg-faint"
         />
@@ -175,19 +178,19 @@ function ProductCard({ product, overrideBadge }) {
         )}
       </View>
 
-      {/* Info — flex: 1 so button is always pushed to the bottom */}
+      {/* Info */}
       <View
-        className="p-2"
+        className={gridMode ? "p-3" : "p-2"}
         style={{ flex: 1, justifyContent: "space-between" }}
       >
-        <View className="gap-1">
-          <Text className="text-2xs text-text-muted">
+        <View className={gridMode ? "gap-2" : "gap-1"}>
+          <Text className={gridMode ? "text-xs text-text-muted" : "text-2xs text-text-muted"}>
             Ürün Kodu: {product.code}
           </Text>
           <Text
-            className="text-xs text-text-primary font-medium"
+            className={gridMode ? "text-sm text-text-primary font-medium" : "text-xs text-text-primary font-medium"}
             numberOfLines={2}
-            style={{ height: 34 }}
+            style={gridMode ? undefined : { height: 34 }}
           >
             {product.name}
           </Text>
@@ -196,20 +199,20 @@ function ProductCard({ product, overrideBadge }) {
               <Ionicons
                 key={s}
                 name={s <= Math.round(product.rating) ? "star" : "star-outline"}
-                size={10}
+                size={gridMode ? 12 : 10}
                 color="#ff7700"
               />
             ))}
-            <Text className="text-2xs text-text-muted ml-0.5">
+            <Text className={gridMode ? "text-xs text-text-muted ml-0.5" : "text-2xs text-text-muted ml-0.5"}>
               ({product.reviews?.length ?? 0})
             </Text>
           </View>
           <View className="flex-row items-center gap-1 flex-wrap">
-            <Text className="text-md font-bold text-price-red">
+            <Text className={gridMode ? "text-lg font-bold text-price-red" : "text-md font-bold text-price-red"}>
               {Number(displayPrice).toFixed(2)}₺
             </Text>
             {originalPrice && (
-              <Text className="text-xs text-text-muted line-through">
+              <Text className={gridMode ? "text-sm text-text-muted line-through" : "text-xs text-text-muted line-through"}>
                 {Number(originalPrice).toFixed(2)}₺
               </Text>
             )}
@@ -219,52 +222,52 @@ function ProductCard({ product, overrideBadge }) {
         {/* Cart button */}
         {product.hasVariants ? (
           <TouchableOpacity
-            className={`rounded-sm items-center py-1.5 mt-1 ${outOfStock ? "bg-bg-light" : "bg-primary"}`}
+            className={`rounded-sm items-center mt-3 ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
             onPress={() => navigation.navigate("ProductDetail", { productId })}
             disabled={outOfStock}
             activeOpacity={0.85}
           >
             <Text
-              className={`text-xs font-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}
+              className={`font-semibold ${outOfStock ? "text-text-muted" : "text-white"} ${gridMode ? "text-sm" : "text-xs"}`}
             >
               {outOfStock ? "Stokta Yok" : "Seçenek Seç"}
             </Text>
           </TouchableOpacity>
         ) : cartItem ? (
-          <View className="flex-row items-center border border-border-input rounded-lg overflow-hidden mt-1">
+          <View className="flex-row items-center border border-border-input rounded-lg overflow-hidden mt-3">
             <TouchableOpacity
-              className="flex-1 items-center py-1"
+              className={`flex-1 items-center ${gridMode ? "py-2" : "py-1"}`}
               onPress={handleDecrease}
             >
               {cartItem.quantity === 1 ? (
-                <Ionicons name="trash-outline" size={14} color="#f83b0a" />
+                <Ionicons name="trash-outline" size={gridMode ? 16 : 14} color="#f83b0a" />
               ) : (
-                <Text className="text-price-red font-bold text-md">−</Text>
+                <Text className={`text-price-red font-bold ${gridMode ? "text-lg" : "text-md"}`}>−</Text>
               )}
             </TouchableOpacity>
-            <Text className="text-sm font-semibold text-text-primary px-2">
+            <Text className={`font-semibold text-text-primary px-2 ${gridMode ? "text-base" : "text-sm"}`}>
               {cartItem.quantity}
             </Text>
             {cartItem.quantity >= product.stock ? (
               <View className="flex-1" />
             ) : (
               <TouchableOpacity
-                className="flex-1 items-center py-1"
+                className={`flex-1 items-center ${gridMode ? "py-2" : "py-1"}`}
                 onPress={handleIncrease}
               >
-                <Text className="text-price-red font-bold text-md">+</Text>
+                <Text className={`text-price-red font-bold ${gridMode ? "text-lg" : "text-md"}`}>+</Text>
               </TouchableOpacity>
             )}
           </View>
         ) : (
           <TouchableOpacity
-            className={`rounded-sm items-center py-1.5 mt-1 ${outOfStock ? "bg-bg-light" : "bg-primary"}`}
+            className={`rounded-sm items-center mt-3 ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
             onPress={handleAddToCart}
             disabled={outOfStock}
             activeOpacity={0.85}
           >
             <Text
-              className={`text-xs font-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}
+              className={`font-semibold ${outOfStock ? "text-text-muted" : "text-white"} ${gridMode ? "text-sm" : "text-xs"}`}
             >
               {outOfStock ? "Stokta Yok" : "Sepete Ekle"}
             </Text>
@@ -380,7 +383,7 @@ export default function HomeProductList({ title, settings = {} }) {
         ) : (
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate("Category", { filter: settings })
+              navigation.navigate("ProductList", { filter: settings })
             }
           >
             <Text className="text-sm text-primary underline">Tümünü Gör</Text>
