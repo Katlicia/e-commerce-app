@@ -128,6 +128,15 @@ export default function CategoryScreen() {
       } else if (filter.brand) {
         setTitle(filter.brand);
         setResolved({ brand: filter.brand });
+      } else if (filter.campaignId) {
+        try {
+          const res = await axiosInstance.get(`/campaigns/${filter.campaignId}`);
+          setTitle(res.data?.title || "Kampanya");
+          setResolved({ campaignId: filter.campaignId, campaignProducts: res.data?.products || [] });
+        } catch {
+          setTitle("Kampanya");
+          setResolved({ campaignProducts: [] });
+        }
       } else if (filter.stockLte != null) {
         setTitle("Stokları Eritiyoruz");
         setResolved({ stockLte: filter.stockLte });
@@ -150,6 +159,12 @@ export default function CategoryScreen() {
         if (resolved.featuredList) {
           const res = await axiosInstance.get(`/featured-lists/${resolved.featuredList}`);
           const list = res.data.products || [];
+          setProducts(list);
+          setTotal(list.length);
+          setHasMore(false);
+          setPage(1);
+        } else if (resolved.campaignProducts) {
+          const list = resolved.campaignProducts;
           setProducts(list);
           setTotal(list.length);
           setHasMore(false);
