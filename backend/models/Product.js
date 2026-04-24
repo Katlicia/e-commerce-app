@@ -118,6 +118,10 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true,
           },
+          surname: {
+            type: String,
+            required: true,
+          },
           comment: {
             type: String,
             required: true,
@@ -148,7 +152,9 @@ productSchema.pre("save", async function () {
   if (this.isNew) {
     if (!this.badge) this.badge = "yeni";
     if (!this.newUntil) {
-      this.newUntil = new Date(Date.now() + NEW_BADGE_DAYS * 24 * 60 * 60 * 1000);
+      this.newUntil = new Date(
+        Date.now() + NEW_BADGE_DAYS * 24 * 60 * 60 * 1000,
+      );
     }
   }
   if (this.badge === "indirimli" && this.discountPercent) {

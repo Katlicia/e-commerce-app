@@ -374,6 +374,7 @@ exports.createReview = async (req, res) => {
   const review = {
     user: req.user._id,
     name: req.user.name,
+    surname: req.user.surname,
     comment,
     rating: Number(rating),
   };
