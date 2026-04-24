@@ -18,6 +18,18 @@ export const fetchFavourites = createAsyncThunk(
   },
 );
 
+export const hydrateFavouritesFromStorage = createAsyncThunk(
+  "favourite/hydrate",
+  async () => {
+    try {
+      const raw = await storage.getItem("favourites");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  },
+);
+
 export const syncAddToFavourites = createAsyncThunk(
   "favourite/syncAdd",
   async (productId) => {
@@ -87,6 +99,11 @@ const favouriteSlice = createSlice({
 
     builder
       .addCase(fetchFavourites.fulfilled, applyFavourites)
+      .addCase(hydrateFavouritesFromStorage.fulfilled, (state, action) => {
+        if (action.payload.length > 0 && state.favourites.length === 0) {
+          applyFavourites(state, action);
+        }
+      })
       .addCase(syncAddToFavourites.fulfilled, applyFavourites)
       .addCase(syncRemoveFromFavourites.fulfilled, applyFavourites)
       .addCase(syncClearFavourites.fulfilled, (state) => {
