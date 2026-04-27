@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
@@ -21,21 +21,56 @@ export default function ProfileScreen({ navigation }) {
 
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="flex-1 items-center justify-center px-6 gap-4">
-          <Text className="text-2xl font-bold text-text-primary">Hesabım</Text>
-          <Text className="text-base text-text-secondary text-center">
-            Hesabınıza erişmek için giriş yapın.
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+        {/* Header */}
+        <View className="flex-row items-center px-4 py-3 border-b border-border-subtle">
+          <TouchableOpacity onPress={() => navigation.goBack()} className="p-1 w-8">
+            <Ionicons name="arrow-back" size={22} color="#212529" />
+          </TouchableOpacity>
+          <Text className="flex-1 text-lg font-sans-bold text-text-primary text-center">
+            Hesap
           </Text>
-          <TouchableOpacity
-            className="bg-primary rounded-md px-8 py-3 w-full items-center"
-            onPress={() => navigation.navigate("Login")}
-          >
-            <Text className="text-white font-semibold text-md">Giriş Yap</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-            <Text className="text-brand-blue text-base">Hesap Oluştur</Text>
-          </TouchableOpacity>
+          <View className="w-8" />
+        </View>
+
+        {/* Body */}
+        <View className="flex-1 items-center justify-center px-6 gap-4">
+          <Image
+            source={require("../assets/listensi_logo.png")}
+            style={{ width: 200, height: 60 }}
+            resizeMode="contain"
+          />
+
+          <View className="w-full gap-3 mt-4">
+            <TouchableOpacity
+              className="bg-brand-red rounded-md py-4 flex-row items-center justify-center gap-3"
+              onPress={() => navigation.navigate("Login")}
+              activeOpacity={0.85}
+            >
+              <Text className="text-md text-white font-sans text-md">
+                Giriş Yap
+              </Text>
+              <Ionicons name="arrow-forward" size={18} color="white" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="border border-brand-red rounded-md py-4 items-center"
+              onPress={() => navigation.navigate("Register")}
+              activeOpacity={0.85}
+            >
+              <Text className="text-brand-red font-sans text-md">Kayıt Ol</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Support */}
+        <View className="items-center pb-8 gap-1">
+          <Text className="text-sm text-text-secondary">
+            Yardıma mı ihtiyacınız var?
+          </Text>
+          <Text className="text-md font-sans-bold text-brand-red">
+            444 56 50
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -44,7 +79,7 @@ export default function ProfileScreen({ navigation }) {
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1 items-center justify-center">
-        <Text className="text-2xl font-bold text-text-primary">Hesabım</Text>
+        <Text className="text-2xl font-bold text-text-brand-red">Hesabım</Text>
         <Text className="text-base text-text-secondary mt-2">{user.name}</Text>
       </View>
       <View className="px-6 pb-6">
@@ -54,7 +89,9 @@ export default function ProfileScreen({ navigation }) {
           activeOpacity={0.75}
         >
           <Ionicons name="log-out-outline" size={20} color="#f87171" />
-          <Text className="text-red-400 font-semibold text-base">Çıkış Yap</Text>
+          <Text className="text-red-400 font-semibold text-base">
+            Çıkış Yap
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
