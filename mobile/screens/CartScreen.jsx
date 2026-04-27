@@ -1,12 +1,5 @@
-import React from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import React, { useState } from "react";
+import { View, Text, FlatList, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -124,15 +117,53 @@ function CartItem({ item }) {
   );
 }
 
-export default function CartScreen() {
-  const navigation = useNavigation();
-  const { cart, totalAmount } = useSelector((state) => state.cart);
-  const freeShippingThreshold = useSelector(
-    (state) => state.taxSettings.freeShippingThreshold ?? 500,
+function SummaryRow({ label, value, valueClass = "" }) {
+  return (
+    <View className="flex-row justify-between items-center">
+      <Text className="text-sm text-text-secondary">{label}</Text>
+      <Text className={`text-sm font-medium text-text-primary ${valueClass}`}>
+        {value}
+      </Text>
+    </View>
   );
+}
 
+const fmt = (n) =>
+  Number(n).toLocaleString("tr-TR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+export default function CartScreen() {
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const navigation = useNavigation();
+  const { cart, totalAmount, appliedCoupon } = useSelector(
+    (state) => state.cart,
+  );
+  const {
+    freeShippingThreshold = 500,
+    kdv1Rate = 0.01,
+    kdv20Rate = 0.2,
+  } = useSelector((state) => state.taxSettings);
+
+  const totalDiscount = +cart
+    .filter((item) => item.discountedPrice)
+    .reduce(
+      (sum, item) =>
+        sum +
+        (parseFloat(item.price) - parseFloat(item.discountedPrice)) *
+          item.quantity,
+      0,
+    )
+    .toFixed(2);
+
+  const rawTotal = +(totalAmount + totalDiscount).toFixed(2);
+  const kdv1 = +(totalAmount * kdv1Rate).toFixed(2);
+  const kdv20 = +(totalAmount * kdv20Rate).toFixed(2);
+  const couponDiscount = appliedCoupon?.discount ?? 0;
   const remaining = Math.max(freeShippingThreshold - totalAmount, 0);
-  const progress = Math.min((totalAmount / freeShippingThreshold) * 100, 100);
+  const freeShipping = remaining === 0;
+  const totalQuantity = cart.reduce((s, i) => s + i.quantity, 0);
 
   if (cart.length === 0) {
     return (
@@ -166,7 +197,7 @@ export default function CartScreen() {
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
       <View className="bg-white px-4 py-3 border-b border-border-subtle">
         <Text className="text-lg font-bold text-text-primary">
-          Sepetim ({cart.reduce((s, i) => s + i.quantity, 0)} ürün)
+          Sepetim ({totalQuantity} ürün)
         </Text>
       </View>
 
@@ -174,79 +205,133 @@ export default function CartScreen() {
         data={cart}
         keyExtractor={(item) => `${item._id || item.id}-${item.skuId ?? ""}`}
         renderItem={({ item }) => <CartItem item={item} />}
-        contentContainerStyle={{ paddingBottom: 8 }}
+        contentContainerStyle={{ paddingBottom: 16 }}
         style={{ backgroundColor: "white" }}
-        ListFooterComponent={
-          <View className="bg-white">
-            {/* Free shipping progress */}
-            {remaining > 0 ? (
-              <View className="mx-4 mt-4 mb-2 bg-bg-light rounded-xl px-4 py-3">
-                <Text className="text-xs text-text-secondary text-center">
-                  Ücretsiz kargo için{" "}
-                  <Text className="font-bold text-primary">
-                    {remaining.toFixed(2)}₺
-                  </Text>{" "}
-                  daha ekle
-                </Text>
-                <View className="h-1.5 bg-border-light rounded-full mt-2 overflow-hidden">
-                  <View
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${progress}%` }}
-                  />
-                </View>
-              </View>
-            ) : (
-              <View className="mx-4 mt-4 mb-2 bg-success-light rounded-xl px-4 py-3 flex-row items-center justify-center gap-2">
-                <Ionicons name="checkmark-circle" size={16} color="#3DB860" />
-                <Text className="text-xs font-semibold text-discount-green">
-                  Ücretsiz kargo kazandınız!
-                </Text>
-              </View>
-            )}
-
-            {/* Order summary */}
-            <View className="mx-4 mt-3 mb-4 bg-bg-light rounded-xl p-4 gap-2">
-              <View className="flex-row justify-between">
-                <Text className="text-sm text-text-secondary">Ara Toplam</Text>
-                <Text className="text-sm font-semibold text-text-primary">
-                  {totalAmount.toFixed(2)}₺
-                </Text>
-              </View>
-              <View className="flex-row justify-between">
-                <Text className="text-sm text-text-secondary">Kargo</Text>
-                <Text
-                  className={`text-sm font-semibold ${remaining === 0 ? "text-discount-green" : "text-text-primary"}`}
-                >
-                  {remaining === 0
-                    ? "Ücretsiz"
-                    : "Adrese göre hesaplanacaktır."}
-                </Text>
-              </View>
-              <View className="border-t border-border-subtle pt-2 mt-1 flex-row justify-between">
-                <Text className="text-base font-bold text-text-primary">
-                  Toplam
-                </Text>
-                <Text className="text-base font-bold text-price-red">
-                  {totalAmount.toFixed(2)}₺
-                </Text>
-              </View>
-            </View>
-
-            <View className="px-4 pb-6">
-              <TouchableOpacity
-                className="bg-primary rounded-xl py-4 flex-row items-center justify-center gap-2"
-                onPress={() => navigation.navigate("Checkout")}
-                activeOpacity={0.85}
-              >
-                <Text className="text-white font-bold text-base">
-                  Siparişi Tamamla
-                </Text>
-                <Ionicons name="arrow-forward" size={18} color="white" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        }
       />
+
+      {!summaryExpanded && (
+        <View className="items-center py-2 bg-white">
+          {freeShipping ? (
+            <View className="flex-row items-center gap-1.5 bg-success-light rounded-full px-4 py-1.5">
+              <Ionicons name="checkmark-circle" size={14} color="#2a9d4e" />
+              <Text className="text-sm font-semibold text-discount-green">
+                {fmt(freeShippingThreshold)}₺ geçtiniz kargo bedava
+              </Text>
+            </View>
+          ) : (
+            <View className="flex-row bg-success-light rounded-full px-4 py-1.5">
+              <Text className="text-sm text-discount-green">
+                {fmt(remaining)} TL daha eklerseniz{" "}
+                <Text className="font-bold">kargo ücretsiz.</Text>
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Sticky bottom summary panel */}
+      <View
+        className="bg-white border-t border-border-subtle"
+        style={{
+          elevation: 12,
+          shadowColor: "#000",
+          shadowOpacity: 0.12,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: -3 },
+        }}
+      >
+        {/* Expanded: badge içeride + detail rows */}
+        {summaryExpanded && (
+          <>
+            <View className="items-center pt-2.5 pb-1">
+              {freeShipping ? (
+                <View className="flex-row items-center gap-1.5 bg-success-light rounded-full px-4 py-1.5">
+                  <Ionicons name="checkmark-circle" size={14} color="#2a9d4e" />
+                  <Text className="text-sm font-semibold text-discount-green">
+                    {fmt(freeShippingThreshold)}₺ geçtiniz kargo bedava
+                  </Text>
+                </View>
+              ) : (
+                <View className="flex-row bg-success-light rounded-full px-4 py-1.5">
+                  <Text className="text-sm text-discount-green">
+                    {fmt(remaining)} TL daha eklerseniz{" "}
+                    <Text className="font-bold">kargo ücretsiz.</Text>
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View className="px-11 pt-2 pb-2 gap-2.5">
+              <SummaryRow label="Sipariş Tutarı" value={`${fmt(rawTotal)}₺`} />
+              <SummaryRow label="KDV (%1)" value={`${fmt(kdv1)}₺`} />
+              <SummaryRow label="KDV (%20)" value={`${fmt(kdv20)}₺`} />
+              <SummaryRow
+                label="Kargo Bedeli"
+                value={
+                  freeShipping ? "Ücretsiz" : "Adrese göre hesaplanacaktır."
+                }
+                valueClass={
+                  freeShipping ? "text-discount-green" : "text-text-muted"
+                }
+              />
+              {totalDiscount > 0 && (
+                <SummaryRow
+                  label="İndirimler 🤩"
+                  value={`-${fmt(totalDiscount)}₺`}
+                  valueClass="text-discount-green"
+                />
+              )}
+              {couponDiscount > 0 && (
+                <SummaryRow
+                  label={`Kupon (${appliedCoupon.code})`}
+                  value={`-${fmt(couponDiscount)}₺`}
+                  valueClass="text-discount-green"
+                />
+              )}
+            </View>
+
+            <View className="h-px bg-border-subtle mx-4 mb-1" />
+          </>
+        )}
+
+        {/* Total row */}
+        <View className="flex-row items-center px-4 py-3 gap-3">
+          <TouchableOpacity
+            className="flex-row items-center gap-2 flex-1"
+            onPress={() => setSummaryExpanded((v) => !v)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={summaryExpanded ? "chevron-down" : "chevron-up"}
+              size={20}
+              color="#212529"
+            />
+            <View>
+              <View className="flex-column items-start">
+                <Text className="text-sm font-semibold text-text-primary">
+                  Toplam Tutar
+                </Text>
+                <Text className="text-xl font-bold text-text-primary">
+                  {fmt(totalAmount)}₺
+                </Text>
+              </View>
+              {freeShipping && (
+                <Text className="text-sm font-medium text-discount-green">
+                  Kargo Bedava
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-primary rounded-md px-10 py-3.5"
+            onPress={() => navigation.navigate("Checkout")}
+            activeOpacity={0.85}
+          >
+            <Text className="text-white font-bold text-base">Ödeme Yap</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
