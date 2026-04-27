@@ -163,24 +163,31 @@ export default function CartScreen() {
   if (cart.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-        <View className="bg-white px-4 py-3 border-b border-border-subtle">
-          <Text className="text-lg font-bold text-text-primary">Sepetim</Text>
+        <View className="bg-white px-4 py-3 border-b border-border-subtle flex-row items-center">
+          <TouchableOpacity onPress={() => navigation.goBack()} className="p-1 w-8">
+            <Ionicons name="arrow-back" size={22} color="#212529" />
+          </TouchableOpacity>
+          <Text className="flex-1 text-lg font-bold text-text-primary text-center">
+            Sepet
+          </Text>
+          <View className="w-8" />
         </View>
         <View className="flex-1 items-center justify-center gap-3 px-8">
-          <Ionicons name="cart-outline" size={64} color="#dee2e6" />
+          <Image
+            source={require("../assets/Cart/cart_icon.png")}
+            style={{ width: 64, height: 64 }}
+            resizeMode="contain"
+          />
           <Text className="text-lg font-semibold text-text-primary">
-            Sepetiniz Boş
-          </Text>
-          <Text className="text-sm text-text-muted text-center">
-            Ürünleri keşfetmek için alışverişe başlayın.
+            Sepetinizde ürün bulunmamaktadır.
           </Text>
           <TouchableOpacity
-            className="bg-primary rounded-xl px-8 py-3 mt-2"
+            className="bg-brand-red rounded-sm px-8 py-3 mt-2"
             onPress={() => navigation.navigate("Home")}
             activeOpacity={0.85}
           >
             <Text className="text-white font-semibold text-base">
-              Alışverişe Başla
+              Alışverişe Devam Et
             </Text>
           </TouchableOpacity>
         </View>
@@ -190,10 +197,14 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      <View className="bg-white px-4 py-3 border-b border-border-subtle">
-        <Text className="text-lg font-bold text-text-primary">
+      <View className="bg-white px-4 py-3 border-b border-border-subtle flex-row items-center">
+        <TouchableOpacity onPress={() => navigation.goBack()} className="p-1 w-8">
+          <Ionicons name="arrow-back" size={22} color="#212529" />
+        </TouchableOpacity>
+        <Text className="flex-1 text-lg font-bold text-text-primary text-center">
           Sepetim ({totalQuantity} ürün)
         </Text>
+        <View className="w-8" />
       </View>
 
       <FlatList
