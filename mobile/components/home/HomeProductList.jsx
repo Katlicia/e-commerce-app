@@ -21,8 +21,8 @@ import {
   removeFromFavouritesWithSync,
 } from "@mobile/shared/redux/favouriteSlice";
 
-const CARD_WIDTH = 150;
-const CARD_HEIGHT = 300;
+export const CARD_WIDTH = 150;
+export const CARD_HEIGHT = 300;
 const IMAGE_HEIGHT = 140;
 
 const BADGE_CONFIG = {
