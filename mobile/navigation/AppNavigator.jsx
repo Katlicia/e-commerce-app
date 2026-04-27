@@ -5,6 +5,7 @@ import MainTabs from "./MainTabs";
 import CategoryScreen from "../screens/CategoryScreen";
 import ProductDetailScreen from "../screens/ProductDetailScreen";
 import CheckoutScreen from "../screens/CheckoutScreen";
+import OrdersScreen from "../screens/OrdersScreen";
 import OrderDetailScreen from "../screens/OrderDetailScreen";
 import FavouritesScreen from "../screens/FavouritesScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -33,6 +34,7 @@ export default function AppNavigator() {
       <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
       <Stack.Screen name="AccountEdit" component={AccountEditScreen} />
       <Stack.Screen name="AddressEdit" component={AddressEditScreen} />
+      <Stack.Screen name="Orders" component={OrdersScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
       <Stack.Screen name="Favourites" component={FavouritesScreen} />
       <Stack.Screen name="CampaignDetail" component={CampaignDetailScreen} />
