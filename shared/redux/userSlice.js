@@ -41,6 +41,18 @@ export const editUserAddress = createAsyncThunk(
   },
 );
 
+export const deleteUserAddress = createAsyncThunk(
+  "user/deleteAddress",
+  async (index, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.delete(`/users/me/addresses/${index}`);
+      return data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Adres silinemedi.");
+    }
+  },
+);
+
 export const changePassword = createAsyncThunk(
   "user/changePassword",
   async ({ currentPassword, newPassword }, { rejectWithValue }) => {
@@ -117,6 +129,19 @@ export const userSlice = createSlice({
         state.addresses = action.payload;
       })
       .addCase(editUserAddress.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deleteUserAddress.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUserAddress.fulfilled, (state, action) => {
+        state.loading = false;
+        state.addresses = action.payload;
+      })
+      .addCase(deleteUserAddress.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
