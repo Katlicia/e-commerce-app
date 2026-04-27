@@ -9,10 +9,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
-import { ProductCard } from "./HomeProductList";
-
-const CARD_WIDTH = 150;
-const CARD_HEIGHT = 280;
+import { ProductCard, CARD_WIDTH, CARD_HEIGHT } from "./HomeProductList";
 
 function BannerCard({ image }) {
   return (
