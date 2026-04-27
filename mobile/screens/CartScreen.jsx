@@ -27,15 +27,16 @@ function CartItem({ item }) {
 
   const availableStock =
     item.skuId && Array.isArray(item.skus)
-      ? (item.skus.find(
-          (s) => s._id?.toString() === item.skuId?.toString(),
-        )?.stock ?? 0)
+      ? (item.skus.find((s) => s._id?.toString() === item.skuId?.toString())
+          ?.stock ?? 0)
       : (item.stock ?? 0);
 
   return (
     <View className="flex-row gap-3 py-3 border-b border-border-subtle mx-4">
       <TouchableOpacity
-        onPress={() => navigation.navigate("ProductDetail", { productId: itemId })}
+        onPress={() =>
+          navigation.navigate("ProductDetail", { productId: itemId })
+        }
       >
         <Image
           source={{ uri: image }}
@@ -47,7 +48,9 @@ function CartItem({ item }) {
 
       <View className="flex-1 justify-between">
         <TouchableOpacity
-          onPress={() => navigation.navigate("ProductDetail", { productId: itemId })}
+          onPress={() =>
+            navigation.navigate("ProductDetail", { productId: itemId })
+          }
         >
           <Text
             className="text-sm font-medium text-text-primary"
@@ -61,10 +64,7 @@ function CartItem({ item }) {
           Object.keys(item.selectedVariants).length > 0 && (
             <View className="flex-row flex-wrap gap-1 mt-0.5">
               {Object.entries(item.selectedVariants).map(([label, value]) => (
-                <View
-                  key={label}
-                  className="bg-bg-light rounded px-1.5 py-0.5"
-                >
+                <View key={label} className="bg-bg-light rounded px-1.5 py-0.5">
                   <Text className="text-2xs text-text-secondary">
                     {label}: {value}
                   </Text>
@@ -217,7 +217,9 @@ export default function CartScreen() {
                 <Text
                   className={`text-sm font-semibold ${remaining === 0 ? "text-discount-green" : "text-text-primary"}`}
                 >
-                  {remaining === 0 ? "Ücretsiz" : "Hesaplanıyor"}
+                  {remaining === 0
+                    ? "Ücretsiz"
+                    : "Adrese göre hesaplanacaktır."}
                 </Text>
               </View>
               <View className="border-t border-border-subtle pt-2 mt-1 flex-row justify-between">
