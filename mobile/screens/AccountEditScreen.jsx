@@ -8,11 +8,16 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
-import { updateUser } from "@mobile/shared/redux/userSlice";
+import { updateUser, deleteAccount } from "@mobile/shared/redux/userSlice";
+import { logoutUser } from "@mobile/shared/redux/authSlice";
+import { clearFavouritesLocal } from "@mobile/shared/redux/favouriteSlice";
+import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
+import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
 export default function AccountEditScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -23,6 +28,30 @@ export default function AccountEditScreen({ navigation }) {
   const [surname, setSurname] = useState(user?.surname ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [saved, setSaved] = useState(false);
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Hesabımı Sil",
+      "Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      [
+        { text: "Vazgeç", style: "cancel" },
+        {
+          text: "Hesabı Sil",
+          style: "destructive",
+          onPress: async () => {
+            const result = await dispatch(deleteAccount(user._id));
+            if (result.meta.requestStatus === "fulfilled") {
+              setBearerToken(null);
+              dispatch(logoutUser());
+              dispatch(clearFavouritesLocal());
+              dispatch(clearCartLocal());
+              navigation.navigate("MainTabs", { screen: "Profile" });
+            }
+          },
+        },
+      ],
+    );
+  };
 
   const handleSave = async () => {
     const result = await dispatch(
@@ -104,8 +133,12 @@ export default function AccountEditScreen({ navigation }) {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity className="items-center mt-2" activeOpacity={0.7}>
-            <Text className="text-sm">Hesabımı Sil</Text>
+          <TouchableOpacity
+            className="items-center mt-2"
+            activeOpacity={0.7}
+            onPress={handleDeleteAccount}
+          >
+            <Text className="text-sm text-red-400">Hesabımı Sil</Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
