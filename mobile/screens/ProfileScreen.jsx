@@ -118,8 +118,8 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Menu items */}
         {[
-          { label: "Listelerim", icon: "list-outline" },
-          { label: "Adreslerim", icon: "location-outline" },
+          { label: "Listelerim", icon: "list-outline", screen: null },
+          { label: "Adreslerim", icon: "location-outline", screen: "AddressEdit" },
           { label: "Siparişler", icon: "bag-outline" },
           { label: "Mesajlar", icon: "chatbubble-outline" },
           { label: "Soru Cevap", icon: "help-circle-outline" },
@@ -131,6 +131,7 @@ export default function ProfileScreen({ navigation }) {
           <TouchableOpacity
             key={item.label}
             className="flex-row items-center px-4 py-4 border-b border-border-subtle"
+            onPress={() => item.screen && navigation.navigate(item.screen)}
             activeOpacity={0.6}
           >
             <Text className="flex-1 text-md text-text-primary">
