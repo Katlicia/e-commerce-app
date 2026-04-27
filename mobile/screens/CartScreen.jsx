@@ -9,6 +9,7 @@ import {
   decreaseCartWithSync,
   removeFromCartWithSync,
 } from "@mobile/shared/redux/cartSlice";
+import { fmt } from "@mobile/shared/utils/format";
 
 function CartItem({ item }) {
   const dispatch = useDispatch();
@@ -127,12 +128,6 @@ function SummaryRow({ label, value, valueClass = "" }) {
     </View>
   );
 }
-
-const fmt = (n) =>
-  Number(n).toLocaleString("tr-TR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
 
 export default function CartScreen() {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
