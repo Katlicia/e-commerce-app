@@ -120,7 +120,7 @@ export default function ProfileScreen({ navigation }) {
         {[
           { label: "Listelerim", icon: "list-outline", screen: null },
           { label: "Adreslerim", icon: "location-outline", screen: "AddressEdit" },
-          { label: "Siparişler", icon: "bag-outline" },
+          { label: "Siparişler", icon: "bag-outline", screen: "Orders" },
           { label: "Mesajlar", icon: "chatbubble-outline" },
           { label: "Soru Cevap", icon: "help-circle-outline" },
           { label: "Kurumsal Teklif", icon: "business-outline" },
