@@ -15,6 +15,7 @@ import CampaignDetailScreen from "../screens/CampaignDetailScreen";
 import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import AccountEditScreen from "../screens/AccountEditScreen";
 import AddressEditScreen from "../screens/AddressEditScreen";
+import ChangePasswordScreen from "../screens/ChangePasswordScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ export default function AppNavigator() {
       <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
       <Stack.Screen name="AccountEdit" component={AccountEditScreen} />
       <Stack.Screen name="AddressEdit" component={AddressEditScreen} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="Orders" component={OrdersScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
       <Stack.Screen name="Favourites" component={FavouritesScreen} />
