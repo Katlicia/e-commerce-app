@@ -125,7 +125,7 @@ export default function ProfileScreen({ navigation }) {
           { label: "Soru Cevap", icon: "help-circle-outline" },
           { label: "Kurumsal Teklif", icon: "business-outline" },
           { label: "Fiyat Alarmlarım", icon: "notifications-outline" },
-          { label: "Şifre Değiştir", icon: "lock-closed-outline" },
+          { label: "Şifre Değiştir", icon: "lock-closed-outline", screen: "ChangePassword" },
           { label: "Sözleşmeler", icon: "document-text-outline" },
         ].map((item) => (
           <TouchableOpacity
