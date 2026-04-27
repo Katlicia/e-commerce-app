@@ -53,6 +53,17 @@ export const deleteUserAddress = createAsyncThunk(
   },
 );
 
+export const deleteAccount = createAsyncThunk(
+  "user/deleteAccount",
+  async (userId, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`/users/${userId}`);
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Hesap silinemedi.");
+    }
+  },
+);
+
 export const changePassword = createAsyncThunk(
   "user/changePassword",
   async ({ currentPassword, newPassword }, { rejectWithValue }) => {
