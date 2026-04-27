@@ -11,10 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+import { Ionicons } from "@expo/vector-icons";
 import { registerUser } from "@mobile/shared/redux/authSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
-const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+const capitalize = (str) =>
+  str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
 export default function RegisterScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -37,7 +39,7 @@ export default function RegisterScreen({ navigation }) {
         ...formData,
         name: capitalize(formData.name),
         surname: capitalize(formData.surname),
-      })
+      }),
     );
     if (result.meta.requestStatus === "fulfilled") {
       setBearerToken(result.payload?.token ?? null);
@@ -57,10 +59,13 @@ export default function RegisterScreen({ navigation }) {
         >
           {/* Header */}
           <View className="flex-row items-center px-4 py-3 border-b border-border-light">
-            <TouchableOpacity onPress={() => navigation.goBack()} className="mr-3 p-1">
-              <Text className="text-2xl text-text-primary">←</Text>
+            <TouchableOpacity onPress={() => navigation.goBack()} className="p-1 w-8">
+              <Ionicons name="arrow-back" size={22} color="#212529" />
             </TouchableOpacity>
-            <Text className="text-lg font-bold text-text-primary">Kayıt Ol</Text>
+            <Text className="flex-1 text-lg font-bold text-text-primary text-center">
+              Kayıt Ol
+            </Text>
+            <View className="w-8" />
           </View>
 
           <View className="px-5 pt-8 pb-6" style={{ width: "100%" }}>
@@ -73,9 +78,8 @@ export default function RegisterScreen({ navigation }) {
 
             {/* Name */}
             <View className="mb-4">
-              <Text className="text-base font-medium text-text-primary mb-1">Ad</Text>
               <TextInput
-                className="border border-border-input rounded-lg px-4 h-12 text-base text-text-primary bg-white"
+                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
                 value={formData.name}
                 onChangeText={update("name")}
                 autoCapitalize="words"
@@ -86,9 +90,8 @@ export default function RegisterScreen({ navigation }) {
 
             {/* Surname */}
             <View className="mb-4">
-              <Text className="text-base font-medium text-text-primary mb-1">Soyad</Text>
               <TextInput
-                className="border border-border-input rounded-lg px-4 h-12 text-base text-text-primary bg-white"
+                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
                 value={formData.surname}
                 onChangeText={update("surname")}
                 autoCapitalize="words"
@@ -99,36 +102,34 @@ export default function RegisterScreen({ navigation }) {
 
             {/* Email */}
             <View className="mb-4">
-              <Text className="text-base font-medium text-text-primary mb-1">E-posta</Text>
               <TextInput
-                className="border border-border-input rounded-lg px-4 h-12 text-base text-text-primary bg-white"
+                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
                 value={formData.email}
                 onChangeText={update("email")}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
                 placeholderTextColor="#adb5bd"
-                placeholder="ornek@mail.com"
+                placeholder="E-Mail Adresiniz"
               />
             </View>
 
             {/* Password */}
             <View className="mb-6">
-              <Text className="text-base font-medium text-text-primary mb-1">Şifre</Text>
               <TextInput
-                className="border border-border-input rounded-lg px-4 h-12 text-base text-text-primary bg-white"
+                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
                 value={formData.password}
                 onChangeText={update("password")}
                 secureTextEntry
                 autoComplete="new-password"
                 placeholderTextColor="#adb5bd"
-                placeholder="••••••••"
+                placeholder="Şifreniz"
               />
             </View>
 
             {/* Register button */}
             <TouchableOpacity
-              className="bg-primary rounded-md h-12 items-center justify-center mb-5"
+              className="bg-brand-red rounded-sm h-12 items-center justify-center mb-5"
               onPress={handleRegister}
               disabled={loading}
               activeOpacity={0.85}
@@ -142,9 +143,13 @@ export default function RegisterScreen({ navigation }) {
 
             {/* Login link */}
             <View className="flex-row justify-center gap-1">
-              <Text className="text-base text-text-secondary">Zaten hesabın var mı?</Text>
+              <Text className="text-base text-text-secondary">
+                Zaten hesabın var mı?
+              </Text>
               <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                <Text className="text-base text-brand-blue font-medium">Giriş Yap</Text>
+                <Text className="text-base text-brand-blue font-medium">
+                  Giriş Yap
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
