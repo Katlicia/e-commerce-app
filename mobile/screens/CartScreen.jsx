@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -9,8 +17,11 @@ import {
   addToCartWithSync,
   decreaseCartWithSync,
   removeFromCartWithSync,
+  setAppliedCoupon,
+  clearAppliedCoupon,
 } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
+import axiosInstance from "@mobile/shared/utils/axiosInstance";
 
 function CartItem({ item }) {
   const dispatch = useDispatch();
@@ -132,10 +143,39 @@ function SummaryRow({ label, value, valueClass = "" }) {
 
 export default function CartScreen() {
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState("");
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const { cart, totalAmount, appliedCoupon } = useSelector(
     (state) => state.cart,
   );
+  const user = useSelector((state) => state.auth.user);
+
+  const handleApplyCoupon = async () => {
+    const trimmed = couponCode.trim().toUpperCase();
+    if (!trimmed) return;
+    setCouponError("");
+    setCouponLoading(true);
+    try {
+      const { data } = await axiosInstance.post("/coupons/apply", {
+        code: trimmed,
+        orderTotal: totalAmount,
+      });
+      dispatch(setAppliedCoupon(data));
+      setCouponCode("");
+    } catch (err) {
+      setCouponError(err?.response?.data?.message ?? "Kupon uygulanamadı.");
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    dispatch(clearAppliedCoupon());
+    setCouponError("");
+  };
   const {
     freeShippingThreshold = 500,
     kdv1Rate = 0.01,
@@ -199,6 +239,78 @@ export default function CartScreen() {
         contentContainerStyle={{ paddingBottom: 16 }}
         style={{ backgroundColor: "white" }}
       />
+
+      {/* Coupon Section */}
+      <View className="bg-white border-t border-border-subtle px-4 py-3">
+        {appliedCoupon ? (
+          <View className="flex-row items-center justify-between bg-success-light rounded-lg px-3 py-2.5">
+            <View className="flex-row items-center gap-2">
+              <Ionicons name="pricetag" size={16} color="#2a9d4e" />
+              <View>
+                <Text className="text-sm font-semibold text-discount-green">
+                  {appliedCoupon.code}
+                </Text>
+                <Text className="text-xs text-discount-green">
+                  -{fmt(appliedCoupon.discount)}₺ indirim uygulandı
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={handleRemoveCoupon} hitSlop={8}>
+              <Ionicons name="close-circle" size={20} color="#2a9d4e" />
+            </TouchableOpacity>
+          </View>
+        ) : user ? (
+          <>
+            <View className="flex-row gap-2">
+              <TextInput
+                className="flex-1 border border-border-input rounded-lg px-3 py-2 text-sm text-text-primary"
+                placeholder="Kupon kodunuzu girin"
+                placeholderTextColor="#aaa"
+                value={couponCode}
+                onChangeText={(t) => {
+                  setCouponCode(t);
+                  if (couponError) setCouponError("");
+                }}
+                autoCapitalize="characters"
+                returnKeyType="done"
+                onSubmitEditing={handleApplyCoupon}
+              />
+              <TouchableOpacity
+                className="bg-primary rounded-lg px-4 items-center justify-center"
+                onPress={handleApplyCoupon}
+                disabled={couponLoading}
+                activeOpacity={0.8}
+              >
+                {couponLoading ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text className="text-white font-semibold text-sm">
+                    Uygula
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            {couponError ? (
+              <Text className="text-xs text-price-red mt-1.5">
+                {couponError}
+              </Text>
+            ) : null}
+          </>
+        ) : (
+          <View className="flex-row items-center gap-2 py-1">
+            <Ionicons name="pricetag-outline" size={16} color="#aaa" />
+            <Text className="text-sm text-text-muted">
+              Kupon kullanmak için{" "}
+              <Text
+                className="text-primary font-medium"
+                onPress={() => navigation.navigate("Login")}
+              >
+                giriş yapın
+              </Text>
+            </Text>
+          </View>
+        )}
+      </View>
 
       {!summaryExpanded && (
         <View className="items-center py-2 bg-white">
