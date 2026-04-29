@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../utils/axiosInstance";
 import { storage } from "../utils/storage";
+import { updateUser } from "./userSlice";
 
 export const hydrateAuth = createAsyncThunk("auth/hydrate", async () => {
   const raw = await storage.getItem("user");
@@ -146,6 +147,10 @@ const authSlice = createSlice({
       .addCase(forgetPassword.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.user = action.payload;
+        storage.setItem("user", JSON.stringify(action.payload));
       });
   },
 });
