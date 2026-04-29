@@ -22,6 +22,7 @@ import {
   addToCartWithSync,
 } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
+import ScreenHeader from "../components/ScreenHeader";
 
 const STEPS = [
   { label: "Sipariş\nAlındı", icon: require("../assets/Profile/cart.png") },
@@ -201,19 +202,7 @@ export default function OrderDetailScreen({ navigation, route }) {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      {/* Header */}
-      <View className="bg-white flex-row items-center px-4 py-3 border-b border-border-subtle">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ width: 32, padding: 4 }}
-        >
-          <Ionicons name="arrow-back" size={22} color="#212529" />
-        </TouchableOpacity>
-        <Text className="flex-1 text-base font-sans-bold text-text-primary text-center">
-          {order.orderNo} nolu sipariş
-        </Text>
-        <View style={{ width: 32 }} />
-      </View>
+      <ScreenHeader title={`${order.orderNo} nolu sipariş`} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {error && (

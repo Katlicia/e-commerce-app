@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import ScreenHeader from "../components/ScreenHeader";
 import {
   addToCartWithSync,
   decreaseCartWithSync,
@@ -163,15 +164,7 @@ export default function CartScreen() {
   if (cart.length === 0) {
     return (
       <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-        <View className="bg-white px-4 py-3 border-b border-border-subtle flex-row items-center">
-          <TouchableOpacity onPress={() => navigation.goBack()} className="p-1 w-8">
-            <Ionicons name="arrow-back" size={22} color="#212529" />
-          </TouchableOpacity>
-          <Text className="flex-1 text-lg font-bold text-text-primary text-center">
-            Sepet
-          </Text>
-          <View className="w-8" />
-        </View>
+        <ScreenHeader title="Sepet" />
         <View className="flex-1 items-center justify-center gap-3 px-8">
           <Image
             source={require("../assets/Cart/cart_icon.png")}
@@ -197,15 +190,7 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      <View className="bg-white px-4 py-3 border-b border-border-subtle flex-row items-center">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="p-1 w-8">
-          <Ionicons name="arrow-back" size={22} color="#212529" />
-        </TouchableOpacity>
-        <Text className="flex-1 text-lg font-bold text-text-primary text-center">
-          Sepetim ({totalQuantity} ürün)
-        </Text>
-        <View className="w-8" />
-      </View>
+      <ScreenHeader title={`Sepetim (${totalQuantity} ürün)`} />
 
       <FlatList
         data={cart}

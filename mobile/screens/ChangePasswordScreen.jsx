@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { changePassword } from "@mobile/shared/redux/userSlice";
+import ScreenHeader from "../components/ScreenHeader";
 
 function Field({ label, value, onChangeText, secureEntry, show, onToggle, error }) {
   return (
@@ -84,19 +85,7 @@ export default function ChangePasswordScreen({ navigation }) {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      {/* Header */}
-      <View className="bg-white flex-row items-center px-4 py-3 border-b border-border-subtle">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ width: 32, padding: 4 }}
-        >
-          <Ionicons name="arrow-back" size={22} color="#212529" />
-        </TouchableOpacity>
-        <Text className="flex-1 text-lg font-sans-bold text-text-primary text-center">
-          Şifre Değiştir
-        </Text>
-        <View style={{ width: 32 }} />
-      </View>
+      <ScreenHeader title="Şifre Değiştir" />
 
       <ScrollView
         contentContainerStyle={{ padding: 20 }}

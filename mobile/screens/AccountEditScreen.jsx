@@ -18,6 +18,7 @@ import { logoutUser } from "@mobile/shared/redux/authSlice";
 import { clearFavouritesLocal } from "@mobile/shared/redux/favouriteSlice";
 import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
+import ScreenHeader from "../components/ScreenHeader";
 
 export default function AccountEditScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -70,19 +71,7 @@ export default function AccountEditScreen({ navigation }) {
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Header */}
-        <View className="flex-row items-center px-4 py-3 border-b border-border-subtle">
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ width: 32, padding: 4 }}
-          >
-            <Ionicons name="arrow-back" size={22} color="#212529" />
-          </TouchableOpacity>
-          <Text className="flex-1 text-lg font-sans-bold text-text-primary text-center">
-            Hesap İşlemleri
-          </Text>
-          <View style={{ width: 32 }} />
-        </View>
+        <ScreenHeader title="Hesap İşlemleri" />
 
         <ScrollView
           contentContainerStyle={{ padding: 16, gap: 12 }}

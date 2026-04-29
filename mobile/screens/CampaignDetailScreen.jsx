@@ -12,6 +12,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
+import ScreenHeader from "../components/ScreenHeader";
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString("tr-TR", {
@@ -55,40 +56,7 @@ export default function CampaignDetailScreen() {
       style={{ flex: 1, backgroundColor: "#f8f9fa" }}
       edges={["top"]}
     >
-      {/* Header */}
-      <View
-        style={{
-          backgroundColor: "#fff",
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 12,
-          paddingVertical: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "#f1f3f5",
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={{ marginRight: 8 }}
-        >
-          <Ionicons name="arrow-back" size={22} color="#212529" />
-        </TouchableOpacity>
-        <Text
-          style={{
-            flex: 1,
-            fontSize: 16,
-            fontWeight: "700",
-            color: "#212529",
-            textAlign: "center",
-          }}
-        >
-          Kampanya Detayı
-        </Text>
-        <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="notifications-outline" size={22} color="#212529" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title="Kampanya Detayı" />
 
       {loading ? (
         <View

@@ -16,6 +16,7 @@ import {
   deleteUserAddress,
 } from "@mobile/shared/redux/userSlice";
 import AddressModal from "../components/AddressModal";
+import ScreenHeader from "../components/ScreenHeader";
 
 export default function AddressEditScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -58,24 +59,17 @@ export default function AddressEditScreen({ navigation }) {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      {/* Header */}
-      <View className="bg-white flex-row items-center px-4 py-3 border-b border-border-subtle">
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={{ width: 32, padding: 4 }}
-        >
-          <Ionicons name="arrow-back" size={22} color="#212529" />
-        </TouchableOpacity>
-        <Text className="flex-1 text-lg font-sans-bold text-text-primary text-center">
-          Adreslerim
-        </Text>
-        <TouchableOpacity onPress={openAdd} className="flex-row items-center gap-1">
-          <Ionicons name="add" size={18} color="#F83B0A" />
-          <Text className="text-sm font-sans-semibold text-brand-red">
-            Adres Ekle
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader
+        title="Adreslerim"
+        right={
+          <TouchableOpacity onPress={openAdd} className="flex-row items-center gap-1">
+            <Ionicons name="add" size={18} color="#F83B0A" />
+            <Text className="text-sm font-sans-semibold text-brand-red">
+              Adres Ekle
+            </Text>
+          </TouchableOpacity>
+        }
+      />
 
       <AddressModal
         visible={modalVisible}

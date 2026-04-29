@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
+import ScreenHeader from "../components/ScreenHeader";
 
 function CampaignCard({ item }) {
   const navigation = useNavigation();
@@ -128,25 +129,7 @@ export default function CampaignsScreen() {
       style={{ flex: 1, backgroundColor: "#f8f9fa" }}
       edges={["top"]}
     >
-      <View
-        style={{
-          backgroundColor: "#fff",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "#f1f3f5",
-        }}
-      >
-        <Text style={{ fontSize: 18, fontWeight: "800", color: "#212529" }}>
-          Kampanyalar
-        </Text>
-        <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="notifications-outline" size={22} color="#212529" />
-        </TouchableOpacity>
-      </View>
+      <ScreenHeader title="Kampanyalar" />
 
       {loading ? (
         <View

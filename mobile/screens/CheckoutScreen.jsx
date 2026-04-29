@@ -26,6 +26,7 @@ import {
 import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import AddressModal from "../components/AddressModal";
+import ScreenHeader from "../components/ScreenHeader";
 
 function RadioDot({ active }) {
   return (
@@ -213,15 +214,7 @@ export default function CheckoutScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      {/* Header */}
-      <View className="bg-white flex-row items-center px-4 py-3 border-b border-border-subtle">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="mr-3">
-          <Ionicons name="arrow-back" size={22} color="#212529" />
-        </TouchableOpacity>
-        <Text className="text-lg text-center font-sans-bold text-text-primary flex-1">
-          Kasa
-        </Text>
-      </View>
+      <ScreenHeader title="Kasa" />
 
       <AddressModal
         visible={addressModalVisible}
