@@ -38,7 +38,6 @@ app.use(
         process.env.CLIENT_URL2,
         "http://localhost:8081", // Expo web
       ];
-      // React Native isteklerinde origin yoktur (undefined/null)
       if (!origin || allowed.includes(origin)) {
         callback(null, true);
       } else {
