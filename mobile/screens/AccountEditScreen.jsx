@@ -57,7 +57,10 @@ export default function AccountEditScreen({ navigation }) {
 
   const handleSave = async () => {
     const result = await dispatch(
-      updateUser({ userId: user._id, formData: { name, surname, email, phone } }),
+      updateUser({
+        userId: user._id,
+        formData: { name, surname, email, phone },
+      }),
     );
     if (result.meta.requestStatus === "fulfilled") {
       setSaved(true);
