@@ -28,9 +28,9 @@ function LoginPage() {
       {error && <div className="alert alert-danger py-2">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">E-posta</label>
+          <label className="form-label">E-posta veya Telefon</label>
           <input
-            type="email"
+            type="text"
             name="email"
             className="form-control"
             value={formData.email}
