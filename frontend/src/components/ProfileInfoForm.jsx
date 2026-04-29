@@ -11,6 +11,7 @@ function ProfileInfoForm() {
     name: user?.name || "",
     surname: user?.surname || "",
     email: user?.email || "",
+    phone: user?.phone || "",
   });
   const [success, setSuccess] = useState(false);
 
@@ -64,7 +65,7 @@ function ProfileInfoForm() {
             disabled
           />
         </div>
-        <div className="col-12">
+        <div className="col-12 col-sm-6">
           <label
             className="form-label text-muted"
             style={{ fontSize: "0.85rem" }}
@@ -74,8 +75,23 @@ function ProfileInfoForm() {
           <input
             className="form-control"
             name="email"
-            type="email"
+            type="text"
             value={formData.email}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-12 col-sm-6">
+          <label
+            className="form-label text-muted"
+            style={{ fontSize: "0.85rem" }}
+          >
+            Telefon
+          </label>
+          <input
+            className="form-control"
+            name="phone"
+            type="tel"
+            value={formData.phone}
             onChange={handleChange}
           />
         </div>
