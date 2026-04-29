@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Clipboard,
   Image,
   ScrollView,
   Share,
@@ -39,8 +40,9 @@ export default function CampaignDetailScreen() {
       .finally(() => setLoading(false));
   }, [campaignId]);
 
-  const handleCopy = async () => {
+  const handleCopy = () => {
     if (!campaign?.coupon?.code) return;
+    Clipboard.setString(campaign.coupon.code);
     setCopied(true);
   };
 
