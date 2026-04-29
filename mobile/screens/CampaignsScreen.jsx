@@ -19,7 +19,9 @@ function CampaignCard({ item }) {
     <TouchableOpacity
       activeOpacity={0.85}
       style={{ marginHorizontal: 12, marginBottom: 14 }}
-      onPress={() => navigation.navigate("CampaignDetail", { campaignId: item._id })}
+      onPress={() =>
+        navigation.navigate("CampaignDetail", { campaignId: item._id })
+      }
     >
       <View
         style={{
@@ -60,9 +62,7 @@ function CampaignCard({ item }) {
               paddingVertical: 5,
             }}
           >
-            <Text
-              style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}
-            >
+            <Text style={{ color: "#fff", fontSize: 11, fontWeight: "700" }}>
               Kampanya Kodu: {item.coupon.code}
             </Text>
           </View>
@@ -108,7 +108,9 @@ export default function CampaignsScreen() {
   const fetchCampaigns = useCallback(async () => {
     try {
       const res = await axiosInstance.get("/campaigns");
-      const list = Array.isArray(res.data) ? res.data : (res.data.campaigns ?? []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : (res.data.campaigns ?? []);
       setCampaigns(list.filter((c) => c.isActive));
     } catch {
       setCampaigns([]);
@@ -122,7 +124,10 @@ export default function CampaignsScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8f9fa" }} edges={["top"]}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: "#f8f9fa" }}
+      edges={["top"]}
+    >
       <View
         style={{
           backgroundColor: "#fff",
@@ -144,7 +149,9 @@ export default function CampaignsScreen() {
       </View>
 
       {loading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator color="#ff7700" size="large" />
         </View>
       ) : (
@@ -156,11 +163,16 @@ export default function CampaignsScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View
-              style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 80 }}
+              style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingTop: 80,
+              }}
             >
               <Ionicons name="pricetag-outline" size={48} color="#adb5bd" />
               <Text style={{ color: "#adb5bd", marginTop: 12, fontSize: 15 }}>
-                Aktif kampanya bulunamadÄ±
+                Aktif kampanya bulunamadı
               </Text>
             </View>
           }
@@ -169,4 +181,3 @@ export default function CampaignsScreen() {
     </SafeAreaView>
   );
 }
-
