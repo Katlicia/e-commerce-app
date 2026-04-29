@@ -25,20 +25,44 @@ export default function RegisterScreen({ navigation }) {
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
-    email: "",
+    credential: "",
     password: "",
   });
+  const [credentialError, setCredentialError] = useState("");
 
   function update(field) {
-    return (text) => setFormData((prev) => ({ ...prev, [field]: text }));
+    return (text) => {
+      setFormData((prev) => ({ ...prev, [field]: text }));
+      if (field === "credential") setCredentialError("");
+    };
+  }
+
+  function parseCredential(value) {
+    const trimmed = value.trim();
+    if (trimmed.includes("@")) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmed)) return { error: "Geçersiz e-posta adresi." };
+      return { email: trimmed };
+    }
+    const digits = trimmed.replace(/[\s\-().+]/g, "");
+    if (!/^\d+$/.test(digits) || digits.length < 10 || digits.length > 13) {
+      return { error: "Geçerli bir e-posta veya telefon numarası girin." };
+    }
+    return { phone: trimmed };
   }
 
   async function handleRegister() {
+    const parsed = parseCredential(formData.credential);
+    if (parsed.error) {
+      setCredentialError(parsed.error);
+      return;
+    }
     const result = await dispatch(
       registerUser({
-        ...formData,
         name: capitalize(formData.name),
         surname: capitalize(formData.surname),
+        password: formData.password,
+        ...parsed,
       }),
     );
     if (result.meta.requestStatus === "fulfilled") {
@@ -100,18 +124,21 @@ export default function RegisterScreen({ navigation }) {
               />
             </View>
 
-            {/* Email */}
+            {/* Email or Phone */}
             <View className="mb-4">
               <TextInput
-                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
-                value={formData.email}
-                onChangeText={update("email")}
-                keyboardType="email-address"
+                className={`border rounded-xs px-4 h-12 text-base text-text-primary bg-white ${credentialError ? "border-red-400" : "border-border-input"}`}
+                value={formData.credential}
+                onChangeText={update("credential")}
+                keyboardType="default"
                 autoCapitalize="none"
-                autoComplete="email"
+                autoComplete="off"
                 placeholderTextColor="#adb5bd"
-                placeholder="E-Mail Adresiniz"
+                placeholder="E-posta veya telefon numarası"
               />
+              {credentialError ? (
+                <Text className="text-red-500 text-sm mt-1">{credentialError}</Text>
+              ) : null}
             </View>
 
             {/* Password */}
