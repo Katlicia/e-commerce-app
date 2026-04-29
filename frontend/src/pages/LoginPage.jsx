@@ -20,9 +20,16 @@ function LoginPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
+  function buildLoginPayload(credential, password) {
+    const trimmed = credential.trim();
+    if (trimmed.includes("@")) return { email: trimmed, password };
+    return { phone: trimmed, password };
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
-    const result = await dispatch(loginUser(formData));
+    const payload = buildLoginPayload(formData.email, formData.password);
+    const result = await dispatch(loginUser(payload));
     if (result.meta.requestStatus === "fulfilled") {
       dispatch(mergeCartOnLogin());
       dispatch(fetchFavourites());
@@ -50,9 +57,9 @@ function LoginPage() {
       {error && <div className="alert alert-danger py-2">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label className="form-label">E-posta</label>
+          <label className="form-label">E-posta veya Telefon</label>
           <input
-            type="email"
+            type="text"
             name="email"
             className="form-control"
             value={formData.email}
@@ -89,10 +96,15 @@ function LoginPage() {
         )}
         {resetSent && (
           <div className="alert alert-success py-2" style={{ fontSize: 13 }}>
-            Şifre sıfırlama bağlantısı <strong>{formData.email}</strong> adresine gönderildi.
+            Şifre sıfırlama bağlantısı <strong>{formData.email}</strong>{" "}
+            adresine gönderildi.
           </div>
         )}
-        <button type="submit" className="btn w-100 card-button" disabled={loading}>
+        <button
+          type="submit"
+          className="btn w-100 card-button"
+          disabled={loading}
+        >
           {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
         </button>
       </form>

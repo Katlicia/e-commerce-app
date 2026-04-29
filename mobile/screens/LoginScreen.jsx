@@ -25,8 +25,14 @@ export default function LoginScreen({ navigation }) {
   const [resetSent, setResetSent] = useState(false);
   const [resetError, setResetError] = useState(null);
 
+  function buildPayload() {
+    const trimmed = formData.email.trim();
+    const base = { password: formData.password };
+    return trimmed.includes("@") ? { ...base, email: trimmed } : { ...base, phone: trimmed };
+  }
+
   async function handleLogin() {
-    const result = await dispatch(loginUser(formData));
+    const result = await dispatch(loginUser(buildPayload()));
     if (result.meta.requestStatus === "fulfilled") {
       setBearerToken(result.payload?.token ?? null);
       dispatch(mergeCartOnLogin());
