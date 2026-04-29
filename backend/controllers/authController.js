@@ -6,11 +6,20 @@ const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 
 exports.register = async (req, res) => {
-  const { name, surname, email, password } = req.body;
+  const { name, surname, email, phone, password } = req.body;
 
-  const userExists = await User.findOne({ email });
+  if (!email && !phone) {
+    return res.status(400).json({ message: "Email veya telefon numarası zorunludur." });
+  }
 
-  if (userExists) {
+  const existingUser = await User.findOne({
+    $or: [
+      ...(email ? [{ email }] : []),
+      ...(phone ? [{ phone }] : []),
+    ],
+  });
+
+  if (existingUser) {
     return res.status(400).json({ message: "Böyle bir kullanıcı var." });
   }
 
@@ -25,7 +34,8 @@ exports.register = async (req, res) => {
   const user = await User.create({
     name,
     surname,
-    email,
+    ...(email && { email }),
+    ...(phone && { phone }),
     password: hashedPassword,
   });
 
@@ -41,13 +51,23 @@ exports.register = async (req, res) => {
     name: user.name,
     surname: user.surname,
     email: user.email,
+    phone: user.phone,
     token,
   });
 };
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const { email, phone, password } = req.body;
+
+  if (!email && !phone) {
+    return res.status(400).json({ message: "Email veya telefon numarası gerekli." });
+  }
+
+  const conditions = [];
+  if (email) conditions.push({ email });
+  if (phone) conditions.push({ phone });
+
+  const user = await User.findOne({ $or: conditions });
 
   if (user) {
     if (await bcrypt.compare(password, user.password)) {
@@ -63,6 +83,7 @@ exports.login = async (req, res) => {
         name: user.name,
         surname: user.surname,
         email: user.email,
+        phone: user.phone,
         token,
       });
     } else {
@@ -74,8 +95,17 @@ exports.login = async (req, res) => {
 };
 
 exports.adminLogin = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  const { email, phone, password } = req.body;
+
+  if (!email && !phone) {
+    return res.status(400).json({ message: "Email veya telefon numarası gerekli." });
+  }
+
+  const conditions = [];
+  if (email) conditions.push({ email });
+  if (phone) conditions.push({ phone });
+
+  const user = await User.findOne({ $or: conditions });
 
   if (user) {
     if (await bcrypt.compare(password, user.password)) {
