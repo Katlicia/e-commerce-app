@@ -97,7 +97,7 @@ export default function OrderSuccessScreen() {
         {success && (
           <TouchableOpacity
             className="border border-primary rounded-md py-4 items-center"
-            onPress={() => navigation.navigate("MainTabs")}
+            onPress={() => navigation.navigate("Orders")}
             activeOpacity={0.85}
           >
             <Text className="text-primary font-sans-bold text-md">
