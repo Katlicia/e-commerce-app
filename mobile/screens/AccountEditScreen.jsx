@@ -27,6 +27,7 @@ export default function AccountEditScreen({ navigation }) {
   const [name, setName] = useState(user?.name ?? "");
   const [surname, setSurname] = useState(user?.surname ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const [saved, setSaved] = useState(false);
 
   const handleDeleteAccount = () => {
@@ -55,7 +56,7 @@ export default function AccountEditScreen({ navigation }) {
 
   const handleSave = async () => {
     const result = await dispatch(
-      updateUser({ userId: user._id, formData: { name, surname, email } }),
+      updateUser({ userId: user._id, formData: { name, surname, email, phone } }),
     );
     if (result.meta.requestStatus === "fulfilled") {
       setSaved(true);
@@ -111,6 +112,14 @@ export default function AccountEditScreen({ navigation }) {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+          />
+          <TextInput
+            className="border border-border-input rounded-sm px-4 h-12 text-base text-text-primary bg-white"
+            placeholder="Telefon numarası"
+            placeholderTextColor="#adb5bd"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
           />
 
           <TouchableOpacity
