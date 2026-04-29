@@ -17,7 +17,7 @@ import { fetchCart, hydrateCartFromStorage } from "@mobile/shared/redux/cartSlic
 import { store } from "./redux/store";
 import AppNavigator from "./navigation/AppNavigator";
 
-configureAxios(process.env.EXPO_PUBLIC_API_URL);
+configureAxios(process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.121:5000");
 configureStorage({
   getItem: (key) => AsyncStorage.getItem(key),
   setItem: (key, value) => AsyncStorage.setItem(key, value),
