@@ -14,6 +14,7 @@ import { Provider, useDispatch, useSelector } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import * as NavigationBar from "expo-navigation-bar";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -45,6 +46,11 @@ configureStorage({
 function AppContent() {
   const dispatch = useDispatch();
   const initialized = useSelector((state) => state.auth.initialized);
+
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync("#ffffff");
+    NavigationBar.setButtonStyleAsync("dark");
+  }, []);
 
   useEffect(() => {
     dispatch(hydrateAuth()).then(async (action) => {
