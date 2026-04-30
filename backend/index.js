@@ -21,6 +21,8 @@ const featuredListRoutes = require("./routes/featuredListRoutes");
 const campaignRoutes = require("./routes/campaignRoutes");
 const cloudinary = require("cloudinary").v2;
 const paymentRoutes = require("./routes/paymentRoutes");
+const listRoutes = require("./routes/listRoutes");
+const listedProductsRoutes = require("./routes/listedProductsRoutes");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -70,6 +72,8 @@ app.use("/", couponRoutes);
 app.use("/", featuredListRoutes);
 app.use("/", campaignRoutes);
 app.use("/", paymentRoutes);
+app.use("/", listRoutes);
+app.use("/", listedProductsRoutes);
 
 app.get("/", (req, res) => {
   res.send("API working.");
