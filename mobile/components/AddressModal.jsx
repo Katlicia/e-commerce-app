@@ -10,6 +10,7 @@ import {
   Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const emptyAddress = {
   addressName: "",
@@ -51,6 +52,7 @@ function Field({ value, onChangeText, placeholder, error, ...rest }) {
 }
 
 export default function AddressModal({ visible, initial, onSave, onClose }) {
+  const insets = useSafeAreaInsets();
   const [form, setForm] = useState(
     initial ? { addressName: "Adres", ...initial } : emptyAddress,
   );
@@ -84,7 +86,7 @@ export default function AddressModal({ visible, initial, onSave, onClose }) {
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
           >
-            <View className="bg-white rounded-t-2xl px-4 pt-4 pb-8">
+            <View className="bg-white rounded-t-2xl px-4 pt-4" style={{ paddingBottom: Math.max(insets.bottom, 16) }}>
               <View className="flex-row justify-between items-center mb-4">
                 <Text className="text-md font-sans-bold text-text-primary">
                   {initial ? "Adresi Düzenle" : "Adres Ekle"}

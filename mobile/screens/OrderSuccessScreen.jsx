@@ -1,6 +1,9 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -10,6 +13,7 @@ const PAYMENT_LABELS = {
 };
 
 export default function OrderSuccessScreen() {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
   const { orderNo, paymentMethod, success = true } = route.params ?? {};
@@ -82,7 +86,7 @@ export default function OrderSuccessScreen() {
       </View>
 
       {/* Buttons */}
-      <View className="px-6 pb-8 gap-3">
+      <View className="px-6 pb-8 gap-3" style={{ marginBottom: insets.bottom }}>
         <TouchableOpacity
           className="bg-primary rounded-md py-4 flex-row items-center justify-center gap-2"
           onPress={() => navigation.navigate("MainTabs")}
