@@ -7,6 +7,11 @@ const getCartFromStorage = () => {
   return raw ? JSON.parse(raw) : [];
 };
 
+const getBundleDiscountsFromStorage = () => {
+  const raw = storage.getItem("bundleDiscounts");
+  return raw ? JSON.parse(raw) : [];
+};
+
 const calcTotal = (cart) =>
   cart.reduce(
     (sum, item) =>
@@ -45,6 +50,20 @@ const mapBackendItem = (item) => {
   };
 };
 
+// Removes bundle discounts whose required products are no longer fully in cart
+function validateBundleDiscounts(state) {
+  const before = state.bundleDiscounts.length;
+  state.bundleDiscounts = state.bundleDiscounts.filter((bundle) =>
+    bundle.requiredProducts.every((req) => {
+      const item = state.cart.find((c) => (c._id || c.id) === req.productId);
+      return item && item.quantity >= req.quantity;
+    }),
+  );
+  if (state.bundleDiscounts.length !== before) {
+    storage.setItem("bundleDiscounts", JSON.stringify(state.bundleDiscounts));
+  }
+}
+
 export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
   const { data } = await axiosInstance.get("/users/me/cart");
   return data.map(mapBackendItem);
@@ -52,10 +71,14 @@ export const fetchCart = createAsyncThunk("cart/fetchCart", async () => {
 
 export const hydrateCartFromStorage = createAsyncThunk("cart/hydrate", async () => {
   try {
-    const raw = await storage.getItem("cart");
-    return raw ? JSON.parse(raw) : [];
+    const cartRaw = await storage.getItem("cart");
+    const bundleRaw = await storage.getItem("bundleDiscounts");
+    return {
+      cart: cartRaw ? JSON.parse(cartRaw) : [],
+      bundleDiscounts: bundleRaw ? JSON.parse(bundleRaw) : [],
+    };
   } catch {
-    return [];
+    return { cart: [], bundleDiscounts: [] };
   }
 });
 
@@ -103,6 +126,7 @@ const initialState = {
   cart: _initialCart,
   totalAmount: calcTotal(_initialCart),
   appliedCoupon: null, // { couponId, code, discount }
+  bundleDiscounts: getBundleDiscountsFromStorage(), // [{ listId, name, percent, requiredProducts }]
 };
 
 const cartSlice = createSlice({
@@ -143,6 +167,7 @@ const cartSlice = createSlice({
       });
       state.totalAmount = calcTotal(state.cart);
       storage.setItem("cart", JSON.stringify(state.cart));
+      validateBundleDiscounts(state);
     },
 
     decreaseCart: (state, action) => {
@@ -163,6 +188,7 @@ const cartSlice = createSlice({
       }
       state.totalAmount = calcTotal(state.cart);
       storage.setItem("cart", JSON.stringify(state.cart));
+      validateBundleDiscounts(state);
     },
 
     calculateCart: (state) => {
@@ -173,7 +199,9 @@ const cartSlice = createSlice({
       state.cart = [];
       state.totalAmount = 0;
       state.appliedCoupon = null;
+      state.bundleDiscounts = [];
       storage.removeItem("cart");
+      storage.removeItem("bundleDiscounts");
     },
 
     setAppliedCoupon: (state, action) => {
@@ -182,6 +210,23 @@ const cartSlice = createSlice({
 
     clearAppliedCoupon: (state) => {
       state.appliedCoupon = null;
+    },
+
+    addBundleDiscount: (state, action) => {
+      const { listId, name, percent, requiredProducts } = action.payload;
+      // Replace if same list already applied
+      state.bundleDiscounts = state.bundleDiscounts.filter(
+        (b) => b.listId !== listId,
+      );
+      state.bundleDiscounts.push({ listId, name, percent, requiredProducts });
+      storage.setItem("bundleDiscounts", JSON.stringify(state.bundleDiscounts));
+    },
+
+    removeBundleDiscount: (state, action) => {
+      state.bundleDiscounts = state.bundleDiscounts.filter(
+        (b) => b.listId !== action.payload,
+      );
+      storage.setItem("bundleDiscounts", JSON.stringify(state.bundleDiscounts));
     },
   },
   extraReducers: (builder) => {
@@ -202,8 +247,12 @@ const cartSlice = createSlice({
     builder
       .addCase(fetchCart.fulfilled, applyCart)
       .addCase(hydrateCartFromStorage.fulfilled, (state, action) => {
-        if (action.payload.length > 0 && state.cart.length === 0) {
-          applyCart(state, action);
+        const { cart, bundleDiscounts } = action.payload;
+        if (cart.length > 0 && state.cart.length === 0) {
+          applyCart(state, { payload: cart });
+        }
+        if (bundleDiscounts.length > 0 && state.bundleDiscounts.length === 0) {
+          state.bundleDiscounts = bundleDiscounts;
         }
       })
       .addCase(syncAddToCart.fulfilled, applyCart)
@@ -213,7 +262,9 @@ const cartSlice = createSlice({
         state.cart = [];
         state.totalAmount = 0;
         state.appliedCoupon = null;
+        state.bundleDiscounts = [];
         storage.removeItem("cart");
+        storage.removeItem("bundleDiscounts");
       });
   },
 });
@@ -226,6 +277,8 @@ export const {
   clearCartLocal,
   setAppliedCoupon,
   clearAppliedCoupon,
+  addBundleDiscount,
+  removeBundleDiscount,
 } = cartSlice.actions;
 
 // Wrapper thunk's: update local state and if user is logged in sync on server
