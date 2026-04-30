@@ -68,7 +68,7 @@ const MENU_ITEMS = [
   },
   {
     key: "listedProducts",
-    label: "Ürün Listeleri (Hazır)",
+    label: "Ürün Listeleri",
     icon: <TbListCheck />,
     path: "/",
   },
