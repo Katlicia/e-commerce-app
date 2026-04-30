@@ -10,6 +10,7 @@ import ProfileAddressForm from "../components/ProfileAddressForm";
 import ProfilePasswordForm from "../components/ProfilePasswordForm";
 import { getUserOrders } from "../redux/orderSlice";
 import ProfileOrderDetails from "../components/ProfileOrderDetails";
+import ProfileListsSection from "../components/ProfileListsSection";
 import arrowIcon from "../assets/Profile/arrow.svg";
 
 const CONTENT_TITLES = {
@@ -218,12 +219,14 @@ function UserProfile() {
             {activeNav === "uyelik-bilgilerim" && <ProfileInfoForm />}
             {activeNav === "adreslerim" && <ProfileAddressForm />}
             {activeNav === "sifre-degistir" && <ProfilePasswordForm />}
+            {activeNav === "listelerim" && <ProfileListsSection />}
 
             {![
               "siparisler",
               "uyelik-bilgilerim",
               "adreslerim",
               "sifre-degistir",
+              "listelerim",
             ].includes(activeNav) && (
               <p className="text-muted">Bu bölüm yakında aktif olacak.</p>
             )}
