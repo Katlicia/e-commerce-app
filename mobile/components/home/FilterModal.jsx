@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   FlatList,
   Modal,
-  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -26,9 +26,11 @@ function flattenTree(nodes) {
 function ModalHeader({ onBack, title, right }) {
   return (
     <View className="flex-row items-center px-5 py-4 border-b border-border-subtle">
-      <TouchableOpacity onPress={onBack} hitSlop={8}>
-        <Ionicons name="arrow-back" size={22} color="#212529" />
-      </TouchableOpacity>
+      <View style={{ width: 60 }}>
+        <TouchableOpacity onPress={onBack} hitSlop={8}>
+          <Ionicons name="arrow-back" size={22} color="#212529" />
+        </TouchableOpacity>
+      </View>
       <Text className="flex-1 text-center text-lg font-bold text-text-primary">
         {title}
       </Text>
@@ -68,15 +70,11 @@ const Checkbox = React.memo(function Checkbox({ selected }) {
         width: 22,
         height: 22,
         borderRadius: 4,
-        backgroundColor: selected ? "#ff7700" : "transparent",
+        backgroundColor: selected ? "#F83B0A" : "transparent",
         borderWidth: 2,
-        borderColor: selected ? "#ff7700" : "#dee2e6",
-        alignItems: "center",
-        justifyContent: "center",
+        borderColor: selected ? "#F83B0A" : "#dee2e6",
       }}
-    >
-      {selected && <Ionicons name="checkmark" size={13} color="white" />}
-    </View>
+    />
   );
 });
 
@@ -91,7 +89,14 @@ function Chip({ label, onRemove }) {
   );
 }
 
-const CategoryRow = React.memo(function CategoryRow({ node, depth, selected, onToggle, expanded, onExpand }) {
+const CategoryRow = React.memo(function CategoryRow({
+  node,
+  depth,
+  selected,
+  onToggle,
+  expanded,
+  onExpand,
+}) {
   const id = String(node._id);
   const isSelected = selected.some((c) => String(c._id) === id);
   const hasChildren = (node.children ?? []).length > 0;
@@ -109,14 +114,23 @@ const CategoryRow = React.memo(function CategoryRow({ node, depth, selected, onT
           activeOpacity={0.7}
         >
           <Checkbox selected={isSelected} />
-          <Text
-            className={`text-base flex-1 ${isSelected ? "text-primary font-semibold" : "text-text-primary"}`}
-          >
-            {node.name}
-          </Text>
+          <View className="flex-row items-center gap-2 flex-1">
+            <Text
+              className={`text-base ${isSelected ? "text-primary font-semibold" : "text-text-primary"}`}
+            >
+              {node.name}
+            </Text>
+            <Text className="text-sm text-text-muted">
+              ({node.productCount})
+            </Text>
+          </View>
         </TouchableOpacity>
         {hasChildren && (
-          <TouchableOpacity onPress={() => onExpand(id)} hitSlop={8} className="pl-3">
+          <TouchableOpacity
+            onPress={() => onExpand(id)}
+            hitSlop={8}
+            className="pl-3"
+          >
             <Ionicons
               name={isExpanded ? "chevron-down" : "chevron-forward"}
               size={18}
@@ -186,8 +200,13 @@ function CategoryView({ selected, onBack, onChange }) {
         onPress={() => toggleCategory(item)}
         activeOpacity={0.7}
       >
-        <Checkbox selected={selected.some((c) => String(c._id) === String(item._id))} />
+        <Checkbox
+          selected={selected.some((c) => String(c._id) === String(item._id))}
+        />
         <Text className="text-base text-text-primary flex-1">{item.name}</Text>
+        {item.productCount > 0 && (
+          <Text className="text-sm text-text-muted">({item.productCount})</Text>
+        )}
       </TouchableOpacity>
     ),
     [toggleCategory, selected],
@@ -201,12 +220,18 @@ function CategoryView({ selected, onBack, onChange }) {
         right={
           selected.length > 0 ? (
             <TouchableOpacity onPress={() => onChange([])}>
-              <Text className="text-primary font-semibold text-sm">TEMİZLE</Text>
+              <Text className="text-primary font-semibold text-sm">
+                TEMİZLE
+              </Text>
             </TouchableOpacity>
           ) : null
         }
       />
-      <SearchBar value={search} onChange={setSearch} placeholder="Kategori ara..." />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Kategori ara..."
+      />
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#ff7700" />
@@ -258,28 +283,37 @@ function BrandView({ selected, onBack, onChange }) {
   const filtered = useMemo(() => {
     if (!search.trim()) return brands;
     const q = search.toLowerCase();
-    return brands.filter((b) => b.toLowerCase().includes(q));
+    return brands.filter((b) => b.name.toLowerCase().includes(q));
   }, [search, brands]);
 
   const toggle = useCallback(
-    (brand) =>
+    (brandName) =>
       setPending((prev) =>
-        prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand],
+        prev.includes(brandName)
+          ? prev.filter((b) => b !== brandName)
+          : [...prev, brandName],
       ),
     [],
   );
 
   const renderBrandItem = useCallback(
     ({ item }) => {
-      const isSelected = pending.includes(item);
+      const isSelected = pending.includes(item.name);
       return (
         <TouchableOpacity
           className="flex-row items-center gap-3 px-5 py-3.5 border-b border-border-subtle"
-          onPress={() => toggle(item)}
+          onPress={() => toggle(item.name)}
           activeOpacity={0.7}
         >
           <Checkbox selected={isSelected} />
-          <Text className="text-base text-text-primary flex-1">{item}</Text>
+          <View className="flex-row items-center gap-2 flex-1">
+            <Text
+              className={`text-base ${isSelected ? "text-primary font-semibold" : "text-text-primary"}`}
+            >
+              {item.name}
+            </Text>
+            <Text className="text-sm text-text-muted">({item.count})</Text>
+          </View>
         </TouchableOpacity>
       );
     },
@@ -294,12 +328,18 @@ function BrandView({ selected, onBack, onChange }) {
         right={
           pending.length > 0 ? (
             <TouchableOpacity onPress={() => setPending([])}>
-              <Text className="text-primary font-semibold text-sm">TEMİZLE</Text>
+              <Text className="text-primary font-semibold text-sm">
+                TEMİZLE
+              </Text>
             </TouchableOpacity>
           ) : null
         }
       />
-      <SearchBar value={search} onChange={setSearch} placeholder="Marka ara..." />
+      <SearchBar
+        value={search}
+        onChange={setSearch}
+        placeholder="Marka ara..."
+      />
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator color="#ff7700" />
@@ -308,7 +348,7 @@ function BrandView({ selected, onBack, onChange }) {
         <>
           <FlatList
             data={filtered}
-            keyExtractor={(item) => item}
+            keyExtractor={(item) => item.name}
             renderItem={renderBrandItem}
             ListEmptyComponent={
               <View className="items-center py-10">
@@ -318,7 +358,7 @@ function BrandView({ selected, onBack, onChange }) {
           />
           <View className="px-5 py-4">
             <TouchableOpacity
-              className="bg-primary rounded-xl py-4 flex-row items-center justify-center gap-2"
+              className="bg-brand-red rounded-sm py-4 flex-row items-center justify-center gap-2"
               onPress={() => {
                 onChange(pending);
                 onBack();
@@ -363,7 +403,7 @@ function PriceView({ minPrice, maxPrice, onBack, onChange }) {
           />
         </View>
         <TouchableOpacity
-          className="bg-primary rounded-xl py-4 mt-8 flex-row items-center justify-center gap-2"
+          className="bg-brand-red rounded-sm py-4 mt-8 flex-row items-center justify-center gap-2"
           onPress={() => {
             onChange(min, max);
             onBack();
@@ -378,7 +418,13 @@ function PriceView({ minPrice, maxPrice, onBack, onChange }) {
   );
 }
 
-export default function FilterModal({ visible, onClose, onApply, initialFilter = {} }) {
+export default function FilterModal({
+  visible,
+  onClose,
+  onApply,
+  initialFilter = {},
+}) {
+  const insets = useSafeAreaInsets();
   const [view, setView] = useState("main");
   const [categories, setCategories] = useState(initialFilter.categories ?? []);
   const [brands, setBrands] = useState(initialFilter.brands ?? []);
@@ -399,36 +445,37 @@ export default function FilterModal({ visible, onClose, onApply, initialFilter =
     categories.length + brands.length + (minPrice || maxPrice ? 1 : 0);
 
   const MainView = (
-    <>
-      <Pressable
-        style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }}
-        onPress={onClose}
-      />
-      <View className="bg-white rounded-t-2xl px-5 pt-4 pb-8">
-        <View className="w-10 h-1 bg-border-light rounded-full self-center mb-5" />
-        <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity onPress={onClose} hitSlop={8}>
-            <Ionicons name="close" size={22} color="#212529" />
-          </TouchableOpacity>
-          <Text className="text-lg font-bold text-text-primary">
-            Filtrele{" "}
-            {activeCount > 0 && <Text className="text-primary">({activeCount})</Text>}
-          </Text>
-          <View style={{ width: 22 }} />
-        </View>
+    <View style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top, paddingBottom: insets.bottom }}>
+      <View className="flex-row items-center px-5 py-4 border-b border-border-subtle">
+        <TouchableOpacity onPress={onClose} hitSlop={8}>
+          <Ionicons name="close" size={22} color="#212529" />
+        </TouchableOpacity>
+        <Text className="flex-1 text-center text-lg font-bold text-text-primary">
+          Filtrele{" "}
+          {activeCount > 0 && (
+            <Text className="text-primary">({activeCount})</Text>
+          )}
+        </Text>
+        <View style={{ width: 22 }} />
+      </View>
 
+      <View className="px-5">
         <TouchableOpacity
           className="flex-row items-center py-4 border-b border-border-subtle gap-3"
           onPress={() => setView("category")}
-          activeOpacity={0.7}
+          activeOpacity={1.0}
         >
-          <Text className="text-base text-text-primary font-medium w-16">Kategori</Text>
+          <Text className="text-base text-text-primary font-medium w-16">
+            Kategori
+          </Text>
           <View className="flex-1 flex-row flex-wrap gap-1.5">
             {categories.map((c) => (
               <Chip
                 key={c._id}
                 label={c.name}
-                onRemove={() => setCategories((prev) => prev.filter((x) => x._id !== c._id))}
+                onRemove={() =>
+                  setCategories((prev) => prev.filter((x) => x._id !== c._id))
+                }
               />
             ))}
           </View>
@@ -440,13 +487,17 @@ export default function FilterModal({ visible, onClose, onApply, initialFilter =
           onPress={() => setView("brand")}
           activeOpacity={0.7}
         >
-          <Text className="text-base text-text-primary font-medium w-16">Marka</Text>
+          <Text className="text-base text-text-primary font-medium w-16">
+            Marka
+          </Text>
           <View className="flex-1 flex-row flex-wrap gap-1.5">
             {brands.map((b) => (
               <Chip
                 key={b}
                 label={b}
-                onRemove={() => setBrands((prev) => prev.filter((x) => x !== b))}
+                onRemove={() =>
+                  setBrands((prev) => prev.filter((x) => x !== b))
+                }
               />
             ))}
           </View>
@@ -458,7 +509,9 @@ export default function FilterModal({ visible, onClose, onApply, initialFilter =
           onPress={() => setView("price")}
           activeOpacity={0.7}
         >
-          <Text className="text-base text-text-primary font-medium w-16">Fiyat</Text>
+          <Text className="text-base text-text-primary font-medium w-16">
+            Fiyat
+          </Text>
           <View className="flex-1 flex-row flex-wrap gap-1.5">
             {(minPrice || maxPrice) && (
               <Chip
@@ -474,7 +527,7 @@ export default function FilterModal({ visible, onClose, onApply, initialFilter =
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-primary rounded-xl py-4 mt-6 flex-row items-center justify-center gap-2"
+          className="bg-brand-red rounded-md py-4 mt-6 flex-row items-center justify-center gap-2"
           onPress={() => onApply({ categories, brands, minPrice, maxPrice })}
           activeOpacity={0.85}
         >
@@ -482,7 +535,7 @@ export default function FilterModal({ visible, onClose, onApply, initialFilter =
           <Ionicons name="arrow-forward" size={18} color="white" />
         </TouchableOpacity>
       </View>
-    </>
+    </View>
   );
 
   return (
@@ -491,11 +544,12 @@ export default function FilterModal({ visible, onClose, onApply, initialFilter =
       transparent
       animationType="slide"
       onRequestClose={() => (view !== "main" ? setView("main") : onClose())}
+      statusBarTranslucent
     >
       {view === "main" ? (
         MainView
       ) : (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: "white" }}>
           {view === "category" && (
             <CategoryView
               selected={categories}
