@@ -8,7 +8,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -216,6 +216,8 @@ export default function CheckoutScreen() {
   const effectiveCargoPrice =
     totalAmount >= freeShippingThreshold ? 0 : selectedCargoData?.cargoPrice;
 
+  const insets = useSafeAreaInsets();
+
   const installments = [
     { label: "Tek Çekim", multiplier: 1 },
     { label: "2 Taksit", multiplier: 1.077 },
@@ -238,7 +240,7 @@ export default function CheckoutScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Products Collapsible */}
@@ -570,6 +572,7 @@ export default function CheckoutScreen() {
                   <TextInput
                     className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
                     placeholder="Kart Numarası"
+                    placeholderTextColor="#adb5bd"
                     keyboardType="number-pad"
                     maxLength={16}
                     value={cardNumber}
@@ -584,6 +587,7 @@ export default function CheckoutScreen() {
                   <TextInput
                     className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
                     placeholder="Kart Üzerindeki İsim"
+                    placeholderTextColor="#adb5bd"
                     value={cardHolder}
                     onChangeText={setCardHolder}
                   />
@@ -598,6 +602,7 @@ export default function CheckoutScreen() {
                       <TextInput
                         className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
                         placeholder="AA/YY"
+                        placeholderTextColor="#adb5bd"
                         maxLength={5}
                         keyboardType="number-pad"
                         value={expirationDate}
@@ -613,6 +618,7 @@ export default function CheckoutScreen() {
                       <TextInput
                         className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
                         placeholder="CVV"
+                        placeholderTextColor="#adb5bd"
                         maxLength={3}
                         keyboardType="number-pad"
                         secureTextEntry
