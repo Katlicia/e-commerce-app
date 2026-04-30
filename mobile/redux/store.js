@@ -5,6 +5,7 @@ import cartReducer from "@mobile/shared/redux/cartSlice";
 import generalReducer from "@mobile/shared/redux/generalSlice";
 import userReducer from "@mobile/shared/redux/userSlice";
 import favouriteReducer from "@mobile/shared/redux/favouriteSlice";
+import listReducer from "@mobile/shared/redux/listSlice";
 import orderReducer from "@mobile/shared/redux/orderSlice";
 import cargoReducer from "@mobile/shared/redux/cargoSlice";
 import taxSettingsReducer from "@mobile/shared/redux/taxSettingsSlice";
@@ -20,6 +21,7 @@ export const store = configureStore({
     general: generalReducer,
     user: userReducer,
     favourite: favouriteReducer,
+    list: listReducer,
     order: orderReducer,
     cargo: cargoReducer,
     taxSettings: taxSettingsReducer,
