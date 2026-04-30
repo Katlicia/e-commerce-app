@@ -1,11 +1,27 @@
 const Category = require("../models/Category");
+const Product = require("../models/Product");
 
 exports.getCategories = async (req, res) => {
-  const all = await Category.find().lean();
+  const [all, counts] = await Promise.all([
+    Category.find().lean(),
+    Product.aggregate([
+      { $match: { category: { $exists: true, $ne: null } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const countMap = {};
+  counts.forEach((c) => {
+    countMap[c._id.toString()] = c.count;
+  });
 
   const map = {};
   all.forEach((c) => {
-    map[c._id.toString()] = { ...c, children: [] };
+    map[c._id.toString()] = {
+      ...c,
+      children: [],
+      productCount: countMap[c._id.toString()] ?? 0,
+    };
   });
 
   const tree = [];
@@ -15,13 +31,22 @@ exports.getCategories = async (req, res) => {
       if (parentEntry) {
         parentEntry.children.push(map[c._id.toString()]);
       } else {
-        // parent not found (deleted or in a cycle) treat as root
         tree.push(map[c._id.toString()]);
       }
     } else {
       tree.push(map[c._id.toString()]);
     }
   });
+
+  function propagateCounts(node) {
+    let total = node.productCount;
+    for (const child of node.children) {
+      total += propagateCounts(child);
+    }
+    node.productCount = total;
+    return total;
+  }
+  tree.forEach(propagateCounts);
 
   res.json(tree);
 };
