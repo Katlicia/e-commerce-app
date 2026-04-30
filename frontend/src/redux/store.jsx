@@ -5,6 +5,7 @@ import cartReducer from "./cartSlice";
 import generalReducer from "./generalSlice";
 import userReducer from "./userSlice";
 import favouriteReducer from "./favouriteSlice";
+import listReducer from "./listSlice";
 import orderReducer from "./orderSlice";
 import cargoReducer from "./cargoSlice";
 import taxSettingsReducer from "./taxSettingsSlice";
@@ -20,6 +21,7 @@ export const store = configureStore({
     general: generalReducer,
     user: userReducer,
     favourite: favouriteReducer,
+    list: listReducer,
     order: orderReducer,
     cargo: cargoReducer,
     taxSettings: taxSettingsReducer,
