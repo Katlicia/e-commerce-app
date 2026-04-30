@@ -19,6 +19,7 @@ import {
   removeFromCartWithSync,
   setAppliedCoupon,
   clearAppliedCoupon,
+  removeBundleDiscount,
 } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
@@ -148,7 +149,7 @@ export default function CartScreen() {
   const [couponError, setCouponError] = useState("");
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const { cart, totalAmount, appliedCoupon } = useSelector(
+  const { cart, totalAmount, appliedCoupon, bundleDiscounts } = useSelector(
     (state) => state.cart,
   );
   const user = useSelector((state) => state.auth.user);
@@ -182,6 +183,18 @@ export default function CartScreen() {
     kdv20Rate = 0.2,
   } = useSelector((state) => state.taxSettings);
 
+  // Calculate the total discount from all valid bundle discounts
+  const bundleDiscountAmount = +bundleDiscounts
+    .reduce((total, bundle) => {
+      const bundleSubtotal = bundle.requiredProducts.reduce((sum, req) => {
+        const item = cart.find((c) => (c._id || c.id) === req.productId);
+        if (!item) return sum;
+        return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
+      }, 0);
+      return total + bundleSubtotal * (bundle.percent / 100);
+    }, 0)
+    .toFixed(2);
+
   const totalDiscount = +cart
     .filter((item) => item.discountedPrice)
     .reduce(
@@ -197,6 +210,7 @@ export default function CartScreen() {
   const kdv1 = +(totalAmount * kdv1Rate).toFixed(2);
   const kdv20 = +(totalAmount * kdv20Rate).toFixed(2);
   const couponDiscount = appliedCoupon?.discount ?? 0;
+  const finalTotal = Math.max(0, totalAmount - couponDiscount - bundleDiscountAmount);
   const remaining = Math.max(freeShippingThreshold - totalAmount, 0);
   const freeShipping = remaining === 0;
   const totalQuantity = cart.reduce((s, i) => s + i.quantity, 0);
@@ -391,6 +405,36 @@ export default function CartScreen() {
                   valueClass="text-discount-green"
                 />
               )}
+              {bundleDiscounts.map((bundle) => {
+                const amount = +bundle.requiredProducts
+                  .reduce((sum, req) => {
+                    const item = cart.find((c) => (c._id || c.id) === req.productId);
+                    if (!item) return sum;
+                    return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
+                  }, 0)
+                  .toFixed(2) * (bundle.percent / 100);
+                return (
+                  <View key={bundle.listId} className="flex-row justify-between items-center">
+                    <View className="flex-row items-center gap-1 flex-1 mr-2">
+                      <Ionicons name="list-outline" size={13} color="#2a9d4e" />
+                      <Text className="text-sm text-discount-green flex-1" numberOfLines={1}>
+                        {bundle.name}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center gap-1">
+                      <Text className="text-sm font-medium text-discount-green">
+                        -%{bundle.percent} (-{fmt(amount)}₺)
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => dispatch(removeBundleDiscount(bundle.listId))}
+                        hitSlop={8}
+                      >
+                        <Ionicons name="close-circle" size={16} color="#2a9d4e" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
 
             <View className="h-px bg-border-subtle mx-4 mb-1" />
@@ -415,7 +459,7 @@ export default function CartScreen() {
                   Toplam Tutar
                 </Text>
                 <Text className="text-xl font-bold text-text-primary">
-                  {fmt(totalAmount)}₺
+                  {fmt(finalTotal)}₺
                 </Text>
               </View>
               {freeShipping && (
