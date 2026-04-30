@@ -14,6 +14,7 @@ import { configureStorage } from "@mobile/shared/utils/storage";
 import { hydrateAuth } from "@mobile/shared/redux/authSlice";
 import { fetchFavourites, hydrateFavouritesFromStorage } from "@mobile/shared/redux/favouriteSlice";
 import { fetchCart, hydrateCartFromStorage } from "@mobile/shared/redux/cartSlice";
+import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { store } from "./redux/store";
 import AppNavigator from "./navigation/AppNavigator";
 
@@ -29,12 +30,14 @@ function AppContent() {
   const initialized = useSelector((state) => state.auth.initialized);
 
   useEffect(() => {
-    dispatch(hydrateAuth()).then((action) => {
+    dispatch(hydrateAuth()).then(async (action) => {
       const user = action.payload;
       if (user) {
         setBearerToken(user.token ?? null);
+        await dispatch(hydrateCartFromStorage());
         dispatch(fetchFavourites());
         dispatch(fetchCart());
+        dispatch(fetchLists());
       } else {
         dispatch(hydrateFavouritesFromStorage());
         dispatch(hydrateCartFromStorage());
