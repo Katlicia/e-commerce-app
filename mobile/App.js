@@ -1,6 +1,6 @@
 import "./global.css";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import {
   useFonts,
@@ -35,6 +35,15 @@ import {
 import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { store } from "./redux/store";
 import AppNavigator from "./navigation/AppNavigator";
+import { navigationRef } from "./navigation/navigationRef";
+import CartMiniBar from "./components/CartMiniBar";
+
+function getActiveRouteName(state) {
+  if (!state) return null;
+  const route = state.routes[state.index];
+  if (route.state) return getActiveRouteName(route.state);
+  return route.name;
+}
 
 configureAxios(process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.121:5000");
 configureStorage({
@@ -46,6 +55,7 @@ configureStorage({
 function AppContent() {
   const dispatch = useDispatch();
   const initialized = useSelector((state) => state.auth.initialized);
+  const [currentRoute, setCurrentRoute] = useState(null);
 
   useEffect(() => {
     NavigationBar.setBackgroundColorAsync("#ffffff");
@@ -79,9 +89,14 @@ function AppContent() {
   return (
     <>
       <StatusBar style="dark" />
-      <NavigationContainer>
+      <NavigationContainer
+        ref={navigationRef}
+        onStateChange={(state) => setCurrentRoute(getActiveRouteName(state))}
+        onReady={() => setCurrentRoute(getActiveRouteName(navigationRef.getRootState()))}
+      >
         <AppNavigator />
       </NavigationContainer>
+      <CartMiniBar currentRoute={currentRoute} />
       <Toast />
     </>
   );
