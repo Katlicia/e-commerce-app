@@ -45,7 +45,7 @@ export default function CheckoutScreen() {
   const navigation = useNavigation();
   const user = useSelector((state) => state.auth.user);
   const { addresses: apiAddresses } = useSelector((state) => state.user);
-  const { cart, totalAmount, appliedCoupon } = useSelector(
+  const { cart, totalAmount, appliedCoupon, bundleDiscounts } = useSelector(
     (state) => state.cart,
   );
   const { cargos } = useSelector((state) => state.cargo);
@@ -60,7 +60,17 @@ export default function CheckoutScreen() {
   } = useSelector((state) => state.order);
 
   const couponDiscount = appliedCoupon?.discount ?? 0;
-  const finalAmount = Math.max(0, totalAmount - couponDiscount);
+  const bundleDiscountAmount = +bundleDiscounts
+    .reduce((total, bundle) => {
+      const bundleSubtotal = bundle.requiredProducts.reduce((sum, req) => {
+        const item = cart.find((c) => (c._id || c.id) === req.productId);
+        if (!item) return sum;
+        return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
+      }, 0);
+      return total + bundleSubtotal * (bundle.percent / 100);
+    }, 0)
+    .toFixed(2);
+  const finalAmount = Math.max(0, totalAmount - couponDiscount - bundleDiscountAmount);
   const totalQuantity = cart.reduce((s, i) => s + i.quantity, 0);
 
   const [productsExpanded, setProductsExpanded] = useState(false);
@@ -694,6 +704,25 @@ export default function CheckoutScreen() {
               </Text>
             </View>
           )}
+          {bundleDiscounts.map((bundle) => {
+            const amount = +bundle.requiredProducts
+              .reduce((sum, req) => {
+                const item = cart.find((c) => (c._id || c.id) === req.productId);
+                if (!item) return sum;
+                return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
+              }, 0)
+              .toFixed(2) * (bundle.percent / 100);
+            return (
+              <View key={bundle.listId} className="flex-row justify-between">
+                <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={1}>
+                  {bundle.name} (%{bundle.percent})
+                </Text>
+                <Text className="text-sm text-discount-green font-sans-medium">
+                  -{fmt(amount)}₺
+                </Text>
+              </View>
+            );
+          })}
           <View className="flex-row justify-between">
             <Text className="text-sm text-text-secondary">Kargo</Text>
             {effectiveCargoPrice === 0 ? (
