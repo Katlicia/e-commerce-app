@@ -16,6 +16,7 @@ import {
   TbStar,
   TbSpeakerphone,
   TbLayoutDashboard,
+  TbListCheck,
 } from "react-icons/tb";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -63,6 +64,12 @@ const MENU_ITEMS = [
     key: "homeLayout",
     label: "Ana Sayfa Düzeni",
     icon: <TbLayoutDashboard />,
+    path: "/",
+  },
+  {
+    key: "listedProducts",
+    label: "Ürün Listeleri (Hazır)",
+    icon: <TbListCheck />,
     path: "/",
   },
 ];

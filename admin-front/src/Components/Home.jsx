@@ -13,6 +13,7 @@ import CouponsPanel from "./CouponsPanel";
 import FeaturedListsPanel from "./FeaturedListsPanel";
 import CampaignsPanel from "./CampaignsPanel";
 import HomeLayoutPanel from "./HomeLayoutPanel";
+import ListedProductsPanel from "./ListedProductsPanel";
 
 const PAGES = {
   analytics: <Analytics />,
@@ -28,6 +29,7 @@ const PAGES = {
   featuredLists: <FeaturedListsPanel />,
   campaigns: <CampaignsPanel />,
   homeLayout: <HomeLayoutPanel />,
+  listedProducts: <ListedProductsPanel />,
 };
 
 function Home() {
