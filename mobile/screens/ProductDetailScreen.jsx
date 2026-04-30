@@ -32,6 +32,7 @@ import {
 } from "@mobile/shared/redux/favouriteSlice";
 import { ProductCard } from "../components/home/HomeProductList";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
+import AddToListModal from "../components/AddToListModal";
 
 function maskName(name, surname) {
   const parts = [name, surname].filter(Boolean);
@@ -62,6 +63,7 @@ export default function ProductDetailScreen() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [listModalVisible, setListModalVisible] = useState(false);
 
   useEffect(() => {
     if (productId) {
@@ -267,7 +269,7 @@ export default function ProductDetailScreen() {
               icon: "list-outline",
               label: "LİSTEYE\nEKLE",
               color: "#6c757d",
-              onPress: () => {},
+              onPress: () => setListModalVisible(true),
             },
             {
               icon: "briefcase-outline",
@@ -1156,6 +1158,12 @@ export default function ProductDetailScreen() {
           </View>
         )}
       </View>
+
+      <AddToListModal
+        visible={listModalVisible}
+        onClose={() => setListModalVisible(false)}
+        product={product}
+      />
     </SafeAreaView>
   );
 }
