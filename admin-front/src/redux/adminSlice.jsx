@@ -16,6 +16,7 @@ const initialState = {
   homeLayout: [],
   featuredLists: {},
   campaigns: [],
+  listedProducts: [],
   loading: false,
   error: null,
 };
@@ -312,6 +313,38 @@ export const adminUpdateFeaturedList = createAsyncThunk(
   },
 );
 
+export const adminGetListedProducts = createAsyncThunk(
+  "admin/getListedProducts",
+  async () => {
+    const { data } = await axiosInstance.get("/listed-products");
+    return data;
+  },
+);
+
+export const adminCreateListedProducts = createAsyncThunk(
+  "admin/createListedProducts",
+  async (payload) => {
+    const { data } = await axiosInstance.post("/listed-products", payload);
+    return data;
+  },
+);
+
+export const adminUpdateListedProducts = createAsyncThunk(
+  "admin/updateListedProducts",
+  async ({ id, payload }) => {
+    const { data } = await axiosInstance.put(`/listed-products/${id}`, payload);
+    return data;
+  },
+);
+
+export const adminDeleteListedProducts = createAsyncThunk(
+  "admin/deleteListedProducts",
+  async (id) => {
+    await axiosInstance.delete(`/listed-products/${id}`);
+    return id;
+  },
+);
+
 export const adminGetHomeLayout = createAsyncThunk(
   "admin/getHomeLayout",
   async () => {
@@ -511,6 +544,19 @@ const adminSlice = createSlice({
       })
       .addCase(adminUpdateFeaturedList.fulfilled, (state, action) => {
         state.featuredLists[action.payload.key] = action.payload;
+      })
+      .addCase(adminGetListedProducts.fulfilled, (state, action) => {
+        state.listedProducts = action.payload;
+      })
+      .addCase(adminCreateListedProducts.fulfilled, (state, action) => {
+        state.listedProducts.unshift(action.payload);
+      })
+      .addCase(adminUpdateListedProducts.fulfilled, (state, action) => {
+        const idx = state.listedProducts.findIndex((l) => l._id === action.payload._id);
+        if (idx !== -1) state.listedProducts[idx] = action.payload;
+      })
+      .addCase(adminDeleteListedProducts.fulfilled, (state, action) => {
+        state.listedProducts = state.listedProducts.filter((l) => l._id !== action.payload);
       })
       .addCase(adminGetHomeLayout.fulfilled, (state, action) => {
         state.homeLayout = action.payload.sections;
