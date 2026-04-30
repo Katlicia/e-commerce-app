@@ -53,7 +53,7 @@ export default function CartMiniBar({ currentRoute }) {
     <View
       style={{
         position: "absolute",
-        left: 12,
+        left: 0,
         right: 0,
         bottom: bottomOffset,
         backgroundColor: "#ffffff",

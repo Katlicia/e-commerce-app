@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getHomeSections } from "@mobile/shared/redux/homeSectionSlice";
 import { getHomeLayout } from "@mobile/shared/redux/homeLayoutSlice";
 
@@ -26,7 +27,13 @@ function renderSection(section, homeSections) {
       const sec = getSection(section.sectionKey);
       if (section.sectionKey?.startsWith("categoryRow")) {
         if (!sec.left && !sec.right) return null;
-        return <HomeCategoryRow key={section._id} left={sec.left} right={sec.right} />;
+        return (
+          <HomeCategoryRow
+            key={section._id}
+            left={sec.left}
+            right={sec.right}
+          />
+        );
       }
       return (
         <HomeProductList
@@ -59,8 +66,12 @@ function renderSection(section, homeSections) {
 export default function HomeScreen() {
   const dispatch = useDispatch();
   const scrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
   const homeSections = useSelector((state) => state.homeSection.sections ?? []);
-  const layoutSections = useSelector((state) => state.homeLayout.sections ?? []);
+  const layoutSections = useSelector(
+    (state) => state.homeLayout.sections ?? [],
+  );
+  const hasCart = useSelector((state) => (state.cart.cart ?? []).length > 0);
 
   useEffect(() => {
     dispatch(getHomeSections());
@@ -70,12 +81,17 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
       <HomeHeader scrollRef={scrollRef} />
-      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: hasCart ? insets.bottom + 15 : 16,
+        }}
+      >
         <FeaturedShortcuts />
         <HomeCarousel />
         <HomeQuickLinks />
         {layoutSections.map((section) => renderSection(section, homeSections))}
-        <View className="h-4" />
       </ScrollView>
     </SafeAreaView>
   );
