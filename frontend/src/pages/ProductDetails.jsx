@@ -23,6 +23,7 @@ import axiosInstance from "../utils/axiosInstance";
 import "../styles/ProductDetails.css";
 
 import ProductList from "../components/ProductList";
+import AddToListDropdown from "../components/AddToListDropdown";
 
 import paymentLogos from "../assets/ProductDetails/payment.png";
 import boxIcon from "../assets/ProductDetails/box-icon.svg";
@@ -73,6 +74,7 @@ function ProductDetails() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [listDropdownOpen, setListDropdownOpen] = useState(false);
 
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -521,10 +523,21 @@ function ProductDetails() {
                   <img src={heartIcon} alt="Heart Icon" />
                   <span>FAVORİYE EKLE</span>
                 </button>
-                <button className="pd-action-btn">
-                  <img src={clipboardIcon} alt="Clipboard Icon" />
-                  <span>LİSTEYE EKLE</span>
-                </button>
+                <div style={{ position: "relative", flex: 1, maxWidth: 70 }}>
+                  <button
+                    className="pd-action-btn"
+                    style={{ width: "100%" }}
+                    onClick={() => setListDropdownOpen((v) => !v)}
+                  >
+                    <img src={clipboardIcon} alt="Clipboard Icon" />
+                    <span>LİSTEYE EKLE</span>
+                  </button>
+                  <AddToListDropdown
+                    product={product}
+                    open={listDropdownOpen}
+                    onClose={() => setListDropdownOpen(false)}
+                  />
+                </div>
                 <button className="pd-action-btn">
                   <img src={briefcaseIcon} alt="Briefcase Icon" />
                   <span>KURUMSAL TEKLİF</span>
