@@ -36,7 +36,6 @@ import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { store } from "./redux/store";
 import AppNavigator from "./navigation/AppNavigator";
 import { navigationRef } from "./navigation/navigationRef";
-import CartMiniBar from "./components/CartMiniBar";
 
 function getActiveRouteName(state) {
   if (!state) return null;
@@ -58,7 +57,6 @@ function AppContent() {
   const [currentRoute, setCurrentRoute] = useState(null);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("#ffffff");
     NavigationBar.setButtonStyleAsync("dark");
   }, []);
 
@@ -92,11 +90,12 @@ function AppContent() {
       <NavigationContainer
         ref={navigationRef}
         onStateChange={(state) => setCurrentRoute(getActiveRouteName(state))}
-        onReady={() => setCurrentRoute(getActiveRouteName(navigationRef.getRootState()))}
+        onReady={() =>
+          setCurrentRoute(getActiveRouteName(navigationRef.getRootState()))
+        }
       >
         <AppNavigator />
       </NavigationContainer>
-      <CartMiniBar currentRoute={currentRoute} />
       <Toast />
     </>
   );
