@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useNavigation } from "@react-navigation/native";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const LINKS = [
   {
@@ -18,14 +18,14 @@ const LINKS = [
     size: 28,
   },
   {
-    title: "KAMPANYALAR",
+    title: "LİSTELİ ÜRÜNLER",
     subtitle: "Sizin için derledik",
-    icon: "campaign",
-    IconComponent: MaterialIcons,
+    icon: "clipboard-list",
+    IconComponent: FontAwesome5,
     bg: "#ffe4de",
     iconColor: "#E05C35",
     textColor: "#C44820",
-    screen: "Kampanyalar",
+    screen: "ListedProducts",
     params: {},
     size: 40,
   },
