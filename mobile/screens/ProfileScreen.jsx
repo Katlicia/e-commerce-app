@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { logoutUser } from "@mobile/shared/redux/authSlice";
 import { clearFavouritesLocal } from "@mobile/shared/redux/favouriteSlice";
+import { clearListsLocal } from "@mobile/shared/redux/listSlice";
 import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
@@ -17,6 +18,7 @@ export default function ProfileScreen({ navigation }) {
     dispatch(logoutUser());
     dispatch(clearFavouritesLocal());
     dispatch(clearCartLocal());
+    dispatch(clearListsLocal());
   };
 
   if (!user) {
@@ -118,7 +120,7 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Menu items */}
         {[
-          { label: "Listelerim", icon: "list-outline", screen: null },
+          { label: "Listelerim", icon: "list-outline", screen: "Lists" },
           { label: "Adreslerim", icon: "location-outline", screen: "AddressEdit" },
           { label: "Siparişler", icon: "bag-outline", screen: "Orders" },
           { label: "Mesajlar", icon: "chatbubble-outline" },
