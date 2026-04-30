@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
@@ -72,6 +72,7 @@ export default function CategoryScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const filter = route.params?.filter ?? null;
   const initialKeyword = route.params?.initialKeyword ?? "";
   const canGoBack = navigation.canGoBack();
@@ -130,9 +131,14 @@ export default function CategoryScreen() {
         setResolved({ brand: filter.brand });
       } else if (filter.campaignId) {
         try {
-          const res = await axiosInstance.get(`/campaigns/${filter.campaignId}`);
+          const res = await axiosInstance.get(
+            `/campaigns/${filter.campaignId}`,
+          );
           setTitle(res.data?.title || "Kampanya");
-          setResolved({ campaignId: filter.campaignId, campaignProducts: res.data?.products || [] });
+          setResolved({
+            campaignId: filter.campaignId,
+            campaignProducts: res.data?.products || [],
+          });
         } catch {
           setTitle("Kampanya");
           setResolved({ campaignProducts: [] });
@@ -157,7 +163,9 @@ export default function CategoryScreen() {
       const activeFp = fp ?? filterParams;
       try {
         if (resolved.featuredList) {
-          const res = await axiosInstance.get(`/featured-lists/${resolved.featuredList}`);
+          const res = await axiosInstance.get(
+            `/featured-lists/${resolved.featuredList}`,
+          );
           const list = res.data.products || [];
           setProducts(list);
           setTotal(list.length);
@@ -274,7 +282,7 @@ export default function CategoryScreen() {
       {/* Sort / Filter bar */}
       <View className="bg-white flex-row px-3 py-2 gap-2">
         <TouchableOpacity
-          className="flex-1 flex-row items-center justify-center gap-1 border border-border-light bg-bg-light rounded-sm py-2"
+          className="flex-1 flex-row items-center justify-center gap-1 bg-bg-light rounded-sm py-2"
           onPress={openSort}
         >
           <MaterialIcons name="swap-vert" size={16} color="#F83B0A" />
@@ -286,7 +294,7 @@ export default function CategoryScreen() {
           )}
         </TouchableOpacity>
         <TouchableOpacity
-          className="flex-1 flex-row items-center justify-center gap-1 border border-border-light bg-bg-light rounded-sm py-2"
+          className="flex-1 flex-row items-center justify-center gap-1 bg-bg-light rounded-sm py-2"
           onPress={() => setFilterVisible(true)}
         >
           <MaterialIcons name="tune" size={16} color="#F83B0A" />
@@ -362,64 +370,67 @@ export default function CategoryScreen() {
         animationType="slide"
         onRequestClose={() => setSortVisible(false)}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }}
-          onPress={() => setSortVisible(false)}
-        />
-        <View className="bg-white rounded-t-2xl px-5 pt-4 pb-8">
-          <View className="w-10 h-1 bg-border-light rounded-full self-center mb-5" />
-          <Text className="text-lg font-bold text-text-primary mb-3">
-            Sıralama
-          </Text>
-
-          {SORT_OPTIONS.map((opt) => {
-            const selected = pendingSort === opt.value;
-            return (
-              <TouchableOpacity
-                key={opt.value}
-                className="flex-row items-center gap-3 py-3.5 border-b border-border-subtle"
-                onPress={() => setPendingSort(opt.value)}
-                activeOpacity={0.7}
-              >
-                <View
-                  style={{
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    borderWidth: 2,
-                    borderColor: selected ? "#ff7700" : "#adb5bd",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {selected && (
-                    <View
-                      style={{
-                        width: 11,
-                        height: 11,
-                        borderRadius: 6,
-                        backgroundColor: "#ff7700",
-                      }}
-                    />
-                  )}
-                </View>
-                <Text
-                  className={`text-base ${selected ? "text-text-primary font-semibold" : "text-text-primary"}`}
-                >
-                  {opt.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-
-          <TouchableOpacity
-            className="bg-primary rounded-xl py-4 mt-5 flex-row items-center justify-center gap-2"
-            onPress={handleSortConfirm}
-            activeOpacity={0.85}
+        <View style={{ flex: 1, justifyContent: "flex-end" }}>
+          <Pressable
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0,0,0,0.4)",
+            }}
+            onPress={() => setSortVisible(false)}
+          />
+          <View
+            className="bg-white px-5 pt-4"
+            style={{
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingBottom: Math.max(32, insets.bottom + 16),
+            }}
           >
-            <Text className="text-white font-bold text-base">Ürüne Git</Text>
-            <Ionicons name="arrow-forward" size={18} color="white" />
-          </TouchableOpacity>
+            <Text className="text-lg font-bold text-text-primary mb-1 text-center pb-5">
+              Sıralama
+            </Text>
+
+            {SORT_OPTIONS.map((opt) => {
+              const selected = pendingSort === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  className="flex-row items-center gap-3 py-4"
+                  onPress={() => setPendingSort(opt.value)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      borderWidth: 2,
+                      borderColor: selected ? "#F83B0A" : "#adb5bd",
+                      backgroundColor: selected ? "#F83B0A" : "transparent",
+                    }}
+                  />
+                  <Text
+                    className={`text-base ${selected ? "text-text-primary font-semibold" : "text-text-primary"}`}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+
+            <TouchableOpacity
+              className="bg-brand-red rounded-sm py-4 mt-8 flex-row items-center justify-center gap-2"
+              onPress={handleSortConfirm}
+              activeOpacity={0.85}
+            >
+              <Text className="text-white font-bold text-base">Ürüne Git</Text>
+              <Ionicons name="arrow-forward" size={18} color="white" />
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </SafeAreaView>
