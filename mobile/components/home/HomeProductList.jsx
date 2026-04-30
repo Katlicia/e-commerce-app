@@ -235,42 +235,53 @@ function ProductCard({ product, overrideBadge, cardWidth: cardW, noMargin, gridM
           </TouchableOpacity>
         ) : cartItem ? (
           <View
-            className="flex-row items-center border border-border-input rounded-sm overflow-hidden"
-            style={{ height: gridMode ? 40 : 32 }}
+            style={{
+              flexDirection: "row",
+              borderWidth: 1.5,
+              borderColor: "#ff7700",
+              borderRadius: 10,
+              overflow: "hidden",
+              height: gridMode ? 40 : 32,
+            }}
           >
             <TouchableOpacity
-              className="flex-1 items-center justify-center h-full"
+              style={{ flex: 1, backgroundColor: "#ff7700", alignItems: "center", justifyContent: "center" }}
               onPress={handleDecrease}
             >
               {cartItem.quantity === 1 ? (
-                <Ionicons name="trash-outline" size={gridMode ? 16 : 14} color="#f83b0a" />
+                <Ionicons name="trash-outline" size={gridMode ? 15 : 13} color="white" />
               ) : (
-                <Text className={`text-price-red font-bold ${gridMode ? "text-lg" : "text-md"}`}>−</Text>
+                <Text style={{ color: "white", fontWeight: "700", fontSize: gridMode ? 18 : 15, lineHeight: gridMode ? 22 : 18 }}>−</Text>
               )}
             </TouchableOpacity>
-            <Text className={`font-semibold text-text-primary px-2 ${gridMode ? "text-base" : "text-sm"}`}>
+            <Text style={{ flex: 1, textAlign: "center", fontWeight: "600", fontSize: gridMode ? 14 : 12, color: "#212529", lineHeight: gridMode ? 40 : 32 }}>
               {cartItem.quantity}
             </Text>
             {cartItem.quantity >= product.stock ? (
-              <View className="flex-1" />
+              <View style={{ flex: 1 }} />
             ) : (
               <TouchableOpacity
-                className="flex-1 items-center justify-center h-full"
+                style={{ flex: 1, backgroundColor: "#ff7700", alignItems: "center", justifyContent: "center" }}
                 onPress={handleIncrease}
               >
-                <Text className={`text-price-red font-bold ${gridMode ? "text-lg" : "text-md"}`}>+</Text>
+                <Text style={{ color: "white", fontWeight: "700", fontSize: gridMode ? 18 : 15, lineHeight: gridMode ? 22 : 18 }}>+</Text>
               </TouchableOpacity>
             )}
           </View>
         ) : (
           <TouchableOpacity
-            className={`rounded-sm items-center ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
+            style={{
+              borderRadius: 8,
+              alignItems: "center",
+              backgroundColor: outOfStock ? "#f0f0f0" : "#ff7700",
+              paddingVertical: gridMode ? 10 : 7,
+            }}
             onPress={handleAddToCart}
             disabled={outOfStock}
             activeOpacity={0.85}
           >
             <Text
-              className={`font-semibold ${outOfStock ? "text-text-muted" : "text-white"} ${gridMode ? "text-sm" : "text-xs"}`}
+              style={{ fontWeight: "600", color: outOfStock ? "#adb5bd" : "white", fontSize: gridMode ? 13 : 11 }}
             >
               {outOfStock ? "Stokta Yok" : "Sepete Ekle"}
             </Text>
