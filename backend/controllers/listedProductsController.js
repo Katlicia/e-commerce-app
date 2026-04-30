@@ -12,9 +12,8 @@ function computeTotals(doc) {
   }
 
   const discount = obj.discountPercent || 0;
-  const discountedTotal = discount > 0
-    ? +(total * (1 - discount / 100)).toFixed(2)
-    : null;
+  const discountedTotal =
+    discount > 0 ? +(total * (1 - discount / 100)).toFixed(2) : null;
 
   return { ...obj, total: +total.toFixed(2), discountedTotal };
 }
@@ -45,7 +44,11 @@ exports.getListedProductsById = async (req, res) => {
 exports.createListedProducts = async (req, res) => {
   try {
     const { name, products, discountPercent } = req.body;
-    const list = await ListedProducts.create({ name, products, discountPercent });
+    const list = await ListedProducts.create({
+      name,
+      products,
+      discountPercent,
+    });
     const populated = await ListedProducts.findById(list._id).populate(
       "products.product",
     );
@@ -61,7 +64,7 @@ exports.updateListedProducts = async (req, res) => {
     const list = await ListedProducts.findByIdAndUpdate(
       req.params.id,
       { name, products, discountPercent },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     ).populate("products.product");
     if (!list) return res.status(404).json({ message: "Liste bulunamadı" });
     res.json(computeTotals(list));
