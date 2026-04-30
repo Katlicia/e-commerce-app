@@ -6,6 +6,7 @@ import { getTaxSettings } from "./redux/taxSettingsSlice";
 import { fetchMe } from "./redux/authSlice";
 import { fetchCart } from "./redux/cartSlice";
 import { fetchFavourites } from "./redux/favouriteSlice";
+import { fetchLists } from "./redux/listSlice";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import ProductDetails from "./pages/ProductDetails.jsx";
@@ -33,6 +34,7 @@ function App() {
       if (action.payload) {
         dispatch(fetchCart());
         dispatch(fetchFavourites());
+        dispatch(fetchLists());
       }
     });
     dispatch(getTaxSettings());
