@@ -2,18 +2,35 @@ import "./global.css";
 
 import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from "@expo-google-fonts/inter";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from "@expo-google-fonts/inter";
 import { Provider, useDispatch, useSelector } from "react-redux";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import Toast from "react-native-toast-message";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { configureAxios, setBearerToken } from "@mobile/shared/utils/axiosInstance";
+import {
+  configureAxios,
+  setBearerToken,
+} from "@mobile/shared/utils/axiosInstance";
 import { configureStorage } from "@mobile/shared/utils/storage";
 import { hydrateAuth } from "@mobile/shared/redux/authSlice";
-import { fetchFavourites, hydrateFavouritesFromStorage } from "@mobile/shared/redux/favouriteSlice";
-import { fetchCart, hydrateCartFromStorage } from "@mobile/shared/redux/cartSlice";
+import {
+  fetchFavourites,
+  hydrateFavouritesFromStorage,
+} from "@mobile/shared/redux/favouriteSlice";
+import {
+  fetchCart,
+  hydrateCartFromStorage,
+} from "@mobile/shared/redux/cartSlice";
 import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { store } from "./redux/store";
 import AppNavigator from "./navigation/AppNavigator";
@@ -55,6 +72,7 @@ function AppContent() {
 
   return (
     <>
+      <StatusBar style="dark" />
       <NavigationContainer>
         <AppNavigator />
       </NavigationContainer>
