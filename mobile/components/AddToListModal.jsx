@@ -11,6 +11,7 @@ import {
   Platform,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import {
   createList,
@@ -28,6 +29,7 @@ export default function AddToListModal({ visible, onClose, product }) {
   const [creating, setCreating] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [loadingId, setLoadingId] = useState(null);
+  const insets = useSafeAreaInsets();
 
   const productId = product?._id || product?.id;
 
@@ -98,7 +100,7 @@ export default function AddToListModal({ visible, onClose, product }) {
         <FlatList
           data={lists}
           keyExtractor={(item) => item._id}
-          contentContainerStyle={{ padding: 16, gap: 8 }}
+          contentContainerStyle={{ padding: 16, gap: 8, paddingBottom: insets.bottom + 16 }}
           ListHeaderComponent={
             <TouchableOpacity
               className="flex-row items-center gap-3 py-3 px-4 rounded-xl border border-brand-red bg-red-50"
