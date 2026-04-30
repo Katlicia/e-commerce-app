@@ -144,8 +144,12 @@ exports.getBrands = async (req, res) => {
       }
       filter.category = { $in: [...new Set(allCatIds)] };
     }
-    const brands = await Product.distinct("brand", filter);
-    res.json(brands.filter(Boolean).sort());
+    const brands = await Product.aggregate([
+      { $match: { ...filter, brand: { $nin: [null, ""] } } },
+      { $group: { _id: "$brand", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]);
+    res.json(brands.map((b) => ({ name: b._id, count: b.count })));
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
