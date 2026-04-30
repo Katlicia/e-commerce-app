@@ -15,6 +15,14 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+
+const icons = {
+  heart: require("../assets/ProductDetails/heart.png"),
+  list: require("../assets/ProductDetails/list.png"),
+  briefcase: require("../assets/ProductDetails/briefcase.png"),
+  bell: require("../assets/ProductDetails/bell.png"),
+  cargo: require("../assets/ProductDetails/cargo.png"),
+};
 import {
   getProductDetail,
   createReview,
@@ -51,6 +59,7 @@ export default function ProductDetailScreen() {
   const { favourites } = useSelector((state) => state.favourite);
   const { cart } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
+  const { freeShippingThreshold } = useSelector((state) => state.taxSettings);
 
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -58,6 +67,7 @@ export default function ProductDetailScreen() {
   const [showDesc, setShowDesc] = useState(false);
   const [showSpecs, setShowSpecs] = useState(false);
   const [related, setRelated] = useState([]);
+  const [bestSellers, setBestSellers] = useState([]);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
@@ -83,14 +93,33 @@ export default function ProductDetailScreen() {
     }
 
     const categoryId = product.category?._id || product.category;
-    if (!categoryId) return;
-    axiosInstance
-      .get(`/products?category=${categoryId}&limit=10`)
-      .then((res) => {
-        const list = res.data.products || res.data || [];
-        setRelated(list.filter((p) => p._id !== productId));
-      })
-      .catch(() => {});
+    if (categoryId) {
+      axiosInstance
+        .get(`/products?category=${categoryId}&limit=10`)
+        .then((res) => {
+          const list = res.data.products || res.data || [];
+          const filtered = list.filter((p) => p._id !== productId);
+          setRelated(filtered);
+          if (filtered.length === 0) {
+            axiosInstance
+              .get(`/products?sort=-soldCount&limit=10`)
+              .then((r) => {
+                const best = r.data.products || r.data || [];
+                setBestSellers(best.filter((p) => p._id !== productId));
+              })
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    } else {
+      axiosInstance
+        .get(`/products?sort=-soldCount&limit=10`)
+        .then((res) => {
+          const list = res.data.products || res.data || [];
+          setBestSellers(list.filter((p) => p._id !== productId));
+        })
+        .catch(() => {});
+    }
   }, [product?._id]);
 
   const isReady =
@@ -174,6 +203,15 @@ export default function ProductDetailScreen() {
     return !item.skuId;
   });
 
+  const cartTotal = cart.reduce(
+    (sum, item) =>
+      sum + (item.discountedPrice || item.price) * (item.quantity || 1),
+    0,
+  );
+  const remaining = freeShippingThreshold
+    ? Math.max(0, freeShippingThreshold - cartTotal)
+    : 0;
+
   const reviews = product.reviews || [];
   const avgRating =
     reviews.length > 0
@@ -254,46 +292,46 @@ export default function ProductDetailScreen() {
           <Ionicons name="arrow-back" size={22} color="#212529" />
         </TouchableOpacity>
 
-        <View className="flex-1 flex-row justify-around py-2">
+        <View className="flex-1 flex-row justify-end py-2">
           {[
             {
-              icon: isFavourite ? "heart" : "heart-outline",
+              image: icons.heart,
               label: "FAVORİYE\nEKLE",
-              color: isFavourite ? "#e84040" : "#6c757d",
               onPress: () =>
                 isFavourite
                   ? dispatch(removeFromFavouritesWithSync(pid))
                   : dispatch(addToFavouritesWithSync(product)),
             },
             {
-              icon: "list-outline",
+              image: icons.list,
               label: "LİSTEYE\nEKLE",
-              color: "#6c757d",
               onPress: () => setListModalVisible(true),
             },
             {
-              icon: "briefcase-outline",
+              image: icons.briefcase,
               label: "KURUMSAL\nTEKLİF",
-              color: "#6c757d",
               onPress: () => {},
             },
             {
-              icon: "notifications-outline",
+              image: icons.bell,
               label: "FİYAT\nALARMI",
-              color: "#6c757d",
               onPress: () => {},
             },
-          ].map(({ icon, label, color, onPress }) => (
+          ].map(({ image, label, onPress }) => (
             <TouchableOpacity
               key={label}
               className="items-center gap-1"
               style={{ width: 68 }}
               onPress={onPress}
             >
-              <Ionicons name={icon} size={18} color={color} />
+              <Image
+                source={image}
+                style={{ width: 24, height: 24 }}
+                resizeMode="contain"
+              />
               <Text
                 style={{
-                  fontSize: 8,
+                  fontSize: 11,
                   color: "#6c757d",
                   textAlign: "center",
                   lineHeight: 11,
@@ -366,9 +404,8 @@ export default function ProductDetailScreen() {
           {/* Code + stock status */}
           <View className="flex-row items-center justify-between">
             {product.code ? (
-              <Text style={{ fontSize: 11, color: "#6c757d" }}>
-                Ürün Kodu:{" "}
-                <Text style={{ fontWeight: "600" }}>{product.code}</Text>
+              <Text style={{ fontSize: 12, color: "#7B7B7B" }}>
+                Ürün Kodu: <Text>{product.code}</Text>
               </Text>
             ) : (
               <View />
@@ -384,7 +421,7 @@ export default function ProductDetailScreen() {
               />
               <Text
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   color: activeStock > 0 ? "#37a446" : "#adb5bd",
                   fontWeight: "600",
                 }}
@@ -396,10 +433,10 @@ export default function ProductDetailScreen() {
 
           {/* Brand */}
           {product.brand && (
-            <Text style={{ fontSize: 12, color: "#6c757d" }}>
+            <Text style={{ fontSize: 12, color: "#7B7B7B" }}>
               Marka:{" "}
               <Text
-                style={{ fontWeight: "600", color: "#ff7700" }}
+                style={{ fontSize: 12, color: "#7B7B7B" }}
                 onPress={() =>
                   navigation.navigate("ProductList", {
                     filter: { brand: product.brand },
@@ -424,38 +461,23 @@ export default function ProductDetailScreen() {
           </Text>
 
           {/* Price */}
-          <View className="flex-row items-end gap-2 mt-1">
+          <View className="flex-col mt-1">
             {discountedPrice ? (
               <>
-                <Text
-                  style={{ fontSize: 24, fontWeight: "600", color: "#212529" }}
-                >
-                  {Number(discountedPrice).toFixed(2).replace(".", ",")}₺
-                </Text>
                 <Text
                   style={{
                     fontSize: 14,
                     color: "#adb5bd",
                     textDecorationLine: "line-through",
-                    marginBottom: 3,
                   }}
                 >
                   {Number(price).toFixed(2).replace(".", ",")}₺
                 </Text>
-                <View
-                  className="rounded px-2 py-0.5 mb-1"
-                  style={{ backgroundColor: "#fff3e0" }}
+                <Text
+                  style={{ fontSize: 24, fontWeight: "600", color: "#212529" }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: "700",
-                      color: "#ff7700",
-                    }}
-                  >
-                    %{discountPercent} indirim
-                  </Text>
-                </View>
+                  {Number(discountedPrice).toFixed(2).replace(".", ",")}₺
+                </Text>
               </>
             ) : (
               <Text
@@ -680,36 +702,43 @@ export default function ProductDetailScreen() {
         </View>
 
         {/* Suggested Products */}
-        {related.length > 0 && (
+        {(related.length > 0 || bestSellers.length > 0) && (
           <View className="pt-5">
             <View className="flex-row items-center justify-between px-4 mb-3">
               <Text
                 style={{ fontSize: 16, fontWeight: "700", color: "#212529" }}
               >
-                Lazım Olabilir
+                {related.length > 0 ? "Lazım Olabilir" : "Çok Satanlar"}
               </Text>
-              <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate("ProductList", {
-                    filter: {
-                      category: product.category?.slug || product.category,
-                    },
-                  })
-                }
-              >
-                <Text
-                  style={{ fontSize: 13, color: "#ff7700", fontWeight: "600" }}
+              {related.length > 0 && (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("ProductList", {
+                      filter: {
+                        category: product.category?.slug || product.category,
+                      },
+                    })
+                  }
                 >
-                  Tümü
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: "#ff7700",
+                      fontWeight: "600",
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Tümü
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 12 }}
             >
-              {related.map((item) => (
+              {(related.length > 0 ? related : bestSellers).map((item) => (
                 <ProductCard key={item._id} product={item} />
               ))}
             </ScrollView>
@@ -1025,121 +1054,141 @@ export default function ProductDetailScreen() {
         style={{ paddingBottom: insets.bottom + 12 }}
       >
         {cartItem ? (
-          <View
-            className="flex-row items-center rounded-full overflow-hidden"
-            style={{ borderWidth: 1.5, borderColor: "#ff7700" }}
-          >
-            <TouchableOpacity
-              className="flex-1 items-center py-3"
-              style={{ backgroundColor: "#fff3e0" }}
-              onPress={() =>
-                cartItem.quantity === 1
-                  ? dispatch(removeFromCartWithSync(pid, skuId))
-                  : dispatch(decreaseCartWithSync(pid, skuId))
-              }
+          <>
+            {freeShippingThreshold > 0 && (
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: "#37a446",
+                  textAlign: "center",
+                  marginBottom: 10,
+                }}
+              >
+                {remaining > 0 ? (
+                  <>
+                    {"Sepete "}
+                    <Text style={{ fontWeight: "700" }}>
+                      {remaining.toFixed(2).replace(".", ",")} TL
+                    </Text>
+                    {" daha eklerseniz "}
+                    <Text style={{ fontWeight: "700" }}>kargo ücretsiz.</Text>
+                  </>
+                ) : (
+                  <Text style={{ fontWeight: "700" }}>Kargo ücretsiz!</Text>
+                )}
+              </Text>
+            )}
+            <View
+              style={{
+                flexDirection: "row",
+                alignSelf: "center",
+                width: "50%",
+                borderWidth: 1.5,
+                borderColor: "#ff7700",
+                borderRadius: 10,
+                overflow: "hidden",
+                height: 52,
+              }}
             >
-              {cartItem.quantity === 1 ? (
-                <Ionicons name="trash-outline" size={18} color="#ff7700" />
-              ) : (
-                <Text
-                  style={{
-                    fontSize: 22,
-                    color: "#ff7700",
-                    fontWeight: "700",
-                    lineHeight: 24,
-                  }}
-                >
-                  −
-                </Text>
-              )}
-            </TouchableOpacity>
-            <Text
-              className="flex-1 text-center"
-              style={{ fontSize: 16, fontWeight: "700", color: "#ff7700" }}
-            >
-              {cartItem.quantity}
-            </Text>
-            {cartItem.quantity >= activeStock ? (
-              <View className="flex-1" />
-            ) : (
               <TouchableOpacity
-                className="flex-1 items-center py-3"
-                style={{ backgroundColor: "#fff3e0" }}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#ff7700",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
                 onPress={() =>
-                  dispatch(
-                    addToCartWithSync(
-                      { ...product, price, discountedPrice },
-                      selectedVariants,
-                      skuId,
-                    ),
-                  )
+                  cartItem.quantity === 1
+                    ? dispatch(removeFromCartWithSync(pid, skuId))
+                    : dispatch(decreaseCartWithSync(pid, skuId))
                 }
               >
-                <Text
-                  style={{
-                    fontSize: 22,
-                    color: "#ff7700",
-                    fontWeight: "700",
-                    lineHeight: 24,
-                  }}
-                >
-                  +
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          <View className="flex-row gap-3 items-center">
-            <View
-              className="flex-row items-center rounded-full overflow-hidden"
-              style={{ borderWidth: 1, borderColor: "#dee2e6" }}
-            >
-              <TouchableOpacity
-                className="px-4 py-3 items-center justify-center"
-                onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-              >
-                <Text
-                  style={{
-                    fontSize: 20,
-                    color: "#212529",
-                    fontWeight: "700",
-                    lineHeight: 22,
-                  }}
-                >
-                  −
-                </Text>
+                {cartItem.quantity === 1 ? (
+                  <Ionicons name="trash-outline" size={18} color="white" />
+                ) : (
+                  <Text
+                    style={{
+                      fontSize: 22,
+                      color: "white",
+                      fontWeight: "600",
+                      lineHeight: 26,
+                    }}
+                  >
+                    −
+                  </Text>
+                )}
               </TouchableOpacity>
               <Text
                 style={{
-                  paddingHorizontal: 12,
-                  fontSize: 15,
+                  flex: 1,
+                  fontSize: 18,
                   fontWeight: "600",
                   color: "#212529",
+                  textAlign: "center",
+                  textAlignVertical: "center",
+                  lineHeight: 52,
                 }}
               >
-                {quantity}
+                {cartItem.quantity}
               </Text>
-              <TouchableOpacity
-                className="px-4 py-3 items-center justify-center"
-                disabled={quantity >= activeStock}
-                onPress={() => setQuantity((q) => q + 1)}
-              >
-                <Text
+              {cartItem.quantity >= activeStock ? (
+                <View style={{ flex: 1 }} />
+              ) : (
+                <TouchableOpacity
                   style={{
-                    fontSize: 20,
-                    color: quantity >= activeStock ? "#dee2e6" : "#212529",
-                    fontWeight: "700",
-                    lineHeight: 22,
+                    flex: 1,
+                    backgroundColor: "#ff7700",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
+                  onPress={() =>
+                    dispatch(
+                      addToCartWithSync(
+                        { ...product, price, discountedPrice },
+                        selectedVariants,
+                        skuId,
+                      ),
+                    )
+                  }
                 >
-                  +
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={{
+                      fontSize: 22,
+                      color: "white",
+                      fontWeight: "600",
+                      lineHeight: 26,
+                    }}
+                  >
+                    +
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
+          </>
+        ) : (
+          <>
+            {freeShippingThreshold > 0 && (
+              <View
+                className="flex-row items-center justify-center gap-1.5"
+                style={{ marginBottom: 10 }}
+              >
+                <Image
+                  source={icons.cargo}
+                  style={{ width: 16, height: 16 }}
+                  resizeMode="contain"
+                />
+                <Text style={{ fontSize: 13, color: "#212529" }}>
+                  {freeShippingThreshold.toLocaleString("tr-TR")} TL ve üzeri{" "}
+                  <Text style={{ fontWeight: "700" }}>ücretsiz kargo.</Text>
+                </Text>
+              </View>
+            )}
             <TouchableOpacity
-              className="flex-1 rounded-full py-3.5 items-center justify-center"
+              className="rounded-md py-4 items-center justify-center"
               style={{
                 backgroundColor: addToCartDisabled ? "#dee2e6" : "#ff7700",
+                width: "50%",
+                alignSelf: "center",
               }}
               disabled={addToCartDisabled}
               onPress={handleAddToCart}
@@ -1148,14 +1197,14 @@ export default function ProductDetailScreen() {
                 style={{
                   color: "white",
                   fontWeight: "700",
-                  fontSize: 14,
-                  letterSpacing: 0.5,
+                  fontSize: 15,
+                  letterSpacing: 0.3,
                 }}
               >
-                {addToCartDisabled ? "STOKTA YOK" : "SEPETE EKLE"}
+                {addToCartDisabled ? "STOKTA YOK" : "Sepete Ekle"}
               </Text>
             </TouchableOpacity>
-          </View>
+          </>
         )}
       </View>
 
