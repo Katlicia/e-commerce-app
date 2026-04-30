@@ -13,13 +13,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import ScreenHeader from "../components/ScreenHeader";
+import CartSummaryBar from "../components/CartSummaryBar";
 import {
   addToCartWithSync,
   decreaseCartWithSync,
   removeFromCartWithSync,
   setAppliedCoupon,
   clearAppliedCoupon,
-  removeBundleDiscount,
 } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
@@ -131,19 +131,7 @@ function CartItem({ item }) {
   );
 }
 
-function SummaryRow({ label, value, valueClass = "" }) {
-  return (
-    <View className="flex-row justify-between items-center">
-      <Text className="text-sm text-text-secondary">{label}</Text>
-      <Text className={`text-sm font-medium text-text-primary ${valueClass}`}>
-        {value}
-      </Text>
-    </View>
-  );
-}
-
 export default function CartScreen() {
-  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
@@ -177,42 +165,7 @@ export default function CartScreen() {
     dispatch(clearAppliedCoupon());
     setCouponError("");
   };
-  const {
-    freeShippingThreshold = 500,
-    kdv1Rate = 0.01,
-    kdv20Rate = 0.2,
-  } = useSelector((state) => state.taxSettings);
 
-  // Calculate the total discount from all valid bundle discounts
-  const bundleDiscountAmount = +bundleDiscounts
-    .reduce((total, bundle) => {
-      const bundleSubtotal = bundle.requiredProducts.reduce((sum, req) => {
-        const item = cart.find((c) => (c._id || c.id) === req.productId);
-        if (!item) return sum;
-        return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
-      }, 0);
-      return total + bundleSubtotal * (bundle.percent / 100);
-    }, 0)
-    .toFixed(2);
-
-  const totalDiscount = +cart
-    .filter((item) => item.discountedPrice)
-    .reduce(
-      (sum, item) =>
-        sum +
-        (parseFloat(item.price) - parseFloat(item.discountedPrice)) *
-          item.quantity,
-      0,
-    )
-    .toFixed(2);
-
-  const rawTotal = +(totalAmount + totalDiscount).toFixed(2);
-  const kdv1 = +(totalAmount * kdv1Rate).toFixed(2);
-  const kdv20 = +(totalAmount * kdv20Rate).toFixed(2);
-  const couponDiscount = appliedCoupon?.discount ?? 0;
-  const finalTotal = Math.max(0, totalAmount - couponDiscount - bundleDiscountAmount);
-  const remaining = Math.max(freeShippingThreshold - totalAmount, 0);
-  const freeShipping = remaining === 0;
   const totalQuantity = cart.reduce((s, i) => s + i.quantity, 0);
 
   if (cart.length === 0) {
@@ -326,159 +279,7 @@ export default function CartScreen() {
         )}
       </View>
 
-      {!summaryExpanded && (
-        <View className="items-center py-2 bg-white">
-          {freeShipping ? (
-            <View className="flex-row items-center gap-1.5 bg-success-light rounded-full px-4 py-1.5">
-              <Ionicons name="checkmark-circle" size={14} color="#2a9d4e" />
-              <Text className="text-sm font-semibold text-discount-green">
-                {fmt(freeShippingThreshold)}₺ geçtiniz kargo bedava
-              </Text>
-            </View>
-          ) : (
-            <View className="flex-row bg-success-light rounded-full px-4 py-1.5">
-              <Text className="text-sm text-discount-green">
-                {fmt(remaining)} TL daha eklerseniz{" "}
-                <Text className="font-bold">kargo ücretsiz.</Text>
-              </Text>
-            </View>
-          )}
-        </View>
-      )}
-
-      {/* Sticky bottom summary panel */}
-      <View
-        className="bg-white border-t border-border-subtle"
-        style={{
-          elevation: 12,
-          shadowColor: "#000",
-          shadowOpacity: 0.12,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: -3 },
-        }}
-      >
-        {/* Expanded: badge içeride + detail rows */}
-        {summaryExpanded && (
-          <>
-            <View className="items-center pt-2.5 pb-1">
-              {freeShipping ? (
-                <View className="flex-row items-center gap-1.5 bg-success-light rounded-full px-4 py-1.5">
-                  <Ionicons name="checkmark-circle" size={14} color="#2a9d4e" />
-                  <Text className="text-sm font-semibold text-discount-green">
-                    {fmt(freeShippingThreshold)}₺ geçtiniz kargo bedava
-                  </Text>
-                </View>
-              ) : (
-                <View className="flex-row bg-success-light rounded-full px-4 py-1.5">
-                  <Text className="text-sm text-discount-green">
-                    {fmt(remaining)} TL daha eklerseniz{" "}
-                    <Text className="font-bold">kargo ücretsiz.</Text>
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            <View className="px-11 pt-2 pb-2 gap-2.5">
-              <SummaryRow label="Sipariş Tutarı" value={`${fmt(rawTotal)}₺`} />
-              <SummaryRow label="KDV (%1)" value={`${fmt(kdv1)}₺`} />
-              <SummaryRow label="KDV (%20)" value={`${fmt(kdv20)}₺`} />
-              <SummaryRow
-                label="Kargo Bedeli"
-                value={
-                  freeShipping ? "Ücretsiz" : "Adrese göre hesaplanacaktır."
-                }
-                valueClass={
-                  freeShipping ? "text-discount-green" : "text-text-muted"
-                }
-              />
-              {totalDiscount > 0 && (
-                <SummaryRow
-                  label="İndirimler 🤩"
-                  value={`-${fmt(totalDiscount)}₺`}
-                  valueClass="text-discount-green"
-                />
-              )}
-              {couponDiscount > 0 && (
-                <SummaryRow
-                  label={`Kupon (${appliedCoupon.code})`}
-                  value={`-${fmt(couponDiscount)}₺`}
-                  valueClass="text-discount-green"
-                />
-              )}
-              {bundleDiscounts.map((bundle) => {
-                const amount = +bundle.requiredProducts
-                  .reduce((sum, req) => {
-                    const item = cart.find((c) => (c._id || c.id) === req.productId);
-                    if (!item) return sum;
-                    return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
-                  }, 0)
-                  .toFixed(2) * (bundle.percent / 100);
-                return (
-                  <View key={bundle.listId} className="flex-row justify-between items-center">
-                    <View className="flex-row items-center gap-1 flex-1 mr-2">
-                      <Ionicons name="list-outline" size={13} color="#2a9d4e" />
-                      <Text className="text-sm text-discount-green flex-1" numberOfLines={1}>
-                        {bundle.name}
-                      </Text>
-                    </View>
-                    <View className="flex-row items-center gap-1">
-                      <Text className="text-sm font-medium text-discount-green">
-                        -%{bundle.percent} (-{fmt(amount)}₺)
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => dispatch(removeBundleDiscount(bundle.listId))}
-                        hitSlop={8}
-                      >
-                        <Ionicons name="close-circle" size={16} color="#2a9d4e" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-
-            <View className="h-px bg-border-subtle mx-4 mb-1" />
-          </>
-        )}
-
-        {/* Total row */}
-        <View className="flex-row items-center px-4 py-3 gap-3">
-          <TouchableOpacity
-            className="flex-row items-center gap-2 flex-1"
-            onPress={() => setSummaryExpanded((v) => !v)}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={summaryExpanded ? "chevron-down" : "chevron-up"}
-              size={20}
-              color="#212529"
-            />
-            <View>
-              <View className="flex-column items-start">
-                <Text className="text-sm font-semibold text-text-primary">
-                  Toplam Tutar
-                </Text>
-                <Text className="text-xl font-bold text-text-primary">
-                  {fmt(finalTotal)}₺
-                </Text>
-              </View>
-              {freeShipping && (
-                <Text className="text-sm font-medium text-discount-green">
-                  Kargo Bedava
-                </Text>
-              )}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="bg-primary rounded-md px-10 py-3.5"
-            onPress={() => navigation.navigate("Checkout")}
-            activeOpacity={0.85}
-          >
-            <Text className="text-white font-bold text-base">Ödeme Yap</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <CartSummaryBar />
     </SafeAreaView>
   );
 }
