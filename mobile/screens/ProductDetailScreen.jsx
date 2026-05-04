@@ -454,14 +454,13 @@ export default function ProductDetailScreen() {
               fontSize: 24,
               fontWeight: "400",
               color: "#212529",
-              lineHeight: 24,
             }}
           >
             {product.name}
           </Text>
 
           {/* Price */}
-          <View className="flex-col mt-1">
+          <View className="flex-col">
             {discountedPrice ? (
               <>
                 <Text
