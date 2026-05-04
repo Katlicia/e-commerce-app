@@ -14,7 +14,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
-import { ProductCard } from "../components/home/HomeProductList";
+import { ProductCard } from "../components/ProductCard";
 import FilterModal from "../components/home/FilterModal";
 
 const PAGE_LIMIT = 20;

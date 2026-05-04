@@ -38,7 +38,7 @@ import {
   addToFavouritesWithSync,
   removeFromFavouritesWithSync,
 } from "@mobile/shared/redux/favouriteSlice";
-import { ProductCard } from "../components/home/HomeProductList";
+import { ProductCard } from "../components/ProductCard";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
 import AddToListModal from "../components/AddToListModal";
 
