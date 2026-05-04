@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
@@ -95,6 +95,18 @@ export default function HomeProductList({ title, settings = {} }) {
       .finally(() => setLoading(false));
   }, [isFocused]);
 
+  const overrideBadge = settings.bestSellers ? "en-cok-satan" : undefined;
+
+  const renderItem = useCallback(
+    ({ item }) =>
+      item.__banner ? (
+        <BannerCard image={item.url} />
+      ) : (
+        <ProductCard product={item} overrideBadge={overrideBadge} />
+      ),
+    [overrideBadge],
+  );
+
   if (loading) {
     return (
       <View className="h-48 items-center justify-center">
@@ -130,17 +142,8 @@ export default function HomeProductList({ title, settings = {} }) {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 12 }}
-        keyExtractor={(item, i) => (item.__banner ? "banner" : item._id)}
-        renderItem={({ item }) =>
-          item.__banner ? (
-            <BannerCard image={item.url} />
-          ) : (
-            <ProductCard
-              product={item}
-              overrideBadge={settings.bestSellers ? "en-cok-satan" : undefined}
-            />
-          )
-        }
+        keyExtractor={(item) => (item.__banner ? "banner" : item._id)}
+        renderItem={renderItem}
       />
     </View>
   );
