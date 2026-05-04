@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -64,7 +65,9 @@ export default function ListsScreen({ navigation }) {
             onPress={() => navigation.navigate("Login")}
             activeOpacity={0.85}
           >
-            <Text className="text-white font-sans-medium text-md">Giriş Yap</Text>
+            <Text className="text-white font-sans-medium text-md">
+              Giriş Yap
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -73,18 +76,7 @@ export default function ListsScreen({ navigation }) {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <ScreenHeader
-        title="Listelerim"
-        right={
-          <TouchableOpacity
-            onPress={() => setShowInput((v) => !v)}
-            style={{ width: 32, padding: 4 }}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name={showInput ? "close" : "add"} size={22} color="#212529" />
-          </TouchableOpacity>
-        }
-      />
+      <ScreenHeader title="Listelerim" />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -116,54 +108,161 @@ export default function ListsScreen({ navigation }) {
           </View>
         )}
 
+        <View className="px-4 pt-4 pb-2">
+          <View
+            style={{
+              backgroundColor: "#FAE8E4",
+              borderRadius: 16,
+              overflow: "hidden",
+              padding: 20,
+              minHeight: 120,
+            }}
+          >
+            <Image
+              source={require("../assets/Liste/mask.png")}
+              style={{
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+              }}
+              resizeMode="contain"
+            />
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "700",
+                color: "#F83B0A",
+                marginBottom: 15,
+              }}
+            >
+              Listeni oluştur {"\n"}
+              Hızlı alışveriş keyfini yaşa
+            </Text>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#F83B0A",
+                borderRadius: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                alignSelf: "flex-start",
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+              }}
+              onPress={() => setShowInput(true)}
+              activeOpacity={0.85}
+            >
+              <Image
+                source={require("../assets/Liste/doc.png")}
+                style={{ width: 16, height: 16 }}
+                resizeMode="contain"
+              />
+              <Text style={{ color: "white", fontSize: 14 }}>
+                Liste Oluştur
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {loading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#e84040" />
           </View>
-        ) : lists.length === 0 ? (
-          <View className="flex-1 items-center justify-center px-6 gap-3">
-            <Ionicons name="list-outline" size={48} color="#adb5bd" />
-            <Text className="text-md text-text-secondary text-center">
-              Henüz listeniz yok.
-            </Text>
-            <Text className="text-sm text-text-secondary text-center">
-              Ürün sayfasından "Listeye Ekle" ile liste oluşturabilirsiniz.
-            </Text>
-          </View>
-        ) : (
+        ) : lists.length > 0 ? (
           <FlatList
             data={lists}
             keyExtractor={(item) => item._id}
-            contentContainerStyle={{ paddingVertical: 8 }}
+            contentContainerStyle={{ paddingTop: 8, paddingBottom: 16 }}
             renderItem={({ item }) => (
               <TouchableOpacity
-                className="flex-row items-center px-4 py-4 border-b border-border-subtle"
-                onPress={() => navigation.navigate("ListDetail", { listId: item._id })}
+                onPress={() =>
+                  navigation.navigate("ListDetail", { listId: item._id })
+                }
                 activeOpacity={0.7}
+                style={{
+                  marginHorizontal: 16,
+                  marginVertical: 6,
+                  padding: 0,
+                  backgroundColor: "white",
+                }}
               >
-                <View className="w-10 h-10 rounded-xl bg-bg-light items-center justify-center mr-3">
-                  <Ionicons name="list-outline" size={20} color="#e84040" />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-md font-sans-medium text-text-primary">
-                    {item.name}
-                  </Text>
-                  <Text className="text-sm text-text-secondary">
-                    {item.products?.length || 0} ürün
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => handleDelete(item)}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  className="p-2"
+                <Text
+                  style={{
+                    fontWeight: "500",
+                    fontSize: 16,
+                    color: "#212529",
+                    marginBottom: 8,
+                  }}
                 >
-                  <Ionicons name="trash-outline" size={18} color="#adb5bd" />
-                </TouchableOpacity>
-                <Ionicons name="chevron-forward" size={18} color="#adb5bd" />
+                  {item.name}
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderWidth: 1,
+                    backgroundColor: "#F5F5F5",
+                    borderColor: "#f0f0f0",
+                    borderRadius: 10,
+                    padding: 10,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    {item.products?.slice(0, 4).map((product, index) => (
+                      <View
+                        key={index}
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#eee",
+                          overflow: "hidden",
+                          backgroundColor: "#fafafa",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Image
+                          source={{ uri: product.images?.[0]?.url }}
+                          style={{ width: 40, height: 40 }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    ))}
+                    {(item.products?.length || 0) > 4 && (
+                      <Text
+                        style={{
+                          fontWeight: "600",
+                          fontSize: 14,
+                          color: "#212529",
+                        }}
+                      >
+                        +{item.products.length - 4}
+                      </Text>
+                    )}
+                  </View>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: "#212529",
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Detay
+                  </Text>
+                </View>
               </TouchableOpacity>
             )}
           />
-        )}
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
