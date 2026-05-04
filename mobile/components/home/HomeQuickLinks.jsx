@@ -1,33 +1,28 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
+const crownImg = require("../../assets/Home/crown.png");
+const clipboardImg = require("../../assets/Home/clipboard.png");
 
 const LINKS = [
   {
     title: "AYIN ÜRÜNLERİ",
     subtitle: "Süper fiyatlar",
-    icon: "crown",
-    IconComponent: FontAwesome6,
+    image: crownImg,
     bg: "#d9f7dd",
-    iconColor: "#3DB860",
     textColor: "#2A9046",
     screen: "ProductList",
     params: { filter: { featuredList: "monthly-featured" } },
-    size: 28,
   },
   {
     title: "LİSTELİ ÜRÜNLER",
     subtitle: "Sizin için derledik",
-    icon: "clipboard-list",
-    IconComponent: FontAwesome5,
+    image: clipboardImg,
     bg: "#ffe4de",
-    iconColor: "#E05C35",
     textColor: "#C44820",
     screen: "ListedProducts",
     params: {},
-    size: 40,
   },
 ];
 
@@ -43,11 +38,7 @@ export default function HomeQuickLinks() {
           style={[styles.card, { backgroundColor: link.bg }]}
           onPress={() => navigation.navigate(link.screen, link.params)}
         >
-          <link.IconComponent
-            name={link.icon}
-            size={link.size}
-            color={link.iconColor}
-          />
+          <Image source={link.image} style={styles.icon} resizeMode="contain" />
           <View style={styles.textWrap}>
             <Text style={[styles.title, { color: link.textColor }]}>
               {link.title}
@@ -91,5 +82,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginTop: 1,
     opacity: 0.8,
+  },
+  icon: {
+    width: 32,
+    height: 32,
   },
 });
