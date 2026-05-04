@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
+  ScrollView,
   Image,
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,6 +25,130 @@ import {
 } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
+
+function CampaignStrip({ totalAmount }) {
+  const dispatch = useDispatch();
+  const { appliedCoupon } = useSelector((state) => state.cart);
+  const user = useSelector((state) => state.auth.user);
+  const navigation = useNavigation();
+  const [campaigns, setCampaigns] = useState([]);
+
+  useEffect(() => {
+    axiosInstance
+      .get("/campaigns")
+      .then((res) => {
+        const now = new Date();
+        const active = (res.data || []).filter((c) => {
+          if (!c.isActive) return false;
+          if (new Date(c.endDate) < now) return false;
+          if (c.coupon && c.coupon.isActive === false) return false;
+          if (c.coupon?.usageLimit && c.coupon?.usageCount >= c.coupon?.usageLimit) return false;
+          if (user && c.coupon?.usedBy?.includes(user._id)) return false;
+          return true;
+        });
+        setCampaigns(active);
+      })
+      .catch(() => {});
+  }, [user]);
+
+  if (!campaigns.length) return null;
+
+  const handleApply = async (campaign) => {
+    if (!user) {
+      Alert.alert(
+        "Giriş Yapın",
+        "Kampanya uygulamak için giriş yapmanız gerekiyor.",
+        [
+          { text: "Vazgeç", style: "cancel" },
+          { text: "Giriş Yap", onPress: () => navigation.navigate("Login") },
+        ],
+      );
+      return;
+    }
+    if (!campaign.coupon?.code) return;
+    const min = campaign.coupon.minOrderAmount ?? 0;
+    if (min > 0 && totalAmount < min) {
+      Alert.alert(
+        "Minimum Tutar",
+        `Bu kampanyayı kullanmak için sepet tutarınız en az ${Math.floor(min)}₺ olmalıdır.`,
+      );
+      return;
+    }
+    try {
+      const { data } = await axiosInstance.post("/coupons/apply", {
+        code: campaign.coupon.code,
+        orderTotal: totalAmount,
+      });
+      dispatch(setAppliedCoupon(data));
+    } catch (err) {
+      Alert.alert("Hata", err?.response?.data?.message ?? "Kampanya uygulanamadı.");
+    }
+  };
+
+  return (
+    <View className="bg-white pt-3 pb-1 border-b border-border-subtle">
+      <Text className="text-sm font-bold text-text-primary px-4 mb-2">
+        Kampanyalar
+      </Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 12,
+          gap: 10,
+          paddingBottom: 10,
+        }}
+      >
+        {campaigns.map((c) => {
+          const isApplied = appliedCoupon?.code === c.coupon?.code;
+          return (
+            <TouchableOpacity
+              key={c._id}
+              onPress={() =>
+                isApplied ? dispatch(clearAppliedCoupon()) : handleApply(c)
+              }
+              activeOpacity={0.75}
+              style={{
+                width: 200,
+                borderWidth: 1.5,
+                borderStyle: "dashed",
+                borderColor: isApplied ? "#2a9d4e" : "#f83b0a",
+                borderRadius: 10,
+                backgroundColor: isApplied ? "#f0fff4" : "#fff5f5",
+                padding: 10,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={{ fontSize: 12, color: "#212529", fontWeight: "500", lineHeight: 17 }}>
+                  {c.title}
+                </Text>
+                <Text style={{ fontSize: 10, color: "#adb5bd" }}>
+                  Son gün:{" "}
+                  {new Date(c.endDate).toLocaleDateString("tr-TR", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </Text>
+              </View>
+              {c.coupon && (
+                <View>
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: isApplied ? "#2a9d4e" : "#ff7700" }}>
+                    {isApplied ? "Kaldır" : "Uygula"}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
 
 function CartItem({ item }) {
   const dispatch = useDispatch();
@@ -81,20 +207,40 @@ function CartItem({ item }) {
           )}
 
         <View className="flex-row items-center justify-between mt-2">
-          <View className="flex-row items-center gap-1">
-            <Text className="text-base font-bold text-price-red">
-              {Number(displayPrice).toFixed(2)}₺
-            </Text>
+          <View style={{ flexDirection: "column" }}>
             {item.discountedPrice && (
-              <Text className="text-xs text-text-muted line-through">
-                {Number(item.price).toFixed(2)}₺
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: "#adb5bd",
+                  textDecorationLine: "line-through",
+                }}
+              >
+                {Number(item.price).toFixed(2).replace(".", ",")}₺
               </Text>
             )}
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#212529" }}>
+              {Number(displayPrice).toFixed(2).replace(".", ",")}₺
+            </Text>
           </View>
 
-          <View className="flex-row items-center border border-border-input rounded-lg overflow-hidden">
+          <View
+            style={{
+              flexDirection: "row",
+              borderWidth: 1.5,
+              borderColor: "#ff7700",
+              borderRadius: 10,
+              overflow: "hidden",
+              height: 36,
+            }}
+          >
             <TouchableOpacity
-              className="px-3 py-1.5 items-center justify-center"
+              style={{
+                width: 36,
+                backgroundColor: "#ff7700",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
               onPress={() =>
                 item.quantity === 1
                   ? dispatch(removeFromCartWithSync(itemId, item.skuId))
@@ -102,26 +248,58 @@ function CartItem({ item }) {
               }
             >
               {item.quantity === 1 ? (
-                <Ionicons name="trash-outline" size={14} color="#f83b0a" />
+                <Ionicons name="trash-outline" size={14} color="white" />
               ) : (
-                <Text className="text-price-red font-bold text-base">−</Text>
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "700",
+                    fontSize: 16,
+                    lineHeight: 20,
+                  }}
+                >
+                  −
+                </Text>
               )}
             </TouchableOpacity>
-            <Text className="px-3 text-sm font-semibold text-text-primary">
+            <Text
+              style={{
+                width: 36,
+                textAlign: "center",
+                fontWeight: "600",
+                fontSize: 13,
+                color: "#212529",
+                lineHeight: 36,
+              }}
+            >
               {item.quantity}
             </Text>
             {item.quantity >= availableStock ? (
-              <View className="px-3 py-1.5" />
+              <View style={{ width: 36 }} />
             ) : (
               <TouchableOpacity
-                className="px-3 py-1.5 items-center justify-center"
+                style={{
+                  width: 36,
+                  backgroundColor: "#ff7700",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
                 onPress={() =>
                   dispatch(
                     addToCartWithSync(item, item.selectedVariants, item.skuId),
                   )
                 }
               >
-                <Text className="text-price-red font-bold text-base">+</Text>
+                <Text
+                  style={{
+                    color: "white",
+                    fontWeight: "700",
+                    fontSize: 16,
+                    lineHeight: 20,
+                  }}
+                >
+                  +
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -135,6 +313,7 @@ export default function CartScreen() {
   const [couponCode, setCouponCode] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState("");
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { cart, totalAmount, appliedCoupon, bundleDiscounts } = useSelector(
@@ -197,18 +376,27 @@ export default function CartScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      <ScreenHeader title={`Sepetim (${totalQuantity} ürün)`} />
-
+      <ScreenHeader
+        title="Sepet"
+        right={
+          <TouchableOpacity
+            onPress={() => setSummaryExpanded(true)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text className="text-sm text-primary font-medium">+ Kupon Kodu</Text>
+          </TouchableOpacity>
+        }
+      />
       <FlatList
         data={cart}
         keyExtractor={(item) => `${item._id || item.id}-${item.skuId ?? ""}`}
         renderItem={({ item }) => <CartItem item={item} />}
+        ListHeaderComponent={<CampaignStrip totalAmount={totalAmount} />}
         contentContainerStyle={{ paddingBottom: 16 }}
         style={{ backgroundColor: "white" }}
       />
-
-      {/* Coupon Section */}
-      <View className="bg-white border-t border-border-subtle px-4 py-3">
+      {summaryExpanded && (
+        <View className="bg-white border-t border-border-subtle px-4 py-3">
         {appliedCoupon ? (
           <View className="flex-row items-center justify-between bg-success-light rounded-lg px-3 py-2.5">
             <View className="flex-row items-center gap-2">
@@ -277,9 +465,9 @@ export default function CartScreen() {
             </Text>
           </View>
         )}
-      </View>
-
-      <CartSummaryBar />
+        </View>
+      )}
+      <CartSummaryBar expanded={summaryExpanded} onToggle={() => setSummaryExpanded((v) => !v)} />
     </SafeAreaView>
   );
 }
