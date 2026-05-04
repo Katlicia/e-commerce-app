@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { memo, useState } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,7 +39,7 @@ export function BannerCard({ image }) {
   );
 }
 
-export function ProductCard({
+export const ProductCard = memo(function ProductCard({
   product,
   overrideBadge,
   cardWidth: cardW,
@@ -355,4 +355,4 @@ export function ProductCard({
       </View>
     </TouchableOpacity>
   );
-}
+});
