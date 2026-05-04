@@ -27,6 +27,14 @@ export const addProductToList = createAsyncThunk(
   },
 );
 
+export const renameList = createAsyncThunk(
+  "list/renameList",
+  async ({ listId, name }) => {
+    const { data } = await axiosInstance.patch(`/users/me/lists/${listId}`, { name });
+    return data;
+  },
+);
+
 export const removeProductFromList = createAsyncThunk(
   "list/removeProduct",
   async ({ listId, productId }) => {
@@ -65,6 +73,10 @@ const listSlice = createSlice({
       })
       .addCase(deleteList.fulfilled, (state, action) => {
         state.lists = state.lists.filter((l) => l._id !== action.payload);
+      })
+      .addCase(renameList.fulfilled, (state, action) => {
+        const idx = state.lists.findIndex((l) => l._id === action.payload._id);
+        if (idx !== -1) state.lists[idx] = action.payload;
       })
       .addCase(addProductToList.fulfilled, (state, action) => {
         const idx = state.lists.findIndex((l) => l._id === action.payload._id);
