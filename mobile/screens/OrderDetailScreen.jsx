@@ -213,76 +213,53 @@ export default function OrderDetailScreen({ navigation, route }) {
 
         {/* Stepper */}
         <View className="bg-white mx-4 rounded-xl border border-border-subtle mb-4 py-5">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20 }}
-          >
-            <View>
-              {/* Circles + connectors — fixed row, independent of labels */}
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                {STEPS.map((step, i) => (
-                  <React.Fragment key={i}>
-                    <View
-                      style={{
-                        width: 64,
-                        alignItems: "center",
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 24,
-                          backgroundColor: isActive(i) ? "#ff7700" : "#e9ecef",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Image
-                          source={step.icon}
-                          style={{ width: 24, height: 24, tintColor: "#fff" }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {i < STEPS.length - 1 && (
-                      <View
-                        style={{
-                          width: 32,
-                          height: 2,
-                          borderTopWidth: 2,
-                          borderStyle: "dashed",
-                          borderColor: isActive(i + 1) ? "#ff7700" : "#dee2e6",
-                        }}
-                      />
-                    )}
-                  </React.Fragment>
-                ))}
-              </View>
-
-              {/* Labels row — same column widths + spacers */}
-              <View style={{ flexDirection: "row", marginTop: 6 }}>
-                {STEPS.map((step, i) => (
-                  <React.Fragment key={i}>
-                    <View style={{ width: 64, alignItems: "center" }}>
-                      <Text
-                        style={{
-                          color: isActive(i) ? "#ff7700" : "#adb5bd",
-                          fontSize: 11,
-                          textAlign: "center",
-                        }}
-                        numberOfLines={2}
-                      >
-                        {step.label}
-                      </Text>
-                    </View>
-                    {i < STEPS.length - 1 && <View style={{ width: 32 }} />}
-                  </React.Fragment>
-                ))}
-              </View>
-            </View>
-          </ScrollView>
+          <View style={{ flexDirection: "row", alignItems: "flex-start", paddingHorizontal: 12 }}>
+            {STEPS.map((step, i) => (
+              <React.Fragment key={i}>
+                <View style={{ alignItems: "center", width: 48 }}>
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: isActive(i) ? "#ff7700" : "#e9ecef",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Image
+                      source={step.icon}
+                      style={{ width: 22, height: 22, tintColor: "#fff" }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text
+                    style={{
+                      color: isActive(i) ? "#ff7700" : "#adb5bd",
+                      fontSize: 9,
+                      textAlign: "center",
+                      marginTop: 4,
+                    }}
+                    numberOfLines={2}
+                  >
+                    {step.label}
+                  </Text>
+                </View>
+                {i < STEPS.length - 1 && (
+                  <View
+                    style={{
+                      flex: 1,
+                      height: 2,
+                      marginTop: 19,
+                      borderTopWidth: 2,
+                      borderStyle: "dashed",
+                      borderColor: isActive(i + 1) ? "#ff7700" : "#dee2e6",
+                    }}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </View>
 
           {order.status === "İptal Edildi" && (
             <View
