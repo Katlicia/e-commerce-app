@@ -15,9 +15,13 @@ export default function ScreenHeader({ title, right, onBack }) {
       >
         <Ionicons name="arrow-back" size={22} color="#212529" />
       </TouchableOpacity>
-      <Text className="flex-1 text-lg font-sans-bold text-text-primary text-center">
-        {title}
-      </Text>
+      <View
+        style={{ position: "absolute", left: 0, right: 0, alignItems: "center" }}
+        pointerEvents="none"
+      >
+        <Text className="text-lg text-text-primary">{title}</Text>
+      </View>
+      <View style={{ flex: 1 }} />
       {right ?? <View style={{ width: 32 }} />}
     </View>
   );
