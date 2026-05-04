@@ -1,21 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, TouchableOpacity } from "react-native";
+import { Image, TouchableOpacity, ScrollView } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { getBanner } from "@mobile/shared/redux/bannerSlice";
 
 function AdBannerImage({ uri, onPress }) {
-  const [ratio, setRatio] = useState(1.8);
+  const [ratio, setRatio] = useState(4);
 
   return (
-    <TouchableOpacity
-      style={{ flex: 1 }}
-      onPress={onPress}
-      activeOpacity={onPress ? 0.85 : 1}
-    >
+    <TouchableOpacity onPress={onPress} activeOpacity={onPress ? 0.85 : 1}>
       <Image
         source={{ uri }}
-        style={{ width: "100%", aspectRatio: ratio }}
+        style={{ aspectRatio: ratio, height: 80 }}
         resizeMode="cover"
         className="rounded-sm"
         onLoad={(e) => {
@@ -41,7 +37,9 @@ export default function HomeAdBanners({ type }) {
   const handlePress = (link) => {
     if (!link) return;
     if (link.startsWith("cat:")) {
-      navigation.navigate("ProductList", { filter: { category: link.slice(4) } });
+      navigation.navigate("ProductList", {
+        filter: { category: link.slice(4) },
+      });
     } else if (link.startsWith("brand:")) {
       navigation.navigate("ProductList", { filter: { brand: link.slice(6) } });
     } else {
@@ -50,7 +48,12 @@ export default function HomeAdBanners({ type }) {
   };
 
   return (
-    <View className="flex-row px-3 gap-1 my-3">
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      className="my-3"
+      contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }}
+    >
       {images.map((img, i) => (
         <AdBannerImage
           key={i}
@@ -58,6 +61,6 @@ export default function HomeAdBanners({ type }) {
           onPress={img.link ? () => handlePress(img.link) : null}
         />
       ))}
-    </View>
+    </ScrollView>
   );
 }
