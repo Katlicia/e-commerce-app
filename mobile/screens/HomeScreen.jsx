@@ -71,7 +71,6 @@ export default function HomeScreen() {
   const layoutSections = useSelector(
     (state) => state.homeLayout.sections ?? [],
   );
-  const hasCart = useSelector((state) => (state.cart.cart ?? []).length > 0);
 
   useEffect(() => {
     dispatch(getHomeSections());
@@ -81,13 +80,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
       <HomeHeader scrollRef={scrollRef} />
-      <ScrollView
-        ref={scrollRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: hasCart ? insets.bottom + 15 : 16,
-        }}
-      >
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         <FeaturedShortcuts />
         <HomeCarousel />
         <HomeQuickLinks />
