@@ -54,6 +54,13 @@
   border-color: var(--orange-btn) !important;
 }
 
+.product-card-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .discount-badge {
   bottom: 8px;
   left: 8px;

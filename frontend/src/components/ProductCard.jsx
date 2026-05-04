@@ -127,7 +127,7 @@ function ProductCard({ product, overrideBadge }) {
       <div className="card-body d-flex flex-column gap-2 p-0 mt-2">
         <div className="flex-grow-1">
           <p className="card-subtitle mute-string">Ürün Kodu: {code}</p>
-          <p className="card-title fw-semibold mb-0">{name}</p>
+          <p className="card-title fw-semibold mb-0 product-card-name">{name}</p>
         </div>
         <div>
           <div className="d-flex align-items-center gap-1">
