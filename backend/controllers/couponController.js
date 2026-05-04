@@ -45,7 +45,9 @@ exports.applyCoupon = async (req, res) => {
     status: { $nin: ["İptal Edildi", "İade Edildi"] },
   });
   if (alreadyUsed)
-    return res.status(400).json({ message: "Bu kuponu daha önce kullandınız." });
+    return res
+      .status(400)
+      .json({ message: "Bu kuponu daha önce kullandınız." });
   if (orderTotal < coupon.minOrderAmount)
     return res.status(400).json({
       message: `Bu kupon için minimum sipariş tutarı ${coupon.minOrderAmount}₺.`,
@@ -96,7 +98,7 @@ exports.createCoupon = async (req, res) => {
 // PUT /coupons/:id — update coupon (admin)
 exports.updateCoupon = async (req, res) => {
   const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
   if (!coupon) return res.status(404).json({ message: "Kupon bulunamadı." });
