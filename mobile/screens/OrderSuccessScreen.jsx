@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -95,7 +95,11 @@ export default function OrderSuccessScreen() {
           <Text className="text-white font-sans-bold text-md">
             Alışverişe Devam Et
           </Text>
-          <Ionicons name="arrow-forward" size={18} color="white" />
+          <Image
+            source={require("../assets/arrow.png")}
+            style={{ width: 40, height: 18 }}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
 
         {success && (

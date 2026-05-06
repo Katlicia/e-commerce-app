@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Modal,
   ScrollView,
   Text,
@@ -366,7 +367,11 @@ function BrandView({ selected, onBack, onChange }) {
               activeOpacity={0.85}
             >
               <Text className="text-white font-bold text-base">Uygula</Text>
-              <Ionicons name="arrow-forward" size={18} color="white" />
+              <Image
+                source={require("../../assets/arrow.png")}
+                style={{ width: 40, height: 18 }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           </View>
         </>
@@ -411,7 +416,11 @@ function PriceView({ minPrice, maxPrice, onBack, onChange }) {
           activeOpacity={0.85}
         >
           <Text className="text-white font-bold text-base">Uygula</Text>
-          <Ionicons name="arrow-forward" size={18} color="white" />
+          <Image
+            source={require("../../assets/arrow.png")}
+            style={{ width: 40, height: 18 }}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -445,7 +454,14 @@ export default function FilterModal({
     categories.length + brands.length + (minPrice || maxPrice ? 1 : 0);
 
   const MainView = (
-    <View style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top, paddingBottom: insets.bottom }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "white",
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+      }}
+    >
       <View className="flex-row items-center px-5 py-4 border-b border-border-subtle">
         <TouchableOpacity onPress={onClose} hitSlop={8}>
           <Ionicons name="close" size={22} color="#212529" />
@@ -532,7 +548,11 @@ export default function FilterModal({
           activeOpacity={0.85}
         >
           <Text className="text-white font-bold text-base">Ürüne Git</Text>
-          <Ionicons name="arrow-forward" size={18} color="white" />
+          <Image
+            source={require("../../assets/arrow.png")}
+            style={{ width: 40, height: 18 }}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -549,7 +569,14 @@ export default function FilterModal({
       {view === "main" ? (
         MainView
       ) : (
-        <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: "white" }}>
+        <View
+          style={{
+            flex: 1,
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: "white",
+          }}
+        >
           {view === "category" && (
             <CategoryView
               selected={categories}

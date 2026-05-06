@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Modal,
   Pressable,
   Text,
@@ -10,7 +11,10 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
@@ -428,7 +432,11 @@ export default function CategoryScreen() {
               activeOpacity={0.85}
             >
               <Text className="text-white font-bold text-base">Ürüne Git</Text>
-              <Ionicons name="arrow-forward" size={18} color="white" />
+              <Image
+                source={require("../assets/arrow.png")}
+                style={{ width: 40, height: 18 }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
           </View>
         </View>
