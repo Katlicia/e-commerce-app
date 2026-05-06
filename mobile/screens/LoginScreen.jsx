@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { loginUser, forgetPassword } from "@mobile/shared/redux/authSlice";
 import { mergeCartOnLogin } from "@mobile/shared/redux/cartSlice";
 import { fetchFavourites } from "@mobile/shared/redux/favouriteSlice";
+import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
 export default function LoginScreen({ navigation }) {
@@ -37,6 +38,7 @@ export default function LoginScreen({ navigation }) {
       setBearerToken(result.payload?.token ?? null);
       dispatch(mergeCartOnLogin());
       dispatch(fetchFavourites());
+      dispatch(fetchLists());
       navigation.goBack();
     }
   }
