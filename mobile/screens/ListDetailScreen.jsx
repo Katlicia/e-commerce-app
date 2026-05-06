@@ -8,7 +8,7 @@ import {
   Alert,
   TextInput,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -18,16 +18,16 @@ import {
   renameList,
 } from "@mobile/shared/redux/listSlice";
 import { addToCartWithSync } from "@mobile/shared/redux/cartSlice";
+import Toast from "react-native-toast-message";
 
 const plusIcon = require("../assets/Liste/plus.png");
 const editIcon = require("../assets/Liste/edit.png");
 const deleteIcon = require("../assets/Liste/delete.png");
 const cartIcon = require("../assets/Liste/cart.png");
 
-function ListProductItem({ item }) {
+function ListProductItem({ item, qty, onQtyChange, onRemove }) {
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const [qty, setQty] = useState(1);
 
   const img = item.images?.[0]?.url;
   const hasDiscount = item.discountPercent > 0;
@@ -37,6 +37,12 @@ function ListProductItem({ item }) {
     for (let i = 0; i < qty; i++) {
       dispatch(addToCartWithSync(item));
     }
+    Toast.show({
+      type: "success",
+      text1: "Sepete Eklendi",
+      text2: `${item.name}`,
+      visibilityTime: 2000,
+    });
   };
 
   return (
@@ -136,7 +142,7 @@ function ListProductItem({ item }) {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
-                onPress={() => setQty((q) => Math.max(1, q - 1))}
+                onPress={() => qty === 1 ? onRemove(item) : onQtyChange(qty - 1)}
               >
                 {qty === 1 ? (
                   <Ionicons name="trash-outline" size={14} color="white" />
@@ -172,7 +178,7 @@ function ListProductItem({ item }) {
                   alignItems: "center",
                   justifyContent: "center",
                 }}
-                onPress={() => setQty((q) => q + 1)}
+                onPress={() => onQtyChange(qty + 1)}
               >
                 <Text
                   style={{
@@ -223,8 +229,16 @@ export default function ListDetailScreen() {
   const { lists } = useSelector((state) => state.list);
   const list = lists.find((l) => l._id === listId);
 
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState("");
+  const [quantities, setQuantities] = useState({});
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+
+  const { freeShippingThreshold = 500 } = useSelector((state) => state.taxSettings);
+
+  const getQty = (id) => quantities[id] ?? 1;
+  const setQty = (id, val) => setQuantities((prev) => ({ ...prev, [id]: val }));
 
   if (!list) {
     return (
@@ -304,7 +318,29 @@ export default function ListDetailScreen() {
     );
   };
 
-  const renderProduct = ({ item }) => <ListProductItem item={item} />;
+  const totalAmount = (list?.products ?? []).reduce((sum, p) => {
+    const price = p.discountPercent > 0 ? p.discountedPrice : p.price;
+    return sum + Number(price) * getQty(p._id);
+  }, 0);
+  const remaining = Math.max(freeShippingThreshold - totalAmount, 0);
+  const freeShipping = remaining === 0;
+
+  const handleAddAllToCart = () => {
+    list.products.forEach((p) => {
+      const qty = getQty(p._id);
+      for (let i = 0; i < qty; i++) dispatch(addToCartWithSync(p));
+    });
+    navigation.navigate("MainTabs", { screen: "Cart" });
+  };
+
+  const renderProduct = ({ item }) => (
+    <ListProductItem
+      item={item}
+      qty={getQty(item._id)}
+      onQtyChange={(val) => setQty(item._id, val)}
+      onRemove={handleRemove}
+    />
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -357,7 +393,7 @@ export default function ListDetailScreen() {
         )}
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-          <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} onPress={() => navigation.navigate("ProductList")}>
             <Image
               source={plusIcon}
               style={{ width: 20, height: 20 }}
@@ -401,14 +437,91 @@ export default function ListDetailScreen() {
           </Text>
         </View>
       ) : (
-        <>
-          <FlatList
-            data={list.products}
-            keyExtractor={(item) => item._id}
-            renderItem={renderProduct}
-            showsVerticalScrollIndicator={false}
-          />
-        </>
+        <FlatList
+          data={list.products}
+          keyExtractor={(item) => item._id}
+          renderItem={renderProduct}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 8 }}
+        />
+      )}
+
+      {list.products.length > 0 && (
+        <View style={{ backgroundColor: "white", borderTopWidth: 1, borderTopColor: "#f0f0f0" }}>
+          {!summaryExpanded && (
+            <View style={{ position: "absolute", top: -30, left: 0, right: 0, alignItems: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#f0fff4", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5 }}>
+                {freeShipping ? (
+                  <Text style={{ fontSize: 12, fontWeight: "600", color: "#2a9d4e" }}>
+                    {`${Math.floor(freeShippingThreshold)}₺ geçtiniz kargo bedava`}
+                  </Text>
+                ) : (
+                  <Text style={{ fontSize: 12, color: "#2a9d4e" }}>
+                    <Text style={{ fontWeight: "700" }}>{remaining.toFixed(2).replace(".", ",")} TL</Text>
+                    <Text> daha eklerseniz</Text>
+                    <Text style={{ fontWeight: "700" }}> kargo ücretsiz!</Text>
+                  </Text>
+                )}
+              </View>
+            </View>
+          )}
+
+          {summaryExpanded && (
+            <>
+              <View style={{ alignItems: "center", paddingTop: 10, paddingBottom: 6 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#f0fff4", borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5 }}>
+                  {freeShipping ? (
+                    <Text style={{ fontSize: 12, fontWeight: "600", color: "#2a9d4e" }}>
+                      {`${Math.floor(freeShippingThreshold)}₺ geçtiniz kargo bedava`}
+                    </Text>
+                  ) : (
+                    <Text style={{ fontSize: 12, color: "#2a9d4e" }}>
+                      <Text style={{ fontWeight: "700" }}>{remaining.toFixed(2).replace(".", ",")} TL</Text>
+                      <Text> daha eklerseniz</Text>
+                      <Text style={{ fontWeight: "700" }}> kargo ücretsiz!</Text>
+                    </Text>
+                  )}
+                </View>
+              </View>
+              <View style={{ paddingHorizontal: 44, paddingVertical: 6, gap: 6 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ fontSize: 13, color: "#6c757d" }}>Kargo Bedeli</Text>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: freeShipping ? "#2a9d4e" : "#6c757d" }}>
+                    {freeShipping ? "Ücretsiz" : "Adrese göre hesaplanacaktır."}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ height: 1, backgroundColor: "#f0f0f0", marginHorizontal: 16, marginBottom: 4 }} />
+            </>
+          )}
+
+          <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 12, paddingBottom: 12 + bottomInset, gap: 12 }}>
+            <TouchableOpacity
+              style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}
+              onPress={() => setSummaryExpanded((v) => !v)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name={summaryExpanded ? "chevron-down" : "chevron-up"} size={20} color="#212529" />
+              <View>
+                <Text style={{ fontSize: 13, fontWeight: "600", color: "#212529" }}>Toplam Tutar</Text>
+                <Text style={{ fontSize: 20, fontWeight: "700", color: "#212529" }}>
+                  {totalAmount.toFixed(2).replace(".", ",")}₺
+                </Text>
+                {freeShipping && (
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: "#2a9d4e" }}>Kargo Bedava</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ backgroundColor: "#ff7700", borderRadius: 8, paddingHorizontal: 20, paddingVertical: 14 }}
+              onPress={handleAddAllToCart}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>Listeyi Sepete Ekle</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
