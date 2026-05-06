@@ -23,7 +23,7 @@ const TAB_STATUSES = {
 };
 
 const STATUS_STYLE = {
-  Hazırlanıyor: { bg: "#fff3cd", text: "#856404" },
+  Hazırlanıyor: { bg: "#FFDED6", text: "#F83B0A" },
   "Kargoya Verildi": { bg: "#cfe2ff", text: "#084298" },
   "Teslim Edildi": { bg: "#d1e7dd", text: "#0f5132" },
   "İptal Edildi": { bg: "#f8d7da", text: "#842029" },
@@ -46,26 +46,27 @@ function formatOrderDate(dateStr) {
   });
 }
 
-const MAX_VISIBLE = 4;
+const MAX_VISIBLE = 3;
+const WIDTH = 44;
 
 function ProductImages({ items }) {
   const visible = items.slice(0, MAX_VISIBLE);
   const extra = items.length - MAX_VISIBLE;
 
   return (
-    <View className="flex-row gap-2 my-3">
+    <View className="flex-row gap-2" style={{ flex: 1 }}>
       {visible.map((item, idx) => {
         const img = item.product?.images?.[0]?.url;
         return (
           <View
             key={idx}
-            style={{ width: 52, height: 52 }}
+            style={{ width: WIDTH, height: WIDTH }}
             className="rounded-md bg-bg-light border border-border-subtle overflow-hidden items-center justify-center"
           >
             {img ? (
               <Image
                 source={{ uri: img }}
-                style={{ width: 52, height: 52 }}
+                style={{ width: WIDTH, height: WIDTH }}
                 resizeMode="cover"
               />
             ) : (
@@ -75,11 +76,11 @@ function ProductImages({ items }) {
         );
       })}
       {extra > 0 && (
-        <View
-          style={{ width: 52, height: 52 }}
-          className="rounded-md bg-bg-light border border-border-subtle items-center justify-center"
-        >
-          <Text className="text-sm font-sans-bold text-text-secondary">
+        <View className="items-center justify-center">
+          <Text
+            className="text-sm font-sans-bold"
+            style={{ fontSize: 14, fontWeight: "700" }}
+          >
             +{extra}
           </Text>
         </View>
@@ -97,39 +98,42 @@ function OrderCard({ order, onPress }) {
     PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod ?? "";
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.75}
-      className="bg-white rounded-xl mx-4 mb-3 px-4 pt-4 pb-3 border border-border-subtle"
-    >
-      <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-bold">
+    <>
+      <View className="mx-4 mb-1">
+        <Text className="font-sans-medium" style={{ fontSize: 14 }}>
           {formatOrderDate(order.createdAt)}
         </Text>
-        <View
-          style={{ backgroundColor: statusStyle.bg }}
-          className="rounded-full px-3 py-1"
-        >
-          <Text
-            style={{ color: statusStyle.text }}
-            className="text-xs font-sans-semibold"
-          >
-            {order.status}
-          </Text>
-        </View>
       </View>
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.75}
+        className="bg-bg-light rounded-xl mx-4 mb-3 px-4 p3-4 pb-3 border border-border-subtle"
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginVertical: 10,
+          }}
+        >
+          <ProductImages items={order.items ?? []} />
+          <View
+            style={{ backgroundColor: statusStyle.bg }}
+            className="rounded-full px-3 py-1 ml-2"
+          >
+            <Text style={{ color: statusStyle.text }} className="text-xs">
+              {order.status}
+            </Text>
+          </View>
+        </View>
 
-      <ProductImages items={order.items ?? []} />
-
-      <View className="border-t border-border-subtle pt-2">
-        <Text className="text-sm text-text-secondary">
-          <Text className="font-sans-semibold text-text-primary">
-            Toplam Tutar: {fmt(order.totalAmount)} TL
-          </Text>
+        <Text className="text-sm">
+          <Text>Toplam Tutar: {fmt(order.totalAmount)} TL</Text>
           {paymentLabel ? ` / ${paymentLabel}` : ""}
         </Text>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </>
   );
 }
 
@@ -147,7 +151,7 @@ export default function OrdersScreen({ navigation }) {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
+    <SafeAreaView className="flex-1" edges={["top"]}>
       <ScreenHeader title="Siparişlerim" />
 
       {/* Tabs */}
