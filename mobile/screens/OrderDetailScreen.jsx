@@ -347,6 +347,7 @@ export default function OrderDetailScreen({ navigation, route }) {
                 borderTopWidth: 1,
                 borderColor: "#e9ecef",
                 justifyContent: "space-between",
+                minHeight: 72,
               }}
             >
               <View
@@ -389,10 +390,10 @@ export default function OrderDetailScreen({ navigation, route }) {
                   )}
               </View>
 
-              <Text className="text-xs font-sans-semibold">
+              <Text className="text-xs font-sans-semibold" style={{ width: 44, textAlign: "center" }}>
                 {item.quantity} Adet
               </Text>
-              <View className="items-center">
+              <View className="items-center" style={{ width: 90 }}>
                 <Text
                   className="text-lg font-sans-bold"
                   style={{ color: "#F83B0A" }}
