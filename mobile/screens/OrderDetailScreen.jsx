@@ -8,7 +8,10 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -25,8 +28,8 @@ import { fmt } from "@mobile/shared/utils/format";
 import ScreenHeader from "../components/ScreenHeader";
 
 const STEPS = [
-  { label: "Sipariş\nAlındı", icon: require("../assets/Profile/cart.png") },
-  { label: "Ödeme\nOnaylandı", icon: require("../assets/Profile/ship.png") },
+  { label: "Sipariş\nAlındı", icon: require("../assets/Profile/ship.png") },
+  { label: "Ödeme\nOnaylandı", icon: require("../assets/Profile/cart.png") },
   { label: "Hazırlanıyor", icon: require("../assets/Profile/cycle.png") },
   { label: "Kargoya\nVerildi", icon: require("../assets/Profile/cargo.png") },
   { label: "Teslim\nEdildi", icon: require("../assets/Profile/check.png") },
@@ -51,6 +54,7 @@ const STATUS_STYLE = {
 export default function OrderDetailScreen({ navigation, route }) {
   const dispatch = useDispatch();
   const { orderId } = route.params ?? {};
+  const { bottom } = useSafeAreaInsets();
   const [actionLoading, setActionLoading] = useState(false);
 
   const order = useSelector((state) =>
@@ -201,10 +205,13 @@ export default function OrderDetailScreen({ navigation, route }) {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
-      <ScreenHeader title={`${order.orderNo} nolu sipariş`} />
+    <SafeAreaView className="flex-1" edges={["top"]}>
+      <ScreenHeader title={`Sipariş Detayı`} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: bottom }}
+      >
         {error && (
           <View className="mx-4 mb-2 px-4 py-3 bg-red-50 rounded-lg border border-red-200">
             <Text className="text-sm text-red-600">{error}</Text>
@@ -212,8 +219,14 @@ export default function OrderDetailScreen({ navigation, route }) {
         )}
 
         {/* Stepper */}
-        <View className="bg-white mx-4 rounded-xl border border-border-subtle mb-4 py-5">
-          <View style={{ flexDirection: "row", alignItems: "flex-start", paddingHorizontal: 12 }}>
+        <View className="mb-4 py-5">
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "flex-start",
+              paddingHorizontal: 12,
+            }}
+          >
             {STEPS.map((step, i) => (
               <React.Fragment key={i}>
                 <View style={{ alignItems: "center", width: 48 }}>
@@ -222,7 +235,7 @@ export default function OrderDetailScreen({ navigation, route }) {
                       width: 40,
                       height: 40,
                       borderRadius: 20,
-                      backgroundColor: isActive(i) ? "#ff7700" : "#e9ecef",
+                      backgroundColor: isActive(i) ? "#F83B0A" : "#e9ecef",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
@@ -235,8 +248,9 @@ export default function OrderDetailScreen({ navigation, route }) {
                   </View>
                   <Text
                     style={{
-                      color: isActive(i) ? "#ff7700" : "#adb5bd",
-                      fontSize: 9,
+                      color: isActive(i) ? "#F83B0A" : "#adb5bd",
+                      fontSize: 12,
+                      lineHeight: 14,
                       textAlign: "center",
                       marginTop: 4,
                     }}
@@ -290,7 +304,7 @@ export default function OrderDetailScreen({ navigation, route }) {
         </View>
 
         {/* Order info */}
-        <View className="bg-white mx-4 rounded-xl border border-border-subtle mb-4 px-4 py-4">
+        <View className="smb-4 px-4 py-4">
           <View className="flex-row flex-wrap gap-4 mb-4">
             <View className="flex-1" style={{ minWidth: 100 }}>
               <Text className="text-xs text-text-muted mb-1">Tarih</Text>
@@ -329,7 +343,11 @@ export default function OrderDetailScreen({ navigation, route }) {
             <View
               key={i}
               className="flex-row items-center py-3"
-              style={{ borderTopWidth: 1, borderColor: "#e9ecef" }}
+              style={{
+                borderTopWidth: 1,
+                borderColor: "#e9ecef",
+                justifyContent: "space-between",
+              }}
             >
               <View
                 className="rounded-md overflow-hidden bg-bg-light border border-border-subtle"
@@ -348,11 +366,8 @@ export default function OrderDetailScreen({ navigation, route }) {
                 )}
               </View>
 
-              <View className="flex-1 mx-3 gap-1">
-                <Text
-                  className="text-sm font-sans-semibold text-text-primary"
-                  numberOfLines={2}
-                >
+              <View style={{ maxWidth: 120, gap: 4 }}>
+                <Text className="text-sm text-text-primary" numberOfLines={2}>
                   {item.product?.name}
                 </Text>
                 {item.selectedVariants &&
@@ -372,19 +387,19 @@ export default function OrderDetailScreen({ navigation, route }) {
                       )}
                     </View>
                   )}
-                <Text className="text-xs text-text-secondary">
-                  {item.quantity} Adet
-                </Text>
               </View>
 
-              <View className="items-end">
+              <Text className="text-xs font-sans-semibold">
+                {item.quantity} Adet
+              </Text>
+              <View className="items-center">
                 <Text
-                  className="text-sm font-sans-bold"
-                  style={{ color: "#ff7700" }}
+                  className="text-lg font-sans-bold"
+                  style={{ color: "#F83B0A" }}
                 >
                   {fmt(item.price)} ₺
                 </Text>
-                <Text className="text-xs text-text-muted">K.D.V Dahil</Text>
+                <Text className="text-sm">K.D.V Dahil</Text>
               </View>
             </View>
           ))}
@@ -436,10 +451,10 @@ export default function OrderDetailScreen({ navigation, route }) {
           </View>
         </View>
         {/* Action buttons */}
-        <View className="flex-row gap-3 px-4 pb-6">
+        <View className="flex-row gap-10 items-center justify-center px-4 mb-6">
           <TouchableOpacity
             onPress={handleReorder}
-            className="flex-1 border border-brand-red rounded-lg py-3 flex-row items-center justify-center gap-2"
+            className="px-5 border border-brand-red rounded-lg py-5 flex-row items-center justify-center gap-2"
             activeOpacity={0.75}
           >
             <Image
@@ -459,10 +474,10 @@ export default function OrderDetailScreen({ navigation, route }) {
                 order.status === "Hazırlanıyor" ? handleCancel : handleReturn
               }
               disabled={actionLoading}
-              className="flex-1 border border-brand-red rounded-lg py-3 items-center"
+              className="py-3 items-center justify-center px-2"
               activeOpacity={0.75}
             >
-              <Text className="text-sm font-sans-semibold text-red-500">
+              <Text className="text-sm font-sans-semibold text-text-secondary">
                 {actionLoading
                   ? "İşleniyor..."
                   : order.status === "Hazırlanıyor"
@@ -472,6 +487,77 @@ export default function OrderDetailScreen({ navigation, route }) {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Address info */}
+        {(order.address || order.billingAddress) && (
+          <View className="pt-5 px-4 gap-4" style={{ paddingBottom: 32 }}>
+            {order.address && (
+              <View
+                className="bg-white rounded-xl px-4 py-4"
+                style={{ borderWidth: 1, borderColor: "#E5E8EC" }}
+              >
+                <Text
+                  className="text-lg font-sans-bold mb-3"
+                  style={{ color: "#F83B0A" }}
+                >
+                  Teslimat Bilgileri
+                </Text>
+                <Text className="text-md font-sans">
+                  {order.address.address}
+                </Text>
+                <Text className="text-md font-sans">
+                  {String(
+                    order.address.city + ", " + order.address.district,
+                  ).toUpperCase()}
+                </Text>
+                <Text className="text-md mt-1 font-sans">
+                  +90{" "}
+                  {String(order.address.phone).slice(0, 3) +
+                    " " +
+                    String(order.address.phone).slice(3, 6) +
+                    " " +
+                    String(order.address.phone).slice(6, 8) +
+                    " " +
+                    String(order.address.phone).slice(8, 10)}
+                </Text>
+              </View>
+            )}
+
+            {order.billingAddress?.fullName && (
+              <View
+                className="bg-white rounded-xl px-4 py-4"
+                style={{ borderWidth: 1, borderColor: "#E5E8EC" }}
+              >
+                <Text
+                  className="text-lg font-sans-bold mb-3"
+                  style={{ color: "#F83B0A" }}
+                >
+                  Fatura Bilgileri
+                </Text>
+                <Text className="text-md font-sans">
+                  {order.billingAddress.address}
+                </Text>
+                <Text className="text-md font-sans">
+                  {String(
+                    order.billingAddress.city +
+                      ", " +
+                      order.billingAddress.district,
+                  ).toUpperCase()}
+                </Text>
+                <Text className="text-md mt-1 font-sans">
+                  +90{" "}
+                  {String(order.billingAddress.phone).slice(1, 4) +
+                    " " +
+                    String(order.billingAddress.phone).slice(4, 7) +
+                    " " +
+                    String(order.billingAddress.phone).slice(7, 9) +
+                    " " +
+                    String(order.billingAddress.phone).slice(9, 11)}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
