@@ -26,6 +26,7 @@ module.exports = {
         "text-primary": "#212529",
         "text-secondary": "#6c757d",
         "text-muted": "#adb5bd",
+        "placeholder": "#818181",
         "text-subtle": "#888888",
         "bg-light": "#f5f5f5",
         "bg-faint": "#fafafa",
