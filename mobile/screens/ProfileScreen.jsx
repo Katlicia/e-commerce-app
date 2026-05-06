@@ -55,7 +55,11 @@ export default function ProfileScreen({ navigation }) {
               <Text className="text-md text-white font-sans text-md">
                 Giriş Yap
               </Text>
-              <Ionicons name="arrow-forward" size={18} color="white" />
+              <Image
+                source={require("../assets/arrow.png")}
+                style={{ width: 40, height: 18 }}
+                resizeMode="contain"
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -115,32 +119,50 @@ export default function ProfileScreen({ navigation }) {
               Hesap İşlemleri
             </Text>
           </View>
-          <Ionicons name="arrow-forward" size={20} color="#212529" />
+          <Ionicons name="arrow-forward" size={20} />
         </TouchableOpacity>
 
         {/* Menu items */}
         {[
           { label: "Listelerim", icon: "list-outline", screen: "Lists" },
-          { label: "Adreslerim", icon: "location-outline", screen: "AddressEdit" },
+          {
+            label: "Adreslerim",
+            icon: "location-outline",
+            screen: "AddressEdit",
+          },
           { label: "Siparişler", icon: "bag-outline", screen: "Orders" },
           { label: "Mesajlar", icon: "chatbubble-outline" },
           { label: "Soru Cevap", icon: "help-circle-outline" },
           { label: "Kurumsal Teklif", icon: "business-outline" },
           { label: "Fiyat Alarmlarım", icon: "notifications-outline" },
-          { label: "Şifre Değiştir", icon: "lock-closed-outline", screen: "ChangePassword" },
+          {
+            label: "Şifre Değiştir",
+            icon: "lock-closed-outline",
+            screen: "ChangePassword",
+          },
           { label: "Sözleşmeler", icon: "document-text-outline" },
-        ].map((item) => (
-          <TouchableOpacity
-            key={item.label}
-            className="flex-row items-center px-4 py-4 border-b border-border-subtle"
-            onPress={() => item.screen && navigation.navigate(item.screen)}
-            activeOpacity={0.6}
-          >
-            <Text className="flex-1 text-md text-text-primary">
-              {item.label}
-            </Text>
-            <Ionicons name="chevron-forward" size={18} color="#adb5bd" />
-          </TouchableOpacity>
+        ].map((item, idx, arr) => (
+          <View key={item.label}>
+            <TouchableOpacity
+              className="flex-row items-center px-4 py-6"
+              onPress={() => item.screen && navigation.navigate(item.screen)}
+              activeOpacity={0.6}
+            >
+              <Text className="flex-1 text-md text-text-primary">
+                {item.label}
+              </Text>
+              <Ionicons name="chevron-forward" size={18} />
+            </TouchableOpacity>
+            {idx < arr.length && (
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: "#ececec",
+                  marginHorizontal: 8,
+                }}
+              />
+            )}
+          </View>
         ))}
 
         {/* Logout */}
