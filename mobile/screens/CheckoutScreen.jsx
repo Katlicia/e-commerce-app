@@ -559,7 +559,7 @@ export default function CheckoutScreen() {
               <View className="flex-row items-center justify-between px-3 py-3">
                 <View className="flex-row items-center gap-2.5">
                   <RadioDot active={selectedPayment === "kredi"} />
-                  <Text className="text-sm font-sans-semibold text-text-primary">
+                  <Text className="text-sm font-sans-semibold text-text-primary py-3">
                     Kredi Kartı
                   </Text>
                 </View>
