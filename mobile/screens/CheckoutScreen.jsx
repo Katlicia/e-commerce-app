@@ -8,7 +8,10 @@ import {
   TextInput,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,12 +34,10 @@ import ScreenHeader from "../components/ScreenHeader";
 function RadioDot({ active }) {
   return (
     <View
-      className={`w-4 h-4 rounded-full border-2 items-center justify-center ${
-        active ? "border-primary" : "border-border-input"
+      className={`w-4 h-4 rounded-full border-2 ${
+        active ? "border-brand-red bg-brand-red" : "border-brand-red bg-white"
       }`}
-    >
-      {active && <View className="w-2 h-2 rounded-full bg-primary" />}
-    </View>
+    />
   );
 }
 
@@ -65,12 +66,17 @@ export default function CheckoutScreen() {
       const bundleSubtotal = bundle.requiredProducts.reduce((sum, req) => {
         const item = cart.find((c) => (c._id || c.id) === req.productId);
         if (!item) return sum;
-        return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
+        return (
+          sum + parseFloat(item.discountedPrice || item.price) * req.quantity
+        );
       }, 0);
       return total + bundleSubtotal * (bundle.percent / 100);
     }, 0)
     .toFixed(2);
-  const finalAmount = Math.max(0, totalAmount - couponDiscount - bundleDiscountAmount);
+  const finalAmount = Math.max(
+    0,
+    totalAmount - couponDiscount - bundleDiscountAmount,
+  );
   const totalQuantity = cart.reduce((s, i) => s + i.quantity, 0);
 
   const [productsExpanded, setProductsExpanded] = useState(false);
@@ -226,7 +232,7 @@ export default function CheckoutScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-bg-light" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <ScreenHeader title="Kasa" />
 
       <AddressModal
@@ -245,7 +251,7 @@ export default function CheckoutScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Products Collapsible */}
-        <View className="bg-white mx-4 mt-4 rounded-xl border border-border-subtle overflow-hidden">
+        <View className="mt-4">
           <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-3"
             onPress={() => setProductsExpanded((v) => !v)}
@@ -345,7 +351,7 @@ export default function CheckoutScreen() {
         </View>
 
         {/* Delivery */}
-        <View className="bg-white mx-4 mt-3 rounded-xl border border-border-subtle px-4 py-3">
+        <View className="mt-3 px-4 py-3">
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-md font-sans-bold text-text-primary">
               TESLİMAT
@@ -387,32 +393,35 @@ export default function CheckoutScreen() {
               {apiAddresses.map((addr, idx) => (
                 <TouchableOpacity
                   key={idx}
-                  className={`border rounded-xl px-3 py-2.5 flex-row items-start justify-between ${
-                    selectedAddressIdx === idx
-                      ? "border-primary bg-primary-light"
-                      : "border-border-input"
-                  }`}
+                  className="px-3 py-3 flex-row items-start"
+                  style={{
+                    borderWidth: 1,
+                    borderColor:
+                      selectedAddressIdx === idx ? "#E5E5E5" : "#BDBDBD",
+                    borderRadius: 8,
+                    ...(selectedAddressIdx === idx && {
+                      backgroundColor: "#F2F2F2",
+                    }),
+                  }}
                   onPress={() => setSelectedAddressIdx(idx)}
                   activeOpacity={0.7}
                 >
-                  <View className="flex-row items-start gap-2.5 flex-1">
-                    <View className="mt-0.5">
-                      <RadioDot active={selectedAddressIdx === idx} />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-sm font-sans-semibold text-text-primary">
-                        {addr.fullName}
-                      </Text>
-                      <Text className="text-xs text-text-secondary mt-0.5">
-                        {addr.city} / {addr.district}
-                      </Text>
-                      <Text className="text-xs text-text-primary mt-0.5">
-                        {addr.address}
-                      </Text>
-                      <Text className="text-xs text-text-muted mt-0.5">
-                        {addr.phone}
-                      </Text>
-                    </View>
+                  <View
+                    className={`w-4 h-4 rounded-full border-2 items-center justify-center mr-3 mt-1 ${
+                      selectedAddressIdx === idx
+                        ? "border-brand-red bg-brand-red"
+                        : "border-brand-red bg-white"
+                    }`}
+                  />
+                  <View className="flex-1">
+                    <Text className="text-md font-sans-semibold text-text-primary">
+                      {addr.addressName || addr.fullName}
+                      {idx === 0 ? " (Varsayılan)" : ""}
+                    </Text>
+                    <Text className="text-sm font-sans-medium">
+                      {addr.address} {addr.district}/
+                      {String(addr.city).toUpperCase()}
+                    </Text>
                   </View>
                   <TouchableOpacity
                     className="ml-2 p-1"
@@ -425,105 +434,100 @@ export default function CheckoutScreen() {
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
+
+              <TouchableOpacity
+                className="flex-row items-center justify-end gap-2 mt-1"
+                onPress={() => setSameAsBilling((v) => !v)}
+                activeOpacity={0.7}
+              >
+                <View
+                  className={`w-4 h-4 ${
+                    sameAsBilling ? "bg-brand-red" : "bg-border-input"
+                  }`}
+                  style={{ borderRadius: 3 }}
+                />
+                <Text className="text-sm text-text-secondary">
+                  Fatura adresim teslimat adresi ile aynı
+                </Text>
+              </TouchableOpacity>
+
+              {!sameAsBilling && (
+                <View className="gap-2 mt-1">
+                  {apiAddresses.map((addr, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      className="px-3 py-3 flex-row items-start"
+                      style={{
+                        borderWidth: 1,
+                        borderColor:
+                          selectedBillingIdx === idx ? "#E5E5E5" : "#BDBDBD",
+                        borderRadius: 8,
+                        ...(selectedBillingIdx === idx && {
+                          backgroundColor: "#F2F2F2",
+                        }),
+                      }}
+                      onPress={() => setSelectedBillingIdx(idx)}
+                      activeOpacity={0.7}
+                    >
+                      <View
+                        className={`w-4 h-4 rounded-full border-2 items-center justify-center mr-3 mt-1 ${
+                          selectedBillingIdx === idx
+                            ? "border-brand-red bg-brand-red"
+                            : "border-brand-red bg-white"
+                        }`}
+                      />
+                      <View className="flex-1">
+                        <Text className="text-md font-sans-semibold text-text-primary">
+                          {addr.addressName || addr.fullName}
+                          {idx === 0 ? " (Varsayılan)" : ""}
+                        </Text>
+                        <Text className="text-sm font-sans-medium">
+                          {addr.address} {addr.district}/
+                          {String(addr.city).toUpperCase()}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
             </View>
           )}
         </View>
 
-        {/* Billing Address */}
-        {user && apiAddresses.length > 0 && (
-          <View className="bg-white mx-4 mt-3 rounded-xl border border-border-subtle px-4 py-3">
-            <Text className="text-md font-sans-bold text-text-primary mb-3">
-              FATURA ADRESİ
-            </Text>
-            <TouchableOpacity
-              className={`border rounded-xl px-3 py-2.5 flex-row items-center gap-2.5 mb-2 ${
-                sameAsBilling
-                  ? "border-primary bg-primary-light"
-                  : "border-border-input"
-              }`}
-              onPress={() => setSameAsBilling(true)}
-              activeOpacity={0.7}
-            >
-              <RadioDot active={sameAsBilling} />
-              <Text className="text-sm text-text-primary">
-                Teslimat adresiyle aynı
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className={`border rounded-xl px-3 py-2.5 flex-row items-center gap-2.5 ${
-                !sameAsBilling
-                  ? "border-primary bg-primary-light"
-                  : "border-border-input"
-              }`}
-              onPress={() => setSameAsBilling(false)}
-              activeOpacity={0.7}
-            >
-              <RadioDot active={!sameAsBilling} />
-              <Text className="text-sm text-text-primary">
-                Farklı fatura adresi kullan
-              </Text>
-            </TouchableOpacity>
-            {!sameAsBilling && (
-              <View className="gap-2 mt-2">
-                {apiAddresses.map((addr, idx) => (
-                  <TouchableOpacity
-                    key={idx}
-                    className={`border rounded-xl px-3 py-2.5 flex-row items-start gap-2.5 ${
-                      selectedBillingIdx === idx
-                        ? "border-primary bg-primary-light"
-                        : "border-border-input"
-                    }`}
-                    onPress={() => setSelectedBillingIdx(idx)}
-                    activeOpacity={0.7}
-                  >
-                    <View className="mt-0.5">
-                      <RadioDot active={selectedBillingIdx === idx} />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-sm font-sans-semibold text-text-primary">
-                        {addr.fullName}
-                      </Text>
-                      <Text className="text-xs text-text-secondary mt-0.5">
-                        {addr.city} / {addr.district}
-                      </Text>
-                      <Text className="text-xs text-text-primary mt-0.5">
-                        {addr.address}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        )}
-
         {/* Cargo */}
-        <View className="bg-white mx-4 mt-3 rounded-xl border border-border-subtle px-4 py-3">
+        <View className="mt-3 px-4 py-3">
           <Text className="text-md font-sans-bold text-text-primary mb-3">
             KARGO
           </Text>
           {cargos.length === 0 ? (
             <ActivityIndicator size="small" color="#ff7700" />
           ) : (
-            <View className="flex-row flex-wrap gap-2">
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8 }}
+            >
               {cargos.map((k) => (
                 <TouchableOpacity
                   key={k._id}
-                  className={`border rounded-md px-3 py-2.5 flex-row items-center gap-2 ${
-                    selectedKargo === k._id
-                      ? "border-primary bg-primary-light"
-                      : "border-border-input"
-                  }`}
-                  style={{ flexBasis: "30%", flexGrow: 1 }}
+                  className="px-3 py-2.5 flex-row items-start gap-2"
+                  style={{
+                    borderWidth: 1,
+                    borderColor:
+                      selectedKargo === k._id ? "#E5E5E5" : "#BDBDBD",
+                    borderRadius: 8,
+                    ...(selectedKargo === k._id && {
+                      backgroundColor: "#F2F2F2",
+                    }),
+                  }}
                   onPress={() => setSelectedKargo(k._id)}
                   activeOpacity={0.7}
                 >
-                  <RadioDot active={selectedKargo === k._id} />
-                  <View className="flex-1 min-w-0">
-                    <Text
-                      className="text-sm font-sans-semibold text-text-primary"
-                      numberOfLines={1}
-                    >
+                  <View className="mt-0.5">
+                    <RadioDot active={selectedKargo === k._id} />
+                  </View>
+                  <View>
+                    <Text className="text-sm text-text-primary">
                       {k.companyName}
                     </Text>
                     {totalAmount >= freeShippingThreshold ? (
@@ -531,49 +535,42 @@ export default function CheckoutScreen() {
                         Ücretsiz
                       </Text>
                     ) : (
-                      <Text className="text-xs text-text-secondary">
-                        {fmt(k.cargoPrice)}₺
-                      </Text>
+                      <Text className="text-xs">{fmt(k.cargoPrice)}₺</Text>
                     )}
                   </View>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           )}
         </View>
 
         {/* Payment */}
-        <View className="bg-white mx-4 mt-3 rounded-xl border border-border-subtle px-4 py-3">
+        <View className="mt-3 px-4 py-3">
           <Text className="text-md font-sans-bold text-text-primary mb-3">
             ÖDEME
           </Text>
           <View className="gap-2">
             {/* Credit Card */}
             <TouchableOpacity
-              className={`border rounded-xl overflow-hidden ${
-                selectedPayment === "kredi"
-                  ? "border-primary"
-                  : "border-border-input"
-              }`}
+              className={`border rounded-sm overflow-hidden border-border-input`}
               onPress={() => setSelectedPayment("kredi")}
               activeOpacity={0.7}
             >
-              <View className="flex-row items-center justify-between px-3 py-2.5">
+              <View className="flex-row items-center justify-between px-3 py-3">
                 <View className="flex-row items-center gap-2.5">
                   <RadioDot active={selectedPayment === "kredi"} />
                   <Text className="text-sm font-sans-semibold text-text-primary">
                     Kredi Kartı
                   </Text>
                 </View>
-                <Ionicons name="card-outline" size={20} color="#6c757d" />
               </View>
 
               {selectedPayment === "kredi" && (
-                <View className="px-3 pb-3 gap-2 border-t border-border-subtle pt-3">
+                <View className="px-10 pb-3 gap-2 pt-3">
                   <TextInput
-                    className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
+                    className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
                     placeholder="Kart Numarası"
-                    placeholderTextColor="#adb5bd"
+                    placeholderTextColor="#818181"
                     keyboardType="number-pad"
                     maxLength={16}
                     value={cardNumber}
@@ -586,9 +583,9 @@ export default function CheckoutScreen() {
                   ) : null}
 
                   <TextInput
-                    className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
+                    className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
                     placeholder="Kart Üzerindeki İsim"
-                    placeholderTextColor="#adb5bd"
+                    placeholderTextColor="#818181"
                     value={cardHolder}
                     onChangeText={setCardHolder}
                   />
@@ -601,9 +598,9 @@ export default function CheckoutScreen() {
                   <View className="flex-row gap-2">
                     <View className="flex-1">
                       <TextInput
-                        className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
-                        placeholder="AA/YY"
-                        placeholderTextColor="#adb5bd"
+                        className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
+                        placeholder="Ay/Yıl"
+                        placeholderTextColor="#818181"
                         maxLength={5}
                         keyboardType="number-pad"
                         value={expirationDate}
@@ -617,9 +614,9 @@ export default function CheckoutScreen() {
                     </View>
                     <View className="flex-1">
                       <TextInput
-                        className="border border-border-input rounded-lg px-3 py-2.5 text-base text-text-primary"
+                        className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
                         placeholder="CVV"
-                        placeholderTextColor="#adb5bd"
+                        placeholderTextColor="#818181"
                         maxLength={3}
                         keyboardType="number-pad"
                         secureTextEntry
@@ -641,7 +638,7 @@ export default function CheckoutScreen() {
                     {installments.map((opt, idx) => (
                       <TouchableOpacity
                         key={idx}
-                        className={`border rounded-xl px-3 py-2.5 flex-row items-center gap-2.5 ${
+                        className={`border rounded-sm px-3 py-2.5 flex-row items-center gap-2.5 ${
                           selectedInstallment === idx
                             ? "border-primary bg-primary-light"
                             : "border-border-input"
@@ -650,10 +647,10 @@ export default function CheckoutScreen() {
                         activeOpacity={0.7}
                       >
                         <RadioDot active={selectedInstallment === idx} />
-                        <Text className="text-sm text-text-primary flex-1">
+                        <Text className="text-md font-sans-semibold text-text-primary flex-1 py-2">
                           {opt.label}
                         </Text>
-                        <Text className="text-sm font-sans-bold text-text-primary">
+                        <Text className="text-md font-sans-bold text-text-primary">
                           {fmt(finalAmount * opt.multiplier)}₺
                         </Text>
                       </TouchableOpacity>
@@ -665,7 +662,7 @@ export default function CheckoutScreen() {
 
             {/* Havale/EFT */}
             <TouchableOpacity
-              className={`border rounded-xl px-3 py-2.5 flex-row items-center justify-between ${
+              className={`border rounded-sm px-3 py-2.5 flex-row items-center justify-between ${
                 selectedPayment === "havale"
                   ? "border-primary bg-primary-light"
                   : "border-border-input"
@@ -675,21 +672,17 @@ export default function CheckoutScreen() {
             >
               <View className="flex-row items-center gap-2.5">
                 <RadioDot active={selectedPayment === "havale"} />
-                <Text className="text-sm font-sans-semibold text-text-primary">
+                <Text className="text-md font-sans-medium text-text-primary py-3">
                   Havale / EFT
                 </Text>
               </View>
-              <View className="bg-discount-blue-light rounded-full px-2.5 py-1">
-                <Text className="text-discount-blue text-xs font-sans-bold">
-                  %5 İndirim
-                </Text>
-              </View>
+              <Text className="font-sans-bold">%5 İndirim</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Order Summary */}
-        <View className="bg-white mx-4 mt-3 rounded-xl border border-border-subtle px-4 py-3 gap-2">
+        <View className="mt-3 px-4 py-3 gap-2">
           <Text className="text-md font-sans-bold text-text-primary mb-1">
             SİPARİŞ ÖZETİ
           </Text>
@@ -712,16 +705,27 @@ export default function CheckoutScreen() {
             </View>
           )}
           {bundleDiscounts.map((bundle) => {
-            const amount = +bundle.requiredProducts
-              .reduce((sum, req) => {
-                const item = cart.find((c) => (c._id || c.id) === req.productId);
-                if (!item) return sum;
-                return sum + parseFloat(item.discountedPrice || item.price) * req.quantity;
-              }, 0)
-              .toFixed(2) * (bundle.percent / 100);
+            const amount =
+              +bundle.requiredProducts
+                .reduce((sum, req) => {
+                  const item = cart.find(
+                    (c) => (c._id || c.id) === req.productId,
+                  );
+                  if (!item) return sum;
+                  return (
+                    sum +
+                    parseFloat(item.discountedPrice || item.price) *
+                      req.quantity
+                  );
+                }, 0)
+                .toFixed(2) *
+              (bundle.percent / 100);
             return (
               <View key={bundle.listId} className="flex-row justify-between">
-                <Text className="text-sm text-text-secondary flex-1 mr-2" numberOfLines={1}>
+                <Text
+                  className="text-sm text-text-secondary flex-1 mr-2"
+                  numberOfLines={1}
+                >
                   {bundle.name} (%{bundle.percent})
                 </Text>
                 <Text className="text-sm text-discount-green font-sans-medium">
@@ -756,24 +760,19 @@ export default function CheckoutScreen() {
         </View>
 
         {/* Terms */}
-        <View className="mx-4 mt-3">
+        <View className="mt-3">
           <TouchableOpacity
-            className="flex-row items-center gap-2.5"
+            className="flex-row items-center justify-end gap-2"
             onPress={() => setAgreeToTerms((v) => !v)}
             activeOpacity={0.7}
           >
             <View
-              className={`w-5 h-5 rounded border-2 items-center justify-center ${
-                agreeToTerms
-                  ? "bg-primary border-primary"
-                  : "border-border-input bg-white"
+              className={`w-4 h-4 ${
+                agreeToTerms ? "bg-brand-red" : "bg-border-input"
               }`}
-            >
-              {agreeToTerms && (
-                <Ionicons name="checkmark" size={12} color="white" />
-              )}
-            </View>
-            <Text className="text-sm text-text-secondary flex-1">
+              style={{ borderRadius: 3 }}
+            />
+            <Text className="text-sm text-text-secondary">
               <Text className="text-text-primary font-sans-semibold">
                 Gizlilik Sözleşmesini
               </Text>{" "}
@@ -793,7 +792,7 @@ export default function CheckoutScreen() {
 
         {/* Submit */}
         <TouchableOpacity
-          className="bg-primary mx-4 mt-4 rounded-xl py-4 items-center"
+          className="bg-primary mt-4 rounded-xl py-4 items-center"
           onPress={handleSubmit}
           activeOpacity={0.85}
           disabled={orderLoading}
