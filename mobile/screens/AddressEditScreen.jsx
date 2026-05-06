@@ -5,6 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,9 +16,13 @@ import {
   addUserAddress,
   editUserAddress,
   deleteUserAddress,
+  setDefaultAddress,
 } from "@mobile/shared/redux/userSlice";
 import AddressModal from "../components/AddressModal";
 import ScreenHeader from "../components/ScreenHeader";
+
+const markerIcon = require("../assets/Address/marker.png");
+const deleteIcon = require("../assets/Address/delete.png");
 
 export default function AddressEditScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -54,7 +60,18 @@ export default function AddressEditScreen({ navigation }) {
   };
 
   const handleDelete = (idx) => {
-    dispatch(deleteUserAddress(idx));
+    Alert.alert(
+      "Adresi Sil",
+      `"${addresses[idx]?.addressName || "Bu adresi"}" silmek istediğinize emin misiniz?`,
+      [
+        { text: "İptal", style: "cancel" },
+        { text: "Sil", style: "destructive", onPress: () => dispatch(deleteUserAddress(idx)) },
+      ],
+    );
+  };
+
+  const handleSetDefault = (idx) => {
+    dispatch(setDefaultAddress(idx));
   };
 
   return (
@@ -62,7 +79,10 @@ export default function AddressEditScreen({ navigation }) {
       <ScreenHeader
         title="Adreslerim"
         right={
-          <TouchableOpacity onPress={openAdd} className="flex-row items-center gap-1">
+          <TouchableOpacity
+            onPress={openAdd}
+            style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+          >
             <Ionicons name="add" size={18} color="#F83B0A" />
             <Text className="text-sm font-sans-semibold text-brand-red">
               Adres Ekle
@@ -83,70 +103,195 @@ export default function AddressEditScreen({ navigation }) {
       />
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator size="large" color="#F83B0A" />
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{ padding: 16, gap: 12 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
         >
           {addresses.length === 0 ? (
-            <View className="items-center justify-center py-16 gap-3">
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                paddingVertical: 64,
+                gap: 12,
+              }}
+            >
               <Ionicons name="location-outline" size={48} color="#dee2e6" />
-              <Text className="text-text-muted text-sm">
+              <Text style={{ color: "#adb5bd", fontSize: 14 }}>
                 Kayıtlı adresiniz bulunmuyor.
               </Text>
               <TouchableOpacity
-                className="bg-brand-red rounded-xl px-6 py-3"
                 onPress={openAdd}
                 activeOpacity={0.85}
+                style={{
+                  backgroundColor: "#F83B0A",
+                  borderRadius: 12,
+                  paddingHorizontal: 24,
+                  paddingVertical: 12,
+                }}
               >
-                <Text className="text-white font-sans-semibold text-sm">
+                <Text
+                  style={{ color: "white", fontWeight: "600", fontSize: 14 }}
+                >
                   Adres Ekle
                 </Text>
               </TouchableOpacity>
             </View>
           ) : (
-            addresses.map((addr, idx) => (
-              <TouchableOpacity
-                key={idx}
-                className="bg-white rounded-xl px-4 py-4 border border-border-subtle"
-                onPress={() => openEdit(idx)}
-                activeOpacity={0.7}
-              >
-                <View className="flex-row items-start justify-between mb-2">
-                  <View className="flex-row items-center gap-2 flex-1">
-                    <Ionicons name="location" size={20} color="#F83B0A" />
-                    <Text className="text-md font-sans-bold text-text-primary flex-1">
+            addresses.map((addr, idx) => {
+              const isKurumsal = addr.invoiceType === "kurumsal";
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  onPress={() => openEdit(idx)}
+                  activeOpacity={0.7}
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: 16,
+                    padding: 16,
+                    marginBottom: 12,
+                    elevation: 2,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 4,
+                  }}
+                >
+                  {/* Top row: marker + title + badge */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Image
+                      source={markerIcon}
+                      style={{ width: 22, height: 22 }}
+                      resizeMode="contain"
+                    />
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "700",
+                        color: "#F83B0A",
+                        flex: 1,
+                        marginLeft: 8,
+                      }}
+                      numberOfLines={1}
+                    >
                       {addr.addressName || "Adres"}
                     </Text>
+                    <View
+                      style={{
+                        backgroundColor: "#FFEA4A",
+                        borderRadius: 20,
+                        paddingHorizontal: 10,
+                        paddingVertical: 3,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "400",
+                        }}
+                      >
+                        {isKurumsal ? "Kurumsal" : "Bireysel"}
+                      </Text>
+                    </View>
                   </View>
-                  <TouchableOpacity
-                    onPress={() => handleDelete(idx)}
-                    className="p-1"
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Ionicons name="trash-outline" size={18} color="#adb5bd" />
-                  </TouchableOpacity>
-                </View>
 
-                <View className="ml-7 gap-0.5">
-                  <Text className="text-sm font-sans-semibold text-text-primary">
-                    {addr.fullName}
-                  </Text>
-                  <Text className="text-sm text-text-secondary">
-                    {addr.address}
-                  </Text>
-                  <Text className="text-sm text-text-secondary">
-                    {addr.district}/{addr.city}
-                  </Text>
-                  <Text className="text-sm text-text-secondary">
-                    +90 {addr.phone}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))
+                  {/* Address detail lines */}
+                  <View style={{ marginLeft: 28, gap: 2 }}>
+                    {addr.address ? (
+                      <Text style={{ fontSize: 14 }}>{addr.address}</Text>
+                    ) : null}
+                    {addr.city || addr.district ? (
+                      <Text style={{ fontSize: 13 }}>
+                        {[addr.city, addr.district]
+                          .filter(Boolean)
+                          .join(", ")
+                          .toUpperCase()}
+                      </Text>
+                    ) : null}
+                    {addr.phone ? (
+                      <Text style={{ fontSize: 13 }}>
+                        +90{" "}
+                        {String(addr.phone).slice(0, 3) +
+                          " " +
+                          String(addr.phone).slice(3, 6) +
+                          " " +
+                          String(addr.phone).slice(6, 8) +
+                          " " +
+                          String(addr.phone).slice(8, 10)}
+                      </Text>
+                    ) : null}
+                    {isKurumsal && addr.companyName ? (
+                      <Text style={{ fontSize: 13 }}>
+                        {addr.companyName.toUpperCase()}
+                      </Text>
+                    ) : null}
+                    {isKurumsal && addr.taxNumber ? (
+                      <Text style={{ fontSize: 13 }}>{addr.taxNumber}</Text>
+                    ) : null}
+                  </View>
+
+                  {/* Bottom row: default + delete */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginTop: 10,
+                      marginLeft: 28,
+                    }}
+                  >
+                    {idx === 0 ? (
+                      <Text
+                        style={{
+                          color: "#F83B0A",
+                          fontWeight: "600",
+                          fontSize: 13,
+                        }}
+                      >
+                        Varsayılan Adresiniz
+                      </Text>
+                    ) : (
+                      <TouchableOpacity
+                        onPress={() => handleSetDefault(idx)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            textDecorationLine: "underline",
+                          }}
+                        >
+                          Varsayılan Yap
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      onPress={() => handleDelete(idx)}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Image
+                        source={deleteIcon}
+                        style={{ width: 22, height: 22 }}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
           )}
         </ScrollView>
       )}
