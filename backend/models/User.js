@@ -32,11 +32,19 @@ const userSchema = new mongoose.Schema(
     addresses: [
       {
         addressName: { type: String },
-        fullName: { type: String, required: true },
+        fullName: { type: String },
+        firstName: { type: String },
+        lastName: { type: String },
         phone: { type: String, required: true },
         city: { type: String, required: true },
         district: { type: String, required: true },
         address: { type: String, required: true },
+        apartment: { type: String },
+        postalCode: { type: String },
+        invoiceType: { type: String, enum: ["bireysel", "kurumsal"], default: "bireysel" },
+        companyName: { type: String },
+        taxOffice: { type: String },
+        taxNumber: { type: String },
       },
     ],
     resetPasswordToken: {
