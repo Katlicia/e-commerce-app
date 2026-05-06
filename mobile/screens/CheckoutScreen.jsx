@@ -190,6 +190,7 @@ export default function CheckoutScreen() {
       address: apiAddresses[selectedAddressIdx],
       cargoCompany: selectedCargoData?.companyName,
       cargoPrice: effectiveCargoPrice,
+      paymentMethod: selectedPayment,
       ...(!sameAsBilling && {
         billingAddress: apiAddresses[selectedBillingIdx],
       }),
