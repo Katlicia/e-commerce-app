@@ -30,6 +30,7 @@ exports.createPayment = async (req, res) => {
       cargoCompany,
       cargoPrice,
       coupon,
+      paymentMethod,
       cardNumber,
       cardHolder,
       expirationDate, // "MM/YY"
@@ -210,6 +211,7 @@ exports.createPayment = async (req, res) => {
           cargoPrice: effectiveCargoPrice,
           ...(billingAddress && { billingAddress }),
           ...(coupon?.couponId && { coupon }),
+          ...(paymentMethod && { paymentMethod }),
           paymentId: result.paymentId,
           conversationId,
           ...(paymentTransactionId && { paymentTransactionId }),

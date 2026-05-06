@@ -14,6 +14,7 @@ exports.createOrder = async (req, res) => {
       cargoCompany,
       cargoPrice,
       coupon,
+      paymentMethod,
     } = req.body;
 
     if (!items || items.length === 0) {
@@ -63,6 +64,7 @@ exports.createOrder = async (req, res) => {
       address,
       cargoCompany,
       cargoPrice,
+      ...(paymentMethod && { paymentMethod }),
       ...(billingAddress && { billingAddress }),
       ...(coupon?.couponId && { coupon }),
     });

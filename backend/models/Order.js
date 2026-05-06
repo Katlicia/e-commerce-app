@@ -61,6 +61,10 @@ const orderSchema = new mongoose.Schema(
       district: { type: String },
       address: { type: String },
     },
+    paymentMethod: {
+      type: String,
+      enum: ["kredi", "havale"],
+    },
     paymentId: { type: String },
     conversationId: { type: String },
     paymentTransactionId: { type: String },
