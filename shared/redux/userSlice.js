@@ -102,7 +102,15 @@ const initialState = {
 export const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    setDefaultAddress(state, action) {
+      const idx = action.payload;
+      if (idx > 0 && idx < state.addresses.length) {
+        const [addr] = state.addresses.splice(idx, 1);
+        state.addresses.unshift(addr);
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getUserAddresses.pending, (state) => {
@@ -182,5 +190,7 @@ export const userSlice = createSlice({
       });
   },
 });
+
+export const { setDefaultAddress } = userSlice.actions;
 
 export default userSlice.reducer;
