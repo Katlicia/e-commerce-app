@@ -15,8 +15,8 @@ function AdBannerImage({ uri, onPress }) {
         resizeMode="cover"
         className="rounded-sm"
         onLoad={(e) => {
-          const { width, height } = e.nativeEvent.source;
-          if (width && height) setRatio(width / height);
+          const source = e.nativeEvent?.source;
+          if (source?.width && source?.height) setRatio(source.width / source.height);
         }}
       />
     </TouchableOpacity>
