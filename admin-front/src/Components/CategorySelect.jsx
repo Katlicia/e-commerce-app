@@ -9,16 +9,16 @@ function CategorySelect({ categories, brands = [], value, onChange }) {
   const filteredCats = categories.filter((c) =>
     c.name.toLowerCase().includes(q),
   );
-  const filteredBrands = brands.filter((b) => b.toLowerCase().includes(q));
+  const filteredBrands = brands.filter((b) => b.name.toLowerCase().includes(q));
 
   const selectedCat = categories.find((c) => "cat:" + c.slug === value);
-  const selectedBrand = brands.find((b) => "brand:" + b === value) ?? null;
+  const selectedBrand = brands.find((b) => "brand:" + b.name === value) ?? null;
   const displayLabel = selectedCat
     ? selectedCat.parent
       ? `↳ ${selectedCat.name}`
       : selectedCat.name
     : selectedBrand
-      ? selectedBrand
+      ? selectedBrand.name
       : null;
 
   useEffect(() => {
@@ -126,12 +126,12 @@ function CategorySelect({ categories, brands = [], value, onChange }) {
             )}
             {filteredBrands.map((brand) => (
               <div
-                key={brand}
-                className={`dropdown-item${"brand:" + brand === value ? " active" : ""}`}
+                key={brand.name}
+                className={`dropdown-item${"brand:" + brand.name === value ? " active" : ""}`}
                 style={{ cursor: "pointer" }}
-                onClick={() => handleSelect("brand:" + brand)}
+                onClick={() => handleSelect("brand:" + brand.name)}
               >
-                {brand}
+                {brand.name}
               </div>
             ))}
 
