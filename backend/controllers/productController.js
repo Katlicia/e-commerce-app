@@ -167,12 +167,26 @@ exports.getProductById = async (req, res) => {
 
 exports.getProductByBadge = async (req, res) => {
   const { badge } = req.params;
-  const query =
-    badge === "yeni"
-      ? { badge: "yeni", newUntil: { $gt: new Date() } }
-      : { badge };
-  const products = await Product.find(query).sort({ createdAt: -1 });
-  res.json(products);
+
+  if (badge !== "yeni") {
+    const products = await Product.find({ badge }).sort({ createdAt: -1 });
+    return res.json(products);
+  }
+
+  const MIN = 10;
+  const badged = await Product.find({
+    badge: "yeni",
+    newUntil: { $gt: new Date() },
+  }).sort({ createdAt: -1 });
+
+  if (badged.length >= MIN) return res.json(badged);
+
+  const excludeIds = badged.map((p) => p._id);
+  const fill = await Product.find({ _id: { $nin: excludeIds } })
+    .sort({ createdAt: -1 })
+    .limit(MIN - badged.length);
+
+  res.json([...badged, ...fill]);
 };
 
 exports.getBestSellers = async (req, res) => {
