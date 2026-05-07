@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,14 +7,19 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
+  Dimensions,
+  Platform,
+  ToastAndroid,
+  Alert,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Feather } from "@expo/vector-icons";
 import {
   getUserAddresses,
   addUserAddress,
@@ -30,6 +35,160 @@ import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import AddressModal from "../components/AddressModal";
 import ScreenHeader from "../components/ScreenHeader";
+
+const BANKS = [
+  {
+    logo: require("../assets/Checkout/isbank.png"),
+    logoStyle: { width: 100, height: 32 },
+    name: "LİSTENSİ OFİS MALZEMELERİ TİC.LTD.ŞTİ",
+    iban: "TR21 0006 4000 0012 4003 9106 80",
+  },
+  {
+    logo: require("../assets/Checkout/vakifbank.png"),
+    logoStyle: { width: 130, height: 32 },
+    name: "LİSTENSİ OFİS MALZEMELERİ TİC.LTD.ŞTİ",
+    iban: "TR11 0001 5001 5800 7314 7080 52",
+  },
+];
+
+function copyToClipboard(text) {
+  Clipboard.setStringAsync(text);
+  if (Platform.OS === "android") {
+    ToastAndroid.show("Kopyalandı", ToastAndroid.SHORT);
+  } else {
+    Alert.alert("Kopyalandı", text);
+  }
+}
+
+const ITEM_WIDTH = 80;
+const ITEM_GAP = 10;
+const ITEM_SLOT = ITEM_WIDTH + ITEM_GAP;
+
+function ProductsSection({
+  cart,
+  totalQuantity,
+  fmt,
+  productsExpanded,
+  setProductsExpanded,
+}) {
+  const [currentPage, setCurrentPage] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(
+    Dimensions.get("window").width,
+  );
+
+  const itemsPerPage = Math.floor((containerWidth - 32) / ITEM_SLOT);
+  const totalPages =
+    itemsPerPage > 0 ? Math.ceil(cart.length / itemsPerPage) : 1;
+  const showDots = totalPages > 1;
+
+  return (
+    <View
+      className="mt-4 mx-4"
+      style={{ borderWidth: 1, borderColor: "#BDBDBD", borderRadius: 8 }}
+    >
+      <TouchableOpacity
+        className="flex-row items-center justify-between px-4 py-3"
+        onPress={() => setProductsExpanded((v) => !v)}
+        activeOpacity={0.7}
+      >
+        <Text className="text-md font-sans-semibold text-text-primary">
+          Sepetimdeki Ürünler ({totalQuantity})
+        </Text>
+        <Ionicons
+          name={productsExpanded ? "chevron-up" : "chevron-down"}
+          size={18}
+          color="#6c757d"
+        />
+      </TouchableOpacity>
+
+      {productsExpanded && (
+        <View
+          onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+          className="py-3"
+          style={{ overflow: "visible" }}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingTop: 8,
+              paddingBottom: 4,
+              gap: ITEM_GAP,
+            }}
+            onScroll={(e) => {
+              const x = e.nativeEvent.contentOffset.x;
+              const page = Math.round(x / (itemsPerPage * ITEM_SLOT || 1));
+              setCurrentPage(page);
+            }}
+            scrollEventThrottle={16}
+          >
+            {cart.map((item) => (
+              <View
+                key={`${item._id || item.id}-${item.skuId ?? "no-sku"}`}
+                className="items-center"
+                style={{ overflow: "visible" }}
+              >
+                <View style={{ overflow: "visible" }}>
+                  <Image
+                    source={{ uri: item.images?.[0]?.url }}
+                    style={{ width: ITEM_WIDTH, height: ITEM_WIDTH }}
+                    className="rounded-lg bg-bg-faint border border-border-subtle"
+                    resizeMode="contain"
+                  />
+                  {item.quantity > 0 && (
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: -6,
+                        right: -6,
+                        backgroundColor: "#F5C518",
+                        borderRadius: 999,
+                        width: 20,
+                        height: 20,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "700",
+                          color: "#212529",
+                        }}
+                      >
+                        {item.quantity}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text className="text-xs text-text-secondary mt-1">
+                  {fmt(item.discountedPrice || item.price)}₺
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+
+          {showDots && (
+            <View className="flex-row justify-center gap-1.5 mt-2">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 999,
+                    backgroundColor: i === currentPage ? "#212529" : "#D1D1D1",
+                  }}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
 
 function RadioDot({ active }) {
   return (
@@ -90,6 +249,7 @@ export default function CheckoutScreen() {
   const [editingAddress, setEditingAddress] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
   const [addressError, setAddressError] = useState("");
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
 
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolder, setCardHolder] = useState("");
@@ -247,108 +407,17 @@ export default function CheckoutScreen() {
       />
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom / 2 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Products Collapsible */}
-        <View className="mt-4">
-          <TouchableOpacity
-            className="flex-row items-center justify-between px-4 py-3"
-            onPress={() => setProductsExpanded((v) => !v)}
-            activeOpacity={0.7}
-          >
-            <Text className="text-md font-sans-semibold text-text-primary">
-              Sepetimdeki Ürünler ({totalQuantity})
-            </Text>
-            <Ionicons
-              name={productsExpanded ? "chevron-up" : "chevron-down"}
-              size={18}
-              color="#6c757d"
-            />
-          </TouchableOpacity>
-
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingBottom: 12,
-              gap: 10,
-            }}
-          >
-            {cart.flatMap((item) =>
-              Array.from({ length: item.quantity }, (_, i) => (
-                <View
-                  key={`${item._id || item.id}-${item.skuId ?? "no-sku"}-${i}`}
-                  className="items-center"
-                >
-                  <View className="relative">
-                    <Image
-                      source={{ uri: item.images?.[0]?.url }}
-                      style={{ width: 64, height: 64 }}
-                      className="rounded-lg bg-bg-faint border border-border-subtle"
-                      resizeMode="contain"
-                    />
-                  </View>
-                  <Text className="text-xs text-text-secondary mt-1">
-                    {fmt(item.discountedPrice || item.price)}₺
-                  </Text>
-                </View>
-              )),
-            )}
-          </ScrollView>
-
-          {productsExpanded && (
-            <View className="border-t border-border-subtle px-4 pt-3 pb-2 gap-3">
-              {cart.map((item) => (
-                <View
-                  key={`${item._id || item.id}-${item.skuId ?? ""}`}
-                  className="flex-row gap-3 items-center"
-                >
-                  <Image
-                    source={{ uri: item.images?.[0]?.url }}
-                    style={{ width: 52, height: 52 }}
-                    className="rounded-lg bg-bg-faint border border-border-subtle"
-                    resizeMode="contain"
-                  />
-                  <View className="flex-1">
-                    <Text
-                      className="text-sm text-text-primary font-sans-medium"
-                      numberOfLines={2}
-                    >
-                      {item.name}
-                    </Text>
-                    {item.selectedVariants &&
-                      Object.keys(item.selectedVariants).length > 0 && (
-                        <View className="flex-row flex-wrap gap-1 mt-0.5">
-                          {Object.entries(item.selectedVariants).map(
-                            ([label, value]) => (
-                              <View
-                                key={label}
-                                className="bg-bg-light rounded px-1.5 py-0.5"
-                              >
-                                <Text className="text-2xs text-text-secondary">
-                                  {label}: {value}
-                                </Text>
-                              </View>
-                            ),
-                          )}
-                        </View>
-                      )}
-                  </View>
-                  <View className="items-end">
-                    <Text className="text-sm font-sans-bold text-text-primary">
-                      {fmt(item.discountedPrice || item.price)}₺
-                    </Text>
-                    <Text className="text-xs text-text-secondary">
-                      x{item.quantity}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
+        <ProductsSection
+          cart={cart}
+          totalQuantity={totalQuantity}
+          fmt={fmt}
+          productsExpanded={productsExpanded}
+          setProductsExpanded={setProductsExpanded}
+        />
 
         {/* Delivery */}
         <View className="mt-3 px-4 py-3">
@@ -430,7 +499,7 @@ export default function CheckoutScreen() {
                       openEditAddress(idx);
                     }}
                   >
-                    <Ionicons name="create-outline" size={16} color="#6c757d" />
+                    <Feather name="edit-2" size={18} color="#6c757d" />
                   </TouchableOpacity>
                 </TouchableOpacity>
               ))}
@@ -549,7 +618,7 @@ export default function CheckoutScreen() {
           <Text className="text-md font-sans-bold text-text-primary mb-3">
             ÖDEME
           </Text>
-          <View className="gap-2">
+          <View className="gap-3">
             {/* Credit Card */}
             <TouchableOpacity
               className={`border rounded-sm overflow-hidden border-border-input`}
@@ -559,7 +628,7 @@ export default function CheckoutScreen() {
               <View className="flex-row items-center justify-between px-3 py-3">
                 <View className="flex-row items-center gap-2.5">
                   <RadioDot active={selectedPayment === "kredi"} />
-                  <Text className="text-sm font-sans-semibold text-text-primary py-3">
+                  <Text className="text-md font-sans-semibold text-text-primary py-3">
                     Kredi Kartı
                   </Text>
                 </View>
@@ -661,108 +730,75 @@ export default function CheckoutScreen() {
             </TouchableOpacity>
 
             {/* Havale/EFT */}
-            <TouchableOpacity
-              className={`border rounded-sm px-3 py-2.5 flex-row items-center justify-between ${
-                selectedPayment === "havale"
-                  ? "border-primary bg-primary-light"
-                  : "border-border-input"
-              }`}
-              onPress={() => setSelectedPayment("havale")}
-              activeOpacity={0.7}
-            >
-              <View className="flex-row items-center gap-2.5">
-                <RadioDot active={selectedPayment === "havale"} />
-                <Text className="text-md font-sans-medium text-text-primary py-3">
-                  Havale / EFT
-                </Text>
-              </View>
-              <Text className="font-sans-bold">%5 İndirim</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            <View className={`border rounded-sm border-border-input`}>
+              <TouchableOpacity
+                className="px-3 py-2.5 flex-row items-center justify-between"
+                onPress={() => setSelectedPayment("havale")}
+                activeOpacity={0.7}
+              >
+                <View className="flex-row items-center gap-2.5">
+                  <RadioDot active={selectedPayment === "havale"} />
+                  <Text className="text-md font-sans-medium text-text-primary py-3">
+                    Havale / EFT
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-        {/* Order Summary */}
-        <View className="mt-3 px-4 py-3 gap-2">
-          <Text className="text-md font-sans-bold text-text-primary mb-1">
-            SİPARİŞ ÖZETİ
-          </Text>
-          <View className="flex-row justify-between">
-            <Text className="text-sm text-text-secondary">
-              Ürünler ({totalQuantity})
-            </Text>
-            <Text className="text-sm text-text-primary font-sans-medium">
-              {fmt(totalAmount)}₺
-            </Text>
-          </View>
-          {couponDiscount > 0 && (
-            <View className="flex-row justify-between">
-              <Text className="text-sm text-text-secondary">
-                Kupon İndirimi
-              </Text>
-              <Text className="text-sm text-discount-green font-sans-medium">
-                -{fmt(couponDiscount)}₺
-              </Text>
+              {selectedPayment === "havale" && (
+                <View className="px-3 pb-4 gap-3">
+                  {BANKS.map((bank, index) => (
+                    <View key={index} className="px-2 py-4 gap-3">
+                      <Image
+                        source={bank.logo}
+                        style={bank.logoStyle}
+                        resizeMode="contain"
+                      />
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-sm font-sans flex-1 mr-2">
+                          {bank.name}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => copyToClipboard(bank.name)}
+                          activeOpacity={0.7}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Image
+                            source={require("../assets/Checkout/copy.png")}
+                            style={{ width: 18, height: 18 }}
+                            resizeMode="contain"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      <View className="flex-row items-center justify-between">
+                        <Text className="text-sm font-sans flex-1 mr-2">
+                          {bank.iban}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() =>
+                            copyToClipboard(bank.iban.replace(/\s/g, ""))
+                          }
+                          activeOpacity={0.7}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Image
+                            source={require("../assets/Checkout/copy.png")}
+                            style={{ width: 18, height: 18 }}
+                            resizeMode="contain"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
-          )}
-          {bundleDiscounts.map((bundle) => {
-            const amount =
-              +bundle.requiredProducts
-                .reduce((sum, req) => {
-                  const item = cart.find(
-                    (c) => (c._id || c.id) === req.productId,
-                  );
-                  if (!item) return sum;
-                  return (
-                    sum +
-                    parseFloat(item.discountedPrice || item.price) *
-                      req.quantity
-                  );
-                }, 0)
-                .toFixed(2) *
-              (bundle.percent / 100);
-            return (
-              <View key={bundle.listId} className="flex-row justify-between">
-                <Text
-                  className="text-sm text-text-secondary flex-1 mr-2"
-                  numberOfLines={1}
-                >
-                  {bundle.name} (%{bundle.percent})
-                </Text>
-                <Text className="text-sm text-discount-green font-sans-medium">
-                  -{fmt(amount)}₺
-                </Text>
-              </View>
-            );
-          })}
-          <View className="flex-row justify-between">
-            <Text className="text-sm text-text-secondary">Kargo</Text>
-            {effectiveCargoPrice === 0 ? (
-              <Text className="text-sm text-discount-green font-sans-semibold">
-                Ücretsiz
-              </Text>
-            ) : effectiveCargoPrice != null ? (
-              <Text className="text-sm text-text-primary font-sans-medium">
-                {fmt(effectiveCargoPrice)}₺
-              </Text>
-            ) : (
-              <Text className="text-sm text-text-muted">Seçilmedi</Text>
-            )}
-          </View>
-          <View className="h-px bg-border-subtle my-1" />
-          <View className="flex-row justify-between">
-            <Text className="text-md font-sans-bold text-text-primary">
-              Toplam
-            </Text>
-            <Text className="text-md font-sans-bold text-primary">
-              {fmt(finalAmount + (effectiveCargoPrice ?? 0))}₺
-            </Text>
           </View>
         </View>
 
         {/* Terms */}
         <View className="mt-3">
           <TouchableOpacity
-            className="flex-row items-center justify-end gap-2"
+            className="flex-row items-start px-4 gap-2"
             onPress={() => setAgreeToTerms((v) => !v)}
             activeOpacity={0.7}
           >
@@ -770,9 +806,9 @@ export default function CheckoutScreen() {
               className={`w-4 h-4 ${
                 agreeToTerms ? "bg-brand-red" : "bg-border-input"
               }`}
-              style={{ borderRadius: 3 }}
+              style={{ borderRadius: 3, marginTop: 3 }}
             />
-            <Text className="text-sm text-text-secondary">
+            <Text className="text-md">
               <Text className="text-text-primary font-sans-semibold">
                 Gizlilik Sözleşmesini
               </Text>{" "}
@@ -780,32 +816,147 @@ export default function CheckoutScreen() {
               <Text className="text-text-primary font-sans-semibold">
                 Satış Sözleşmesini
               </Text>{" "}
-              okudum, onaylıyorum.
+              {"\n"}okudum, onaylıyorum.
             </Text>
           </TouchableOpacity>
           {formErrors.agreeToTerms ? (
-            <Text className="text-price-red text-xs mt-1">
+            <Text className="text-price-red text-xs mt-1 px-4">
               {formErrors.agreeToTerms}
             </Text>
           ) : null}
         </View>
-
-        {/* Submit */}
-        <TouchableOpacity
-          className="bg-primary mt-4 rounded-xl py-4 items-center"
-          onPress={handleSubmit}
-          activeOpacity={0.85}
-          disabled={orderLoading}
-        >
-          {orderLoading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <Text className="text-white font-sans-bold text-md">
-              Siparişi Tamamla
-            </Text>
-          )}
-        </TouchableOpacity>
       </ScrollView>
+
+      {/* Bottom summary bar */}
+      <View
+        style={{
+          backgroundColor: "white",
+          borderTopWidth: 1,
+          borderTopColor: "#E1E1E1",
+        }}
+      >
+        {summaryExpanded && (
+          <View
+            style={{
+              paddingHorizontal: 16,
+              paddingTop: 12,
+              paddingBottom: 8,
+              gap: 6,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text style={{ fontSize: 13 }}>Ürünler ({totalQuantity})</Text>
+              <Text style={{ fontSize: 13, fontWeight: "500" }}>
+                {fmt(totalAmount)}₺
+              </Text>
+            </View>
+            {couponDiscount > 0 && (
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text style={{ fontSize: 13 }}>Kupon İndirimi</Text>
+                <Text
+                  style={{ fontSize: 13, fontWeight: "500", color: "#2a9d4e" }}
+                >
+                  -{fmt(couponDiscount)}₺
+                </Text>
+              </View>
+            )}
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Text style={{ fontSize: 13 }}>Kargo</Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: "500",
+                  color: effectiveCargoPrice === 0 ? "#2a9d4e" : "#212529",
+                }}
+              >
+                {effectiveCargoPrice === 0
+                  ? "Ücretsiz"
+                  : effectiveCargoPrice != null
+                    ? `${fmt(effectiveCargoPrice)}₺`
+                    : "Seçilmedi"}
+              </Text>
+            </View>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: "#f0f0f0",
+                marginVertical: 2,
+              }}
+            />
+          </View>
+        )}
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 12 + insets.bottom,
+            gap: 12,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              flex: 1,
+            }}
+            onPress={() => setSummaryExpanded((v) => !v)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={summaryExpanded ? "chevron-down" : "chevron-up"}
+              size={20}
+            />
+            <View>
+              <Text style={{ fontSize: 13, fontWeight: "600" }}>
+                Toplam Tutar
+              </Text>
+              <Text style={{ fontSize: 20, fontWeight: "700" }}>
+                {fmt(finalAmount + (effectiveCargoPrice ?? 0))}₺
+              </Text>
+              {effectiveCargoPrice === 0 && (
+                <Text
+                  style={{ fontSize: 12, fontWeight: "500", color: "#2a9d4e" }}
+                >
+                  Kargo Bedava
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#ff7700",
+              borderRadius: 8,
+              paddingHorizontal: 20,
+              paddingVertical: 14,
+            }}
+            onPress={handleSubmit}
+            activeOpacity={0.85}
+            disabled={orderLoading}
+          >
+            {orderLoading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text style={{ color: "white", fontWeight: "700", fontSize: 14 }}>
+                Onayla ve Bitir
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
