@@ -5,7 +5,9 @@ import path from "path";
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true,
     fs: { allow: ["../shared", "."] },
+    watch: { usePolling: true },
   },
   resolve: {
     alias: {

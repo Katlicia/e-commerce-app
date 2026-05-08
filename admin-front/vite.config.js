@@ -7,4 +7,9 @@ export default defineConfig({
   optimizeDeps: {
     include: ["formik"],
   },
+  server: {
+    host: true,
+    port: 5174,
+    watch: { usePolling: true },
+  },
 })
