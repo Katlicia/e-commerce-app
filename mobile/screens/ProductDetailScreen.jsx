@@ -40,6 +40,7 @@ import {
 } from "@mobile/shared/redux/favouriteSlice";
 import { ProductCard } from "../components/ProductCard";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
+import { addLocalRecentlyViewed } from "@mobile/shared/utils/recentlyViewed";
 import AddToListModal from "../components/AddToListModal";
 
 function maskName(name, surname) {
@@ -90,6 +91,8 @@ export default function ProductDetailScreen() {
 
     if (user) {
       axiosInstance.post(`/users/me/visited/${productId}`).catch(() => {});
+    } else {
+      addLocalRecentlyViewed(product);
     }
 
     const categoryId = product.category?._id || product.category;

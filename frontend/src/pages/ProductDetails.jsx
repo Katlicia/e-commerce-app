@@ -20,6 +20,7 @@ import {
 import { FaStar, FaRegStar } from "react-icons/fa6";
 import HeaderLinks from "../components/HeaderLinks";
 import axiosInstance from "../utils/axiosInstance";
+import { addLocalRecentlyViewed } from "../../../shared/utils/recentlyViewed";
 import "../styles/ProductDetails.css";
 
 import ProductList from "../components/ProductList";
@@ -88,6 +89,11 @@ function ProductDetails() {
       axiosInstance.post(`/users/me/visited/${id}`).catch(() => {});
     }
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (!product || product._id !== id || user) return;
+    addLocalRecentlyViewed(product);
+  }, [product?._id]);
 
   useEffect(() => {
     if (!product || product._id !== id) return;

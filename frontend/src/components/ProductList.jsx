@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import ProductCard from "./ProductCard";
 import "../styles/ProductList.css";
 import "../styles/Chances.css";
@@ -6,6 +7,7 @@ import { FaArrowAltCircleRight, FaArrowAltCircleLeft } from "react-icons/fa";
 import BannerCard from "./BannerCard";
 import Loading from "./Loading";
 import axiosInstance from "../utils/axiosInstance";
+import { getLocalRecentlyViewed } from "../../../shared/utils/recentlyViewed";
 
 function getTimeLeft(target) {
   if (!target) return { saat: 0, dakika: 0, saniye: 0 };
@@ -21,6 +23,7 @@ function ProductList({ title, settings = {}, id }) {
   const { showTimer, timerEnd, banner, badge, recentlyViewed, bestSellers } =
     settings;
   const rowRef = useRef(null);
+  const user = useSelector((state) => state.auth.user);
   const [time, setTime] = useState(getTimeLeft(timerEnd));
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,8 +41,12 @@ function ProductList({ title, settings = {}, id }) {
       try {
         let res;
         if (recentlyViewed) {
-          res = await axiosInstance.get("/users/me/visited");
-          setProducts(Array.isArray(res.data) ? res.data : []);
+          if (user) {
+            res = await axiosInstance.get("/users/me/visited");
+            setProducts(Array.isArray(res.data) ? res.data : []);
+          } else {
+            setProducts(await getLocalRecentlyViewed());
+          }
         } else if (bestSellers) {
           res = await axiosInstance.get("/products/best-sellers");
           setProducts(res.data.products || []);
@@ -57,7 +64,7 @@ function ProductList({ title, settings = {}, id }) {
       }
     };
     fetchProducts();
-  }, [badge, recentlyViewed, bestSellers]);
+  }, [badge, recentlyViewed, bestSellers, user]);
 
   function scrollLeft() {
     rowRef.current.scrollBy({ left: -600, behavior: "smooth" });

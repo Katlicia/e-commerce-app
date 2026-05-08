@@ -1,16 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
+import { getLocalRecentlyViewed } from "@mobile/shared/utils/recentlyViewed";
 import { ProductCard, BannerCard, CARD_WIDTH, CARD_HEIGHT } from "../ProductCard";
 
 export { ProductCard, CARD_WIDTH, CARD_HEIGHT };
 
-async function fetchProducts(settings) {
+async function fetchProducts(settings, user) {
   try {
     if (settings.recentlyViewed) {
-      const res = await axiosInstance.get("/users/me/visited");
-      return Array.isArray(res.data) ? res.data : [];
+      if (user) {
+        const res = await axiosInstance.get("/users/me/visited");
+        return Array.isArray(res.data) ? res.data : [];
+      }
+      return getLocalRecentlyViewed();
     }
     if (settings.bestSellers) {
       const res = await axiosInstance.get("/products/best-sellers");
@@ -78,22 +83,23 @@ function TimerDisplay({ endTime }) {
 export default function HomeProductList({ title, settings = {} }) {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  const user = useSelector((state) => state.auth.user);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (settings.recentlyViewed) return;
-    fetchProducts(settings)
+    fetchProducts(settings, user)
       .then(setProducts)
       .finally(() => setLoading(false));
   }, [settings.badge, settings.bestSellers]);
 
   useEffect(() => {
     if (!settings.recentlyViewed || !isFocused) return;
-    fetchProducts(settings)
+    fetchProducts(settings, user)
       .then(setProducts)
       .finally(() => setLoading(false));
-  }, [isFocused]);
+  }, [isFocused, user]);
 
   const overrideBadge = settings.bestSellers ? "en-cok-satan" : undefined;
 
