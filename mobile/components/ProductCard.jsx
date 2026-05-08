@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
@@ -14,8 +14,8 @@ import {
 } from "@mobile/shared/redux/favouriteSlice";
 
 export const CARD_WIDTH = 150;
-export const CARD_HEIGHT = 300;
-const IMAGE_HEIGHT = 140;
+export const CARD_HEIGHT = 290;
+const IMAGE_HEIGHT = 130;
 
 const BADGE_CONFIG = {
   yeni: { bg: "#F83B0A", color: "#fff", label: "YENİ" },
@@ -44,16 +44,11 @@ export const ProductCard = memo(function ProductCard({
   overrideBadge,
   cardWidth: cardW,
   noMargin,
-  gridMode,
 }) {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
   const w = cardW ?? CARD_WIDTH;
-  const imgH = gridMode
-    ? Math.round(w * (IMAGE_HEIGHT / CARD_WIDTH))
-    : IMAGE_HEIGHT;
-
   const productId = product._id || product.id;
   const image = product.images?.[0]?.url;
 
@@ -88,30 +83,32 @@ export const ProductCard = memo(function ProductCard({
     ),
   );
 
-  const handleAddToCart = () =>
-    dispatch(addToCartWithSync(product, null, null));
+  const handleAddToCart = () => dispatch(addToCartWithSync(product, null, null));
   const handleIncrease = () => dispatch(addToCartWithSync(product, null, null));
-  const handleDecrease = () => {
+  const handleDecrease = () =>
     cartItem?.quantity === 1
       ? dispatch(removeFromCartWithSync(productId))
       : dispatch(decreaseCartWithSync(productId, null));
-  };
   const handleToggleFav = () =>
     isFav
       ? dispatch(removeFromFavouritesWithSync(productId))
       : dispatch(addToFavouritesWithSync(product));
 
+  const badgeKey = overrideBadge || product.badge;
+  const badgeCfg = badgeKey ? BADGE_CONFIG[badgeKey] : null;
+
   return (
     <TouchableOpacity
-      className={`bg-white border border-border-light rounded-sm pt-1 overflow-hidden${noMargin ? "" : " mr-3"}`}
-      style={{ width: w, height: gridMode ? CARD_HEIGHT + 60 : CARD_HEIGHT }}
+      className={`bg-white border border-border-light rounded-sm overflow-hidden${noMargin ? "" : " mr-3"}`}
+      style={{ width: w, height: CARD_HEIGHT }}
       onPress={() => navigation.navigate("ProductDetail", { productId })}
       activeOpacity={0.85}
     >
-      <View>
+      {/* Image area */}
+      <View style={{ height: IMAGE_HEIGHT }}>
         <Image
           source={{ uri: image }}
-          style={{ width: w, height: imgH }}
+          style={{ width: w, height: IMAGE_HEIGHT }}
           resizeMode="contain"
           className="bg-bg-faint"
         />
@@ -122,232 +119,112 @@ export const ProductCard = memo(function ProductCard({
         >
           <Ionicons
             name={isFav ? "heart" : "heart-outline"}
-            size={24}
+            size={22}
             color={isFav ? "#e84040" : "#adb5bd"}
           />
         </TouchableOpacity>
-        {(() => {
-          const key = overrideBadge || product.badge;
-          const cfg = key ? BADGE_CONFIG[key] : null;
-          if (!cfg) return null;
-          if (cfg.image) {
-            return (
-              <Image
-                source={cfg.image}
-                style={{
-                  position: "absolute",
-                  top: 4,
-                  left: 6,
-                  width: 44,
-                  height: 44,
-                }}
-                resizeMode="contain"
-              />
-            );
-          }
-          return (
-            <View
-              style={{
-                position: "absolute",
-                top: 6,
-                left: 6,
-                backgroundColor: cfg.bg,
-                borderRadius: 4,
-                paddingHorizontal: 5,
-                paddingVertical: 2,
-              }}
-            >
-              <Text
-                style={{ color: cfg.color, fontSize: 9, fontWeight: "700" }}
-              >
-                {cfg.label}
+
+        {badgeCfg && (
+          badgeCfg.image ? (
+            <Image
+              source={badgeCfg.image}
+              style={{ position: "absolute", top: 4, left: 6, width: 44, height: 44 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <View className="absolute top-1.5 left-1.5 bg-brand-red rounded-xs px-1.5 py-0.5">
+              <Text className="text-white text-2xs font-sans-bold">
+                {badgeCfg.label}
               </Text>
             </View>
-          );
-        })()}
+          )
+        )}
+
         {product.discountPercent > 0 && (
-          <View className="absolute bottom-2.5 left-3.5 bg-success-light rounded-xs px-1.5 py-0.5">
-            <Text className="text-discount-green text-2xs font-bold">
+          <View className="absolute bottom-2 left-2 bg-success-light rounded-xs px-1.5 py-0.5">
+            <Text className="text-discount-green text-2xs font-sans-semibold">
               %{product.discountPercent} indirim
             </Text>
           </View>
         )}
       </View>
 
-      <View
-        className={gridMode ? "p-3" : "p-2"}
-        style={{ flex: 1, justifyContent: "space-between" }}
-      >
-        <View className={gridMode ? "gap-2" : "gap-1"}>
-          <Text
-            className={
-              gridMode ? "text-xs text-text-muted" : "text-2xs text-text-muted"
-            }
-          >
-            Ürün Kodu: {product.code}
+      {/* Content */}
+      <View className="p-2" style={{ flex: 1, justifyContent: "space-between" }}>
+        <View className="gap-1">
+          <Text className="text-2xs font-sans text-text-muted">
+            {product.code}
           </Text>
           <Text
-            className={
-              gridMode
-                ? "text-sm text-text-primary font-medium"
-                : "text-xs text-text-primary font-medium"
-            }
+            className="text-base font-sans-medium text-text-primary"
             numberOfLines={2}
-            style={gridMode ? undefined : { height: 34 }}
+            style={{ height: 40 }}
           >
             {product.name}
           </Text>
-          <View className="flex-row items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Ionicons
-                key={s}
-                name={s <= Math.round(product.rating) ? "star" : "star-outline"}
-                size={gridMode ? 12 : 10}
-                color="#ff7700"
-              />
-            ))}
-            <Text
-              className={
-                gridMode
-                  ? "text-xs text-text-muted ml-0.5"
-                  : "text-2xs text-text-muted ml-0.5"
-              }
-            >
-              ({product.reviews?.length ?? 0})
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-1 flex-wrap">
-            <Text
-              className={
-                gridMode
-                  ? "text-lg font-bold text-price-red"
-                  : "text-md font-bold text-price-red"
-              }
-            >
-              {Number(displayPrice).toFixed(2)}₺
-            </Text>
+          <View style={{ height: 34 }}>
             {originalPrice && (
-              <Text
-                className={
-                  gridMode
-                    ? "text-sm text-text-muted line-through"
-                    : "text-xs text-text-muted line-through"
-                }
-              >
+              <Text className="text-xs text-text-muted line-through">
                 {Number(originalPrice).toFixed(2)}₺
               </Text>
             )}
+            <Text className="text-md font-sans-bold text-price-red">
+              {Number(displayPrice).toFixed(2)}₺
+            </Text>
           </View>
         </View>
 
         {product.hasVariants ? (
           <TouchableOpacity
-            className={`rounded-sm items-center ${outOfStock ? "bg-bg-light" : "bg-primary"} ${gridMode ? "py-2.5" : "py-1.5"}`}
+            className={`rounded-sm items-center py-2 ${outOfStock ? "bg-bg-light" : "bg-primary"}`}
             onPress={() => navigation.navigate("ProductDetail", { productId })}
             disabled={outOfStock}
             activeOpacity={0.85}
           >
-            <Text
-              className={`font-semibold ${outOfStock ? "text-text-muted" : "text-white"} ${gridMode ? "text-sm" : "text-xs"}`}
-            >
+            <Text className={`text-xs font-sans-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}>
               {outOfStock ? "Stokta Yok" : "Seçenek Seç"}
             </Text>
           </TouchableOpacity>
         ) : cartItem ? (
           <View
-            style={{
-              flexDirection: "row",
-              borderWidth: 1.5,
-              borderColor: "#ff7700",
-              borderRadius: 10,
-              overflow: "hidden",
-              height: gridMode ? 40 : 32,
-            }}
+            className="flex-row overflow-hidden rounded-md"
+            style={{ borderWidth: 1.5, borderColor: "#ff7700", height: 36 }}
           >
             <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: "#ff7700",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              className="flex-1 bg-primary items-center justify-center"
               onPress={handleDecrease}
             >
               {cartItem.quantity === 1 ? (
-                <Ionicons
-                  name="trash-outline"
-                  size={gridMode ? 15 : 13}
-                  color="white"
-                />
+                <Ionicons name="trash-outline" size={13} color="white" />
               ) : (
-                <Text
-                  style={{
-                    color: "white",
-                    fontWeight: "700",
-                    fontSize: gridMode ? 18 : 15,
-                    lineHeight: gridMode ? 22 : 18,
-                  }}
-                >
-                  −
-                </Text>
+                <Text className="text-white font-sans-bold text-lg" style={{ lineHeight: 20 }}>−</Text>
               )}
             </TouchableOpacity>
             <Text
-              style={{
-                flex: 1,
-                textAlign: "center",
-                fontWeight: "600",
-                fontSize: gridMode ? 14 : 12,
-                color: "#212529",
-                lineHeight: gridMode ? 40 : 32,
-              }}
+              className="flex-1 text-center text-sm font-sans-semibold text-text-primary"
+              style={{ lineHeight: 36 }}
             >
               {cartItem.quantity}
             </Text>
             {cartItem.quantity >= product.stock ? (
-              <View style={{ flex: 1 }} />
+              <View className="flex-1" />
             ) : (
               <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: "#ff7700",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                className="flex-1 bg-primary items-center justify-center"
                 onPress={handleIncrease}
               >
-                <Text
-                  style={{
-                    color: "white",
-                    fontWeight: "700",
-                    fontSize: gridMode ? 18 : 15,
-                    lineHeight: gridMode ? 22 : 18,
-                  }}
-                >
-                  +
-                </Text>
+                <Text className="text-white font-sans-bold text-lg" style={{ lineHeight: 20 }}>+</Text>
               </TouchableOpacity>
             )}
           </View>
         ) : (
           <TouchableOpacity
-            style={{
-              borderRadius: 8,
-              alignItems: "center",
-              backgroundColor: outOfStock ? "#f0f0f0" : "#ff7700",
-              paddingVertical: gridMode ? 10 : 7,
-            }}
+            className={`rounded-sm items-center py-2 ${outOfStock ? "bg-bg-light" : "bg-primary"}`}
             onPress={handleAddToCart}
             disabled={outOfStock}
             activeOpacity={0.85}
           >
-            <Text
-              style={{
-                fontWeight: "600",
-                color: outOfStock ? "#adb5bd" : "white",
-                fontSize: gridMode ? 13 : 11,
-              }}
-            >
+            <Text className={`text-xs font-sans-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}>
               {outOfStock ? "Stokta Yok" : "Sepete Ekle"}
             </Text>
           </TouchableOpacity>
