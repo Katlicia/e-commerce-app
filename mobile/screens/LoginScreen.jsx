@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,52 +8,91 @@ import {
   ScrollView,
   Platform,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
-import { loginUser, forgetPassword } from "@mobile/shared/redux/authSlice";
+import {
+  loginUser,
+  checkPhone,
+  clearError,
+} from "@mobile/shared/redux/authSlice";
 import { mergeCartOnLogin } from "@mobile/shared/redux/cartSlice";
 import { fetchFavourites } from "@mobile/shared/redux/favouriteSlice";
 import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
+function formatPhone(d) {
+  if (!d) return "";
+  if (d.length <= 3) return `0(${d}`;
+  if (d.length <= 6) return `0(${d.slice(0, 3)}) ${d.slice(3)}`;
+  if (d.length <= 8)
+    return `0(${d.slice(0, 3)}) ${d.slice(3, 6)} ${d.slice(6)}`;
+  return `0(${d.slice(0, 3)}) ${d.slice(3, 6)} ${d.slice(6, 8)} ${d.slice(8)}`;
+}
+
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
   const { loading, error } = useSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [resetSent, setResetSent] = useState(false);
-  const [resetError, setResetError] = useState(null);
+  const [phoneDigits, setPhoneDigits] = useState("");
+  const [step, setStep] = useState("phone");
+  const [password, setPassword] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
-  function buildPayload() {
-    const trimmed = formData.email.trim();
-    const base = { password: formData.password };
-    return trimmed.includes("@") ? { ...base, email: trimmed } : { ...base, phone: trimmed };
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(clearError());
+      setPhoneError("");
+      setPasswordError("");
+    }, []),
+  );
+
+  function handlePhoneChange(text) {
+    const digits = text.replace(/\D/g, "");
+    const clean = digits.startsWith("0") ? digits.slice(1) : digits;
+    setPhoneDigits(clean.slice(0, 10));
+    if (phoneError) setPhoneError("");
+  }
+
+  async function handlePhoneSubmit() {
+    if (phoneDigits.length !== 10) {
+      setPhoneError("Lütfen geçerli bir telefon numarası giriniz.");
+      return;
+    }
+    const phone = `0${phoneDigits}`;
+    const result = await dispatch(checkPhone(phone));
+    if (result.meta.requestStatus === "fulfilled") {
+      // If number is in db go to password step
+      setPasswordError("");
+      dispatch(clearError());
+      setStep("password");
+    } else if (result.payload?.status === 404) {
+      // If number is not in db go to register
+      navigation.navigate("PhoneRegister", { phone });
+    } else {
+      setPhoneError(result.payload?.message || "Bir hata oluştu.");
+    }
   }
 
   async function handleLogin() {
-    const result = await dispatch(loginUser(buildPayload()));
+    if (!password) {
+      setPasswordError("Lütfen şifrenizi giriniz.");
+      return;
+    }
+    setPasswordError("");
+    const result = await dispatch(
+      loginUser({ phone: `0${phoneDigits}`, password }),
+    );
     if (result.meta.requestStatus === "fulfilled") {
       setBearerToken(result.payload?.token ?? null);
       dispatch(mergeCartOnLogin());
       dispatch(fetchFavourites());
       dispatch(fetchLists());
-      navigation.goBack();
-    }
-  }
-
-  async function handleForgetPassword() {
-    if (!formData.email) {
-      setResetError("Lütfen önce e-posta adresinizi girin.");
-      return;
-    }
-    setResetError(null);
-    const result = await dispatch(forgetPassword(formData.email));
-    if (forgetPassword.fulfilled.match(result)) {
-      setResetSent(true);
-    } else {
-      setResetError(result.payload);
+      navigation.navigate("MainTabs");
     }
   }
 
@@ -67,114 +106,153 @@ export default function LoginScreen({ navigation }) {
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
-          <View className="flex-row items-center px-4 py-3 border-b border-border-light">
+          {/* X Button */}
+          <View className="items-end px-4 pt-3">
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={{ width: 32, padding: 4 }}
+              onPress={() => navigation.navigate("MainTabs")}
+              className="p-2"
             >
-              <Ionicons name="arrow-back" size={22} color="#212529" />
+              <Ionicons name="close" size={32} color="#212529" />
             </TouchableOpacity>
-            <Text className="flex-1 text-lg font-bold text-text-primary text-center">
-              Giriş Yap
-            </Text>
-            <View style={{ width: 32 }} />
           </View>
 
-          <View
-            className="px-5 pt-8 pb-6 max-w-md w-full self-center"
-            style={{ width: "100%" }}
-          >
-            {/* Error */}
-            {error && (
-              <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
-                <Text className="text-red-600 text-base">{error}</Text>
-              </View>
-            )}
+          <View className="flex-1 px-10 pt-4 pb-6 items-center">
+            {/* Logo */}
+            <Image
+              source={require("../assets/listensi_logo.png")}
+              style={{ width: 200, height: 120 }}
+              resizeMode="contain"
+            />
 
-            {/* Email */}
-            <View className="mb-4">
-              <TextInput
-                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
-                value={formData.email}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, email: text })
-                }
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoComplete="email"
-                placeholderTextColor="#adb5bd"
-                placeholder="E-Mail Adresiniz"
-              />
-            </View>
-
-            {/* Password */}
-            <View className="mb-2">
-              <TextInput
-                className="border border-border-input rounded-xs px-4 h-12 text-base text-text-primary bg-white"
-                value={formData.password}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, password: text })
-                }
-                secureTextEntry
-                autoComplete="password"
-                placeholderTextColor="#adb5bd"
-                placeholder="Şifreniz"
-              />
-            </View>
-
-            {/* Forgot password */}
-            <TouchableOpacity
-              className="self-end mb-4"
-              onPress={handleForgetPassword}
-              disabled={loading}
-            >
-              <Text className="text-base text-brand-red">Şifremi unuttum</Text>
-            </TouchableOpacity>
-
-            {/* Reset error */}
-            {resetError && (
-              <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
-                <Text className="text-red-600 text-base">{resetError}</Text>
-              </View>
-            )}
-
-            {/* Reset success */}
-            {resetSent && (
-              <View className="bg-success-light border border-green-200 rounded-lg px-4 py-3 mb-4">
-                <Text className="text-discount-green text-base">
-                  Şifre sıfırlama bağlantısı{" "}
-                  <Text className="font-semibold">{formData.email}</Text>{" "}
-                  adresine gönderildi.
+            {step === "phone" ? (
+              <>
+                <Text className="text-md text-center mb-10 font-sans">
+                  Lütfen giriş yapmak veya{"\n"}kayıt olmak için telefon
+                  numaranızı giriniz.
                 </Text>
-              </View>
-            )}
 
-            {/* Login button */}
-            <TouchableOpacity
-              className="bg-brand-red rounded-md h-12 items-center justify-center mb-5"
-              onPress={handleLogin}
-              disabled={loading}
-              activeOpacity={0.85}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-white font-bold text-md">Giriş Yap</Text>
-              )}
-            </TouchableOpacity>
+                {/* Phone Input */}
+                <View
+                  className="w-full border-b-2 mb-1"
+                  style={{ borderColor: phoneError ? "#ef4444" : "#dee2e6" }}
+                >
+                  <TextInput
+                    className="text-3xl sans-medium py-3 text-center"
+                    style={{ letterSpacing: 2 }}
+                    value={formatPhone(phoneDigits)}
+                    onChangeText={handlePhoneChange}
+                    keyboardType="phone-pad"
+                    placeholder="0(5__) ___ __ __"
+                    placeholderTextColor="#000000"
+                    maxLength={16}
+                  />
+                </View>
+                {phoneError ? (
+                  <Text className="text-red-500 text-sm mb-6 self-start">
+                    {phoneError}
+                  </Text>
+                ) : (
+                  <View className="mb-10" />
+                )}
 
-            {/* Register link */}
-            <View className="flex-row justify-center gap-1">
-              <Text className="text-base text-text-secondary">
-                Hesabın yok mu?
-              </Text>
-              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-                <Text className="text-base text-brand-blue font-medium">
-                  Kayıt Ol
+                {/* Submit button */}
+                <TouchableOpacity
+                  className="bg-brand-red rounded-sm py-4 items-center justify-center w-full mb-6 flex-row gap-2"
+                  onPress={handlePhoneSubmit}
+                >
+                  <Text className="text-white font-bold text-base">
+                    Giriş Yap veya Kayıt Ol
+                  </Text>
+                  <Image
+                    source={require("../assets/arrow.png")}
+                    style={{ width: 40, height: 18 }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+
+                {/* Email login link */}
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("EmailLogin")}
+                >
+                  <Text className="text-text-secondary text-base font-sans">
+                    E-Mail İle Giriş
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* Phone shown (read-only) */}
+                <Text className="text-text-primary text-lg font-medium mb-8">
+                  {formatPhone(phoneDigits)}
                 </Text>
-              </TouchableOpacity>
-            </View>
+
+                {/* Error */}
+                {error && (
+                  <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4 w-full">
+                    <Text className="text-red-600 text-base">{error}</Text>
+                  </View>
+                )}
+
+                {/* Password */}
+                <View className="w-full mb-1">
+                  <TextInput
+                    className="rounded-xs px-4 h-12 text-base text-text-primary bg-white"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: passwordError ? "#ef4444" : "#dee2e6",
+                    }}
+                    value={password}
+                    onChangeText={(t) => {
+                      setPassword(t);
+                      if (passwordError) setPasswordError("");
+                    }}
+                    secureTextEntry
+                    autoComplete="password"
+                    placeholderTextColor="#adb5bd"
+                    placeholder="Şifreniz"
+                    autoFocus
+                  />
+                </View>
+                {passwordError ? (
+                  <Text className="text-red-500 text-sm mb-3 self-start">
+                    {passwordError}
+                  </Text>
+                ) : (
+                  <View className="mb-4" />
+                )}
+
+                {/* Login button */}
+                <TouchableOpacity
+                  className="bg-brand-red rounded-sm py-4 items-center justify-center w-full mb-4 flex-row gap-2"
+                  onPress={handleLogin}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <>
+                      <Text className="text-white font-bold text-base">
+                        Giriş Yap
+                      </Text>
+                      <Image
+                        source={require("../assets/arrow.png")}
+                        style={{ width: 40, height: 18 }}
+                        resizeMode="contain"
+                      />
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+
+          {/* Support number */}
+          <View className="items-center pb-10">
+            <Text className="text-text-secondary text-sm mb-1">
+              Yardıma mı ihtiyacınız var?
+            </Text>
+            <Text className="text-brand-red font-bold text-base">
+              444 56 50
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
