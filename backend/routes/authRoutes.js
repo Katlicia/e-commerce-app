@@ -7,11 +7,13 @@ const {
   forgetPassword,
   resetPassword,
   getMe,
+  checkPhone,
 } = require("../controllers/authController");
 const { authenticationMiddle } = require("../middleware/auth");
 
 const router = express.Router();
 
+router.post("/check-phone", checkPhone);
 router.post("/register", register);
 router.post("/login", login);
 router.post("/adminlogin", adminLogin);
