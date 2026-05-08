@@ -83,7 +83,8 @@ export const ProductCard = memo(function ProductCard({
     ),
   );
 
-  const handleAddToCart = () => dispatch(addToCartWithSync(product, null, null));
+  const handleAddToCart = () =>
+    dispatch(addToCartWithSync(product, null, null));
   const handleIncrease = () => dispatch(addToCartWithSync(product, null, null));
   const handleDecrease = () =>
     cartItem?.quantity === 1
@@ -124,11 +125,17 @@ export const ProductCard = memo(function ProductCard({
           />
         </TouchableOpacity>
 
-        {badgeCfg && (
-          badgeCfg.image ? (
+        {badgeCfg &&
+          (badgeCfg.image ? (
             <Image
               source={badgeCfg.image}
-              style={{ position: "absolute", top: 4, left: 6, width: 44, height: 44 }}
+              style={{
+                position: "absolute",
+                top: 4,
+                left: 6,
+                width: 44,
+                height: 44,
+              }}
               resizeMode="contain"
             />
           ) : (
@@ -137,8 +144,7 @@ export const ProductCard = memo(function ProductCard({
                 {badgeCfg.label}
               </Text>
             </View>
-          )
-        )}
+          ))}
 
         {product.discountPercent > 0 && (
           <View className="absolute bottom-2 left-2 bg-success-light rounded-xs px-1.5 py-0.5">
@@ -150,10 +156,13 @@ export const ProductCard = memo(function ProductCard({
       </View>
 
       {/* Content */}
-      <View className="p-2" style={{ flex: 1, justifyContent: "space-between" }}>
+      <View
+        className="p-2"
+        style={{ flex: 1, justifyContent: "space-between" }}
+      >
         <View className="gap-1">
           <Text className="text-2xs font-sans text-text-muted">
-            {product.code}
+            Ürün Kodu: {product.code}
           </Text>
           <Text
             className="text-base font-sans-medium text-text-primary"
@@ -162,13 +171,15 @@ export const ProductCard = memo(function ProductCard({
           >
             {product.name}
           </Text>
-          <View style={{ height: 34 }}>
+          <View
+            style={{ height: 34, justifyContent: "flex-end", marginTop: 10 }}
+          >
             {originalPrice && (
-              <Text className="text-xs text-text-muted line-through">
+              <Text className="text-base text-text-muted line-through">
                 {Number(originalPrice).toFixed(2)}₺
               </Text>
             )}
-            <Text className="text-md font-sans-bold text-price-red">
+            <Text className="text-xl font-sans-bold">
               {Number(displayPrice).toFixed(2)}₺
             </Text>
           </View>
@@ -181,7 +192,9 @@ export const ProductCard = memo(function ProductCard({
             disabled={outOfStock}
             activeOpacity={0.85}
           >
-            <Text className={`text-xs font-sans-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}>
+            <Text
+              className={`text-xs font-sans-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}
+            >
               {outOfStock ? "Stokta Yok" : "Seçenek Seç"}
             </Text>
           </TouchableOpacity>
@@ -197,7 +210,12 @@ export const ProductCard = memo(function ProductCard({
               {cartItem.quantity === 1 ? (
                 <Ionicons name="trash-outline" size={13} color="white" />
               ) : (
-                <Text className="text-white font-sans-bold text-lg" style={{ lineHeight: 20 }}>−</Text>
+                <Text
+                  className="text-white font-sans-bold text-lg"
+                  style={{ lineHeight: 20 }}
+                >
+                  −
+                </Text>
               )}
             </TouchableOpacity>
             <Text
@@ -213,7 +231,12 @@ export const ProductCard = memo(function ProductCard({
                 className="flex-1 bg-primary items-center justify-center"
                 onPress={handleIncrease}
               >
-                <Text className="text-white font-sans-bold text-lg" style={{ lineHeight: 20 }}>+</Text>
+                <Text
+                  className="text-white font-sans-bold text-lg"
+                  style={{ lineHeight: 20 }}
+                >
+                  +
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -224,7 +247,9 @@ export const ProductCard = memo(function ProductCard({
             disabled={outOfStock}
             activeOpacity={0.85}
           >
-            <Text className={`text-xs font-sans-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}>
+            <Text
+              className={`text-xs font-sans-semibold ${outOfStock ? "text-text-muted" : "text-white"}`}
+            >
               {outOfStock ? "Stokta Yok" : "Sepete Ekle"}
             </Text>
           </TouchableOpacity>
