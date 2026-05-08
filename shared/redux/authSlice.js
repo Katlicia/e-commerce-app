@@ -17,6 +17,21 @@ export const fetchMe = createAsyncThunk("auth/fetchMe", async (_, { rejectWithVa
   }
 });
 
+export const checkPhone = createAsyncThunk(
+  "auth/checkPhone",
+  async (phone, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosInstance.post("/check-phone", { phone });
+      return data;
+    } catch (err) {
+      return rejectWithValue({
+        message: err.response?.data?.message || "Kontrol edilemedi.",
+        status: err.response?.status ?? 0,
+      });
+    }
+  },
+);
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (formData, { rejectWithValue }) => {
@@ -25,7 +40,10 @@ export const loginUser = createAsyncThunk(
       storage.setItem("user", JSON.stringify(data));
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Giriş başarısız.");
+      return rejectWithValue({
+        message: err.response?.data?.message || "Giriş başarısız.",
+        status: err.response?.status ?? 0,
+      });
     }
   },
 );
@@ -80,7 +98,9 @@ const authSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearError: (state) => { state.error = null; },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(hydrateAuth.fulfilled, (state, action) => {
@@ -98,6 +118,16 @@ const authSlice = createSlice({
         state.user = null;
         state.initialized = true;
       })
+      .addCase(checkPhone.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkPhone.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(checkPhone.rejected, (state) => {
+        state.loading = false;
+      })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -108,7 +138,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload?.message ?? action.payload;
       })
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
@@ -155,4 +185,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
