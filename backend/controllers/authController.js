@@ -56,6 +56,17 @@ exports.register = async (req, res) => {
   });
 };
 
+exports.checkPhone = async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ message: "Telefon numarası gerekli." });
+
+  const user = await User.findOne({ phone });
+  if (user) {
+    return res.status(200).json({ exists: true });
+  }
+  return res.status(404).json({ exists: false });
+};
+
 exports.login = async (req, res) => {
   const { email, phone, password } = req.body;
 
