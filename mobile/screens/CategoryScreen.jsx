@@ -330,7 +330,7 @@ export default function CategoryScreen() {
             gap: GAP,
             marginBottom: GAP,
           }}
-          contentContainerStyle={{ paddingVertical: 8 }}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: insets.bottom + 8 }}
           showsVerticalScrollIndicator={false}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.4}
