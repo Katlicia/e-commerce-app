@@ -99,9 +99,7 @@ export default function HomeProductList({ title, settings = {} }) {
 
   const renderItem = useCallback(
     ({ item }) =>
-      item.__banner ? (
-        <BannerCard image={item.url} />
-      ) : (
+      item.__banner ? null : (
         <ProductCard product={item} overrideBadge={overrideBadge} />
       ),
     [overrideBadge],
@@ -133,7 +131,7 @@ export default function HomeProductList({ title, settings = {} }) {
               navigation.navigate("ProductList", { filter: settings })
             }
           >
-            <Text className="text-sm text-primary underline">Tümünü Gör</Text>
+            <Text className="text-sm text-primary underline">Tümü</Text>
           </TouchableOpacity>
         )}
       </View>

@@ -67,11 +67,13 @@ function CategorySection({ title, image, filterType, filterValue }) {
   return (
     <View className="mb-2">
       <View className="flex-row items-center justify-between px-4 mb-2">
-        <Text className="text-md font-bold text-text-primary">{title}</Text>
+        <Text className="text-2xl font-bold text-text-primary">{title}</Text>
         <TouchableOpacity
-          onPress={() => navigation.navigate("ProductList", { filter: navFilter })}
+          onPress={() =>
+            navigation.navigate("ProductList", { filter: navFilter })
+          }
         >
-          <Text className="text-sm text-text-subtle font-semibold">Tümü</Text>
+          <Text className="text-sm text-primary underline">Tümü</Text>
         </TouchableOpacity>
       </View>
 
@@ -87,11 +89,7 @@ function CategorySection({ title, image, filterType, filterValue }) {
           contentContainerStyle={{ paddingHorizontal: 12 }}
           keyExtractor={(item, i) => (item.__banner ? "banner" : item._id)}
           renderItem={({ item }) =>
-            item.__banner ? (
-              <BannerCard image={item.url} />
-            ) : (
-              <ProductCard product={item} />
-            )
+            item.__banner ? null : <ProductCard product={item} />
           }
         />
       )}
