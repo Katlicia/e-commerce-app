@@ -245,7 +245,12 @@ const cartSlice = createSlice({
     };
 
     builder
-      .addCase(fetchCart.fulfilled, applyCart)
+      .addCase(fetchCart.fulfilled, (state, action) => {
+        applyCart(state, action);
+        action.payload.forEach((i) => {
+          _syncedItems.add(`${i._id || i.id}|${i.skuId ?? ""}`);
+        });
+      })
       .addCase(hydrateCartFromStorage.fulfilled, (state, action) => {
         const { cart, bundleDiscounts } = action.payload;
         if (cart.length > 0 && state.cart.length === 0) {
@@ -255,9 +260,14 @@ const cartSlice = createSlice({
           state.bundleDiscounts = bundleDiscounts;
         }
       })
-      .addCase(syncAddToCart.fulfilled, applyCart)
-      .addCase(syncUpdateCart.fulfilled, applyCart)
-      .addCase(syncRemoveFromCart.fulfilled, applyCart)
+      .addCase(syncAddToCart.fulfilled, (state, action) => {
+        // Apply only for new items — subsequent updates use debounced PUT
+        // whose response we discard since local state is already correct.
+        applyCart(state, action);
+      })
+      // syncUpdateCart and syncRemoveFromCart: local state is already correct
+      // (debounce sends the final quantity; remove is applied instantly locally).
+      // Applying the server response would cause flicker on rapid operations.
       .addCase(syncClearCart.fulfilled, (state) => {
         state.cart = [];
         state.totalAmount = 0;
@@ -281,19 +291,66 @@ export const {
   removeBundleDiscount,
 } = cartSlice.actions;
 
-// Wrapper thunk's: update local state and if user is logged in sync on server
+// Items confirmed to exist on the server (initialized from localStorage so
+// items carried over from a previous session are treated as already synced).
+const _syncedItems = new Set(
+  getCartFromStorage().map((i) => `${i._id || i.id}|${i.skuId ?? ""}`),
+);
+
+// Debounce timers per item key. Fires 400 ms after the LAST press so that
+// a rapid burst sends only one PUT with the final quantity.
+const _syncTimers = Object.create(null);
+
+function _scheduleSyncUpdate(dispatch, getState, productId, skuId) {
+  const key = `${productId}|${skuId ?? ""}`;
+  clearTimeout(_syncTimers[key]);
+  _syncTimers[key] = setTimeout(() => {
+    delete _syncTimers[key];
+    const state = getState();
+    if (!state.auth.user) return;
+    const item = state.cart.cart.find((c) => {
+      if ((c._id || c.id) !== productId) return false;
+      if (skuId) return c.skuId === skuId;
+      return !c.skuId;
+    });
+    if (!item) {
+      _syncedItems.delete(key);
+      dispatch(syncRemoveFromCart({ productId, skuId }));
+    } else {
+      // PUT → sets the exact quantity, never increments
+      dispatch(syncUpdateCart({ productId, quantity: item.quantity, skuId }));
+    }
+  }, 400);
+}
+
+// Wrapper thunks: local state updates are instant; server sync is debounced.
 export const addToCartWithSync =
   (product, selectedVariants, skuId) => (dispatch, getState) => {
     const id = product._id || product.id;
+    const key = `${id}|${skuId ?? ""}`;
+    const isNewItem = !_syncedItems.has(key);
+
     dispatch(addToCart({ ...product, selectedVariants, skuId }));
-    if (getState().auth.user) {
-      dispatch(
-        syncAddToCart({ productId: id, quantity: 1, skuId, selectedVariants }),
-      );
+
+    if (!getState().auth.user) return;
+
+    if (isNewItem) {
+      // First add: POST creates the item on the server, mark as synced.
+      _syncedItems.add(key);
+      clearTimeout(_syncTimers[key]);
+      delete _syncTimers[key];
+      dispatch(syncAddToCart({ productId: id, quantity: 1, skuId, selectedVariants }));
+    } else {
+      // Item already exists on server: debounce a PUT with the final quantity.
+      _scheduleSyncUpdate(dispatch, getState, id, skuId);
     }
   };
 
 export const removeFromCartWithSync = (id, skuId) => (dispatch, getState) => {
+  const key = `${id}|${skuId ?? ""}`;
+  _syncedItems.delete(key);
+  clearTimeout(_syncTimers[key]);
+  delete _syncTimers[key];
   dispatch(removeFromCart({ id, skuId }));
   if (getState().auth.user) {
     dispatch(syncRemoveFromCart({ productId: id, skuId }));
@@ -324,21 +381,9 @@ export const mergeCartOnLogin = () => async (dispatch, getState) => {
 };
 
 export const decreaseCartWithSync = (id, skuId) => (dispatch, getState) => {
-  const currentQty =
-    getState().cart.cart.find((item) => {
-      if ((item._id || item.id) !== id) return false;
-      if (skuId) return item.skuId === skuId;
-      return !item.skuId;
-    })?.quantity ?? 0;
   dispatch(decreaseCart({ id, skuId }));
   if (getState().auth.user) {
-    if (currentQty <= 1) {
-      dispatch(syncRemoveFromCart({ productId: id, skuId }));
-    } else {
-      dispatch(
-        syncUpdateCart({ productId: id, quantity: currentQty - 1, skuId }),
-      );
-    }
+    _scheduleSyncUpdate(dispatch, getState, id, skuId);
   }
 };
 
