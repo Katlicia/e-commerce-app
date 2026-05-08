@@ -30,8 +30,9 @@ function CartTabIcon({ color, size }) {
   );
 }
 
-export default function MainTabs() {
+export default function MainTabs({ navigation }) {
   const insets = useSafeAreaInsets();
+  const user = useSelector((state) => state.auth.user);
 
   return (
     <Tab.Navigator
@@ -100,6 +101,14 @@ export default function MainTabs() {
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
+        listeners={{
+          tabPress: (e) => {
+            if (!user) {
+              e.preventDefault();
+              navigation.navigate("Login");
+            }
+          },
+        }}
         options={{
           tabBarLabel: "Hesabım",
           tabBarIcon: ({ color, size }) => (
