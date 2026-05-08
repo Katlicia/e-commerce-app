@@ -11,6 +11,8 @@ import FavouritesScreen from "../screens/FavouritesScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import EmailLoginScreen from "../screens/EmailLoginScreen";
+import PhoneRegisterScreen from "../screens/PhoneRegisterScreen";
 import CampaignDetailScreen from "../screens/CampaignDetailScreen";
 import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import AccountEditScreen from "../screens/AccountEditScreen";
@@ -55,6 +57,16 @@ export default function AppNavigator() {
         name="Register"
         component={RegisterScreen}
         options={{ animation: "slide_from_bottom" }}
+      />
+      <Stack.Screen
+        name="EmailLogin"
+        component={EmailLoginScreen}
+        options={{ animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="PhoneRegister"
+        component={PhoneRegisterScreen}
+        options={{ animation: "slide_from_right" }}
       />
       <Stack.Screen
         name="ForgotPassword"
