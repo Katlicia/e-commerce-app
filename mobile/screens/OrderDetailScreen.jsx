@@ -447,7 +447,7 @@ export default function OrderDetailScreen({ navigation, route }) {
               className="text-base font-sans-bold"
               style={{ color: "#ff7700" }}
             >
-              {fmt(order.totalAmount)} TL
+              {fmt(order.totalAmount + (order.cargoPrice ?? 0))} TL
             </Text>
           </View>
         </View>
