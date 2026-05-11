@@ -12,6 +12,7 @@ import taxSettingsReducer from "@mobile/shared/redux/taxSettingsSlice";
 import bannerReducer from "@mobile/shared/redux/bannerSlice";
 import homeSectionReducer from "@mobile/shared/redux/homeSectionSlice";
 import homeLayoutReducer from "@mobile/shared/redux/homeLayoutSlice";
+import questionReducer from "@mobile/shared/redux/questionSlice";
 
 export const store = configureStore({
   reducer: {
@@ -28,5 +29,6 @@ export const store = configureStore({
     banner: bannerReducer,
     homeSection: homeSectionReducer,
     homeLayout: homeLayoutReducer,
+    question: questionReducer,
   },
 });
