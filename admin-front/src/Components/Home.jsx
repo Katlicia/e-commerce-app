@@ -14,6 +14,7 @@ import FeaturedListsPanel from "./FeaturedListsPanel";
 import CampaignsPanel from "./CampaignsPanel";
 import HomeLayoutPanel from "./HomeLayoutPanel";
 import ListedProductsPanel from "./ListedProductsPanel";
+import QuestionsPanel from "./QuestionsPanel";
 
 const PAGES = {
   analytics: <Analytics />,
@@ -30,6 +31,7 @@ const PAGES = {
   campaigns: <CampaignsPanel />,
   homeLayout: <HomeLayoutPanel />,
   listedProducts: <ListedProductsPanel />,
+  questions: <QuestionsPanel />,
 };
 
 function Home() {
