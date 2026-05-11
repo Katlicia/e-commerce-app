@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -42,6 +42,7 @@ import { ProductCard } from "../components/ProductCard";
 import axiosInstance from "@mobile/shared/utils/axiosInstance";
 import { addLocalRecentlyViewed } from "@mobile/shared/utils/recentlyViewed";
 import AddToListModal from "../components/AddToListModal";
+import PriceAlarmModal from "../components/PriceAlarmModal";
 
 function maskName(name, surname) {
   const parts = [name, surname].filter(Boolean);
@@ -75,6 +76,18 @@ export default function ProductDetailScreen() {
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
+  const [priceAlarmModalVisible, setPriceAlarmModalVisible] = useState(false);
+  const [hasAlarm, setHasAlarm] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [questionText, setQuestionText] = useState("");
+  const [questionSubmitting, setQuestionSubmitting] = useState(false);
+  const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [answerTexts, setAnswerTexts] = useState({});
+  const [answerSubmitting, setAnswerSubmitting] = useState({});
+  const [showQuestionForm, setShowQuestionForm] = useState(false);
+
+  const scrollRef = useRef(null);
+  const [descY, setDescY] = useState(0);
 
   useEffect(() => {
     if (productId) {
@@ -83,7 +96,24 @@ export default function ProductDetailScreen() {
       setSelectedVariants({});
       setQuantity(1);
       setRelated([]);
+      setHasAlarm(false);
     }
+  }, [productId]);
+
+  useEffect(() => {
+    if (!productId || !user) return;
+    axiosInstance
+      .get(`/price-alarms/${productId}`)
+      .then((res) => setHasAlarm(res.data.hasAlarm))
+      .catch(() => {});
+  }, [productId, user]);
+
+  useEffect(() => {
+    if (!productId) return;
+    axiosInstance
+      .get(`/products/${productId}/questions`)
+      .then((res) => setQuestions(res.data))
+      .catch(() => {});
   }, [productId]);
 
   useEffect(() => {
@@ -275,6 +305,62 @@ export default function ProductDetailScreen() {
     dispatch(getProductDetail(productId));
   }
 
+  async function handleQuestionSubmit() {
+    if (!questionText.trim()) return;
+    setQuestionSubmitting(true);
+    try {
+      const res = await axiosInstance.post(`/products/${pid}/questions`, {
+        question: questionText.trim(),
+      });
+      setQuestions((prev) => [res.data, ...prev]);
+      setQuestionText("");
+    } catch (_) {
+    } finally {
+      setQuestionSubmitting(false);
+    }
+  }
+
+  async function handleAnswerSubmit(questionId) {
+    const text = answerTexts[questionId]?.trim();
+    if (!text) return;
+    setAnswerSubmitting((prev) => ({ ...prev, [questionId]: true }));
+    try {
+      const res = await axiosInstance.post(
+        `/products/${pid}/questions/${questionId}/answers`,
+        { answer: text },
+      );
+      setQuestions((prev) =>
+        prev.map((q) => (q._id === questionId ? res.data : q)),
+      );
+      setAnswerTexts((prev) => ({ ...prev, [questionId]: "" }));
+    } catch (_) {
+    } finally {
+      setAnswerSubmitting((prev) => ({ ...prev, [questionId]: false }));
+    }
+  }
+
+  async function handleDeleteQuestion(questionId) {
+    try {
+      await axiosInstance.delete(`/products/${pid}/questions/${questionId}`);
+      setQuestions((prev) => prev.filter((q) => q._id !== questionId));
+    } catch (_) {}
+  }
+
+  async function handleDeleteAnswer(questionId, answerId) {
+    try {
+      await axiosInstance.delete(
+        `/products/${pid}/questions/${questionId}/answers/${answerId}`,
+      );
+      setQuestions((prev) =>
+        prev.map((q) =>
+          q._id === questionId
+            ? { ...q, answers: q.answers.filter((a) => a._id !== answerId) }
+            : q,
+        ),
+      );
+    } catch (_) {}
+  }
+
   function handleAddToCart() {
     for (let i = 0; i < quantity; i++) {
       dispatch(
@@ -304,6 +390,7 @@ export default function ProductDetailScreen() {
                 isFavourite
                   ? dispatch(removeFromFavouritesWithSync(pid))
                   : dispatch(addToFavouritesWithSync(product)),
+              tint: isFavourite ? "#ff7700" : undefined,
             },
             {
               image: icons.list,
@@ -318,9 +405,16 @@ export default function ProductDetailScreen() {
             {
               image: icons.bell,
               label: "FİYAT\nALARMI",
-              onPress: () => {},
+              onPress: () => {
+                if (!user) {
+                  navigation.navigate("Login");
+                } else {
+                  setPriceAlarmModalVisible(true);
+                }
+              },
+              tint: hasAlarm ? "#ff7700" : undefined,
             },
-          ].map(({ image, label, onPress }) => (
+          ].map(({ image, label, onPress, tint }) => (
             <TouchableOpacity
               key={label}
               className="items-center gap-1"
@@ -329,7 +423,7 @@ export default function ProductDetailScreen() {
             >
               <Image
                 source={image}
-                style={{ width: 24, height: 24 }}
+                style={{ width: 24, height: 24, tintColor: tint }}
                 resizeMode="contain"
               />
               <Text
@@ -347,7 +441,7 @@ export default function ProductDetailScreen() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false}>
         {/* Image area */}
         <View className="relative bg-white px-4 pt-3 pb-5">
           {product.badge && (
@@ -582,7 +676,12 @@ export default function ProductDetailScreen() {
               ))}
               {(features.length > 0 || product.description) && (
                 <TouchableOpacity
-                  onPress={() => setShowDesc((v) => !v)}
+                  onPress={() => {
+                    setShowDesc(true);
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({ y: descY, animated: true });
+                    }, 50);
+                  }}
                   className="mt-1"
                 >
                   <Text
@@ -600,152 +699,214 @@ export default function ProductDetailScreen() {
           )}
         </View>
 
-        {/* Accordion rows */}
-        <View style={{ borderTopWidth: 1, borderColor: "#f0f0f0" }}>
-          {/* Product Description */}
-          {(product.description || product.descriptionImages?.length > 0) && (
-            <>
-              <TouchableOpacity
-                className="flex-row items-center justify-between px-4 py-4"
-                style={{ borderBottomWidth: 1, borderColor: "#f0f0f0" }}
-                onPress={() => setShowDesc((v) => !v)}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#212529",
-                  }}
-                >
-                  Ürün Açıklaması
-                </Text>
-                <Ionicons
-                  name={showDesc ? "chevron-down" : "chevron-forward"}
-                  size={18}
-                  color="#adb5bd"
-                />
-              </TouchableOpacity>
-              {showDesc && (
-                <View
-                  style={{
-                    borderBottomWidth: 1,
-                    borderColor: "#f0f0f0",
-                    paddingHorizontal: 16,
-                    paddingTop: 12,
-                    paddingBottom: 16,
-                    gap: 12,
-                  }}
-                >
-                  {product.description && (
-                    <Text
-                      style={{ fontSize: 13, color: "#424040", lineHeight: 20 }}
-                    >
-                      {product.description}
-                    </Text>
-                  )}
-                  {product.descriptionImages?.map((img, i) => (
-                    <Image
-                      key={i}
-                      source={{ uri: img.url }}
-                      style={{ width: "100%", height: 200, borderRadius: 8 }}
-                      resizeMode="cover"
-                    />
-                  ))}
-                </View>
-              )}
-            </>
-          )}
-
-          {/* Product Features */}
-          {features.length > 0 && (
-            <>
-              <TouchableOpacity
-                className="flex-row items-center justify-between px-4 py-4"
-                style={{ borderBottomWidth: 1, borderColor: "#f0f0f0" }}
-                onPress={() => setShowSpecs((v) => !v)}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#212529",
-                  }}
-                >
-                  Ürün Özellikleri
-                </Text>
-                <Ionicons
-                  name={showSpecs ? "chevron-down" : "chevron-forward"}
-                  size={18}
-                  color="#adb5bd"
-                />
-              </TouchableOpacity>
-              {showSpecs && (
-                <View
-                  className="px-4 pb-4"
-                  style={{
-                    borderBottomWidth: 1,
-                    borderColor: "#f0f0f0",
-                    paddingTop: 12,
-                    gap: 6,
-                  }}
-                >
-                  {features.map((f, i) => (
-                    <View key={i} className="flex-row gap-2">
-                      <Text style={{ color: "#6c757d", fontSize: 13 }}>•</Text>
-                      <Text style={{ flex: 1, fontSize: 13, color: "#424040" }}>
-                        {f}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </>
-          )}
-        </View>
-
-        {/* Suggested Products */}
-        {(related.length > 0 || bestSellers.length > 0) && (
-          <View className="pt-5">
-            <View className="flex-row items-center justify-between px-4 mb-3">
-              <Text
-                style={{ fontSize: 16, fontWeight: "700", color: "#212529" }}
-              >
-                {related.length > 0 ? "Lazım Olabilir" : "Çok Satanlar"}
-              </Text>
-              {related.length > 0 && (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("ProductList", {
-                      filter: {
-                        category: product.category?.slug || product.category,
-                      },
-                    })
-                  }
-                >
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: "#ff7700",
-                      fontWeight: "600",
-                      textDecorationLine: "underline",
-                    }}
-                  >
-                    Tümü
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 12 }}
+        {/* Q&A */}
+        <View className="pt-5 pb-2">
+          {/* Header */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: 16,
+              marginBottom: 14,
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#212529" }}>
+              Soru Cevaplar
+            </Text>
+            <TouchableOpacity
+              onPress={() =>
+                user
+                  ? setShowQuestionForm((v) => !v)
+                  : navigation.navigate("Login")
+              }
+              style={{
+                backgroundColor: "#fff0ed",
+                borderRadius: 7,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
             >
-              {(related.length > 0 ? related : bestSellers).map((item) => (
-                <ProductCard key={item._id} product={item} />
-              ))}
-            </ScrollView>
+              <Text
+                style={{ fontSize: 13, color: "#F83B0A", fontWeight: "600" }}
+              >
+                + Soru Sor
+              </Text>
+            </TouchableOpacity>
           </View>
-        )}
+
+          {/* Question form */}
+          {showQuestionForm && user && (
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginBottom: 14,
+                flexDirection: "row",
+                gap: 8,
+              }}
+            >
+              <TextInput
+                style={{
+                  flex: 1,
+                  borderWidth: 1,
+                  borderColor: "#dee2e6",
+                  borderRadius: 8,
+                  paddingHorizontal: 12,
+                  paddingVertical: 10,
+                  fontSize: 13,
+                  color: "#212529",
+                  backgroundColor: "#fafafa",
+                }}
+                placeholder="Sorunuzu yazın..."
+                placeholderTextColor="#adb5bd"
+                value={questionText}
+                onChangeText={setQuestionText}
+              />
+              <TouchableOpacity
+                onPress={async () => {
+                  await handleQuestionSubmit();
+                  setShowQuestionForm(false);
+                }}
+                disabled={questionSubmitting}
+                style={{
+                  backgroundColor: "#F83B0A",
+                  borderRadius: 8,
+                  paddingHorizontal: 14,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {questionSubmitting ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Ionicons name="send" size={16} color="white" />
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Horizontal cards — answered questions + user's own */}
+          {(() => {
+            const visible = questions.filter((q) => {
+              if (q.answers.length > 0) return true;
+              return (
+                user &&
+                q.user?.toString() === (user._id?.toString() ?? user._id)
+              );
+            });
+            if (visible.length === 0) return null;
+            return (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+              >
+                {visible.map((q) => {
+                  const isMyQuestion =
+                    user &&
+                    q.user?.toString() === (user._id?.toString() ?? user._id);
+                  const firstAnswer = q.answers[0] ?? null;
+                  return (
+                    <View
+                      key={q._id}
+                      style={{
+                        width: 230,
+                        borderWidth: 1,
+                        borderColor: "#f0f0f0",
+                        borderRadius: 12,
+                        padding: 14,
+                        backgroundColor: "#F5F5F5",
+                      }}
+                    >
+                      {/* Delete button for own/admin */}
+                      {(isMyQuestion || user?.isAdmin) && (
+                        <TouchableOpacity
+                          onPress={() => handleDeleteQuestion(q._id)}
+                          style={{ position: "absolute", top: 10, right: 10 }}
+                          hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                        >
+                          <Ionicons
+                            name="trash-outline"
+                            size={14}
+                            color="#dee2e6"
+                          />
+                        </TouchableOpacity>
+                      )}
+
+                      {/* Question */}
+                      <Text
+                        className={"text-secondary"}
+                        style={{
+                          fontSize: 13,
+                          fontWeight: "700",
+                          lineHeight: 19,
+                          marginBottom: 6,
+                          paddingRight: 16,
+                        }}
+                        numberOfLines={3}
+                      >
+                        {q.question}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          color: "#adb5bd",
+                          marginBottom: firstAnswer ? 10 : 0,
+                        }}
+                      >
+                        {maskName(q.name, q.surname)}{"  "}
+                        {new Date(q.createdAt).toLocaleDateString("tr-TR", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </Text>
+
+                      {/* Answer */}
+                      {firstAnswer ? (
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            gap: 6,
+                            alignItems: "flex-start",
+                          }}
+                        >
+                          <Ionicons
+                            name="return-down-forward-outline"
+                            size={14}
+                            color="#adb5bd"
+                            style={{ marginTop: 3 }}
+                          />
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontSize: 13,
+                                color: "#424040",
+                                lineHeight: 18,
+                              }}
+                              numberOfLines={4}
+                            >
+                              {firstAnswer.answer}
+                            </Text>
+                          </View>
+                        </View>
+                      ) : (
+                        <Text
+                          style={{
+                            fontSize: 12,
+                            fontStyle: "italic",
+                          }}
+                        >
+                          Henüz yanıtlanmadı
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            );
+          })()}
+        </View>
 
         {/* Ratings */}
         <View className="pt-5 pb-6">
@@ -1048,6 +1209,146 @@ export default function ProductDetailScreen() {
             )}
           </View>
         </View>
+
+        {/* Suggested Products */}
+        {(related.length > 0 || bestSellers.length > 0) && (
+          <View className="pt-5">
+            <View className="flex-row items-center justify-between px-4 mb-3">
+              <Text
+                style={{ fontSize: 16, fontWeight: "700", color: "#212529" }}
+              >
+                {related.length > 0 ? "Lazım Olabilir" : "Çok Satanlar"}
+              </Text>
+              {related.length > 0 && (
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("ProductList", {
+                      filter: {
+                        category: product.category?.slug || product.category,
+                      },
+                    })
+                  }
+                >
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: "#ff7700",
+                      fontWeight: "600",
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    Tümü
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 12 }}
+            >
+              {(related.length > 0 ? related : bestSellers).map((item) => (
+                <ProductCard key={item._id} product={item} />
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Accordion: Description + Features */}
+        <View
+          style={{ borderTopWidth: 1, borderColor: "#f0f0f0", marginTop: 20 }}
+          onLayout={(e) => setDescY(e.nativeEvent.layout.y)}
+        >
+          {(product.description || product.descriptionImages?.length > 0) && (
+            <>
+              <TouchableOpacity
+                className="flex-row items-center justify-between px-4 py-4"
+                style={{ borderBottomWidth: 1, borderColor: "#f0f0f0" }}
+                onPress={() => setShowDesc((v) => !v)}
+              >
+                <Text
+                  style={{ fontSize: 14, fontWeight: "500", color: "#212529" }}
+                >
+                  Ürün Açıklaması
+                </Text>
+                <Ionicons
+                  name={showDesc ? "chevron-down" : "chevron-forward"}
+                  size={18}
+                  color="#adb5bd"
+                />
+              </TouchableOpacity>
+              {showDesc && (
+                <View
+                  style={{
+                    borderBottomWidth: 1,
+                    borderColor: "#f0f0f0",
+                    paddingHorizontal: 16,
+                    paddingTop: 12,
+                    paddingBottom: 16,
+                    gap: 12,
+                  }}
+                >
+                  {product.description && (
+                    <Text
+                      style={{ fontSize: 13, color: "#424040", lineHeight: 20 }}
+                    >
+                      {product.description}
+                    </Text>
+                  )}
+                  {product.descriptionImages?.map((img, i) => (
+                    <Image
+                      key={i}
+                      source={{ uri: img.url }}
+                      style={{ width: "100%", height: 200, borderRadius: 8 }}
+                      resizeMode="cover"
+                    />
+                  ))}
+                </View>
+              )}
+            </>
+          )}
+
+          {features.length > 0 && (
+            <>
+              <TouchableOpacity
+                className="flex-row items-center justify-between px-4 py-4"
+                style={{ borderBottomWidth: 1, borderColor: "#f0f0f0" }}
+                onPress={() => setShowSpecs((v) => !v)}
+              >
+                <Text
+                  style={{ fontSize: 14, fontWeight: "500", color: "#212529" }}
+                >
+                  Ürün Özellikleri
+                </Text>
+                <Ionicons
+                  name={showSpecs ? "chevron-down" : "chevron-forward"}
+                  size={18}
+                  color="#adb5bd"
+                />
+              </TouchableOpacity>
+              {showSpecs && (
+                <View
+                  className="px-4 pb-4"
+                  style={{
+                    borderBottomWidth: 1,
+                    borderColor: "#f0f0f0",
+                    paddingTop: 12,
+                    gap: 6,
+                  }}
+                >
+                  {features.map((f, i) => (
+                    <View key={i} className="flex-row gap-2">
+                      <Text style={{ color: "#6c757d", fontSize: 13 }}>•</Text>
+                      <Text style={{ flex: 1, fontSize: 13, color: "#424040" }}>
+                        {f}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </>
+          )}
+        </View>
       </ScrollView>
 
       {/* Bottom cart bar */}
@@ -1214,6 +1515,14 @@ export default function ProductDetailScreen() {
         visible={listModalVisible}
         onClose={() => setListModalVisible(false)}
         product={product}
+      />
+
+      <PriceAlarmModal
+        visible={priceAlarmModalVisible}
+        onClose={() => setPriceAlarmModalVisible(false)}
+        product={product}
+        hasAlarm={hasAlarm}
+        onAlarmChange={(val) => setHasAlarm(val)}
       />
     </SafeAreaView>
   );
