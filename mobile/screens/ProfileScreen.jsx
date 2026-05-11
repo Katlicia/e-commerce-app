@@ -71,7 +71,7 @@ export default function ProfileScreen({ navigation }) {
           },
           { label: "Siparişler", icon: "bag-outline", screen: "Orders" },
           { label: "Mesajlar", icon: "chatbubble-outline" },
-          { label: "Soru Cevap", icon: "help-circle-outline" },
+          { label: "Soru Cevap", icon: "help-circle-outline", screen: "Questions" },
           { label: "Kurumsal Teklif", icon: "business-outline" },
           { label: "Fiyat Alarmlarım", icon: "notifications-outline" },
           {
