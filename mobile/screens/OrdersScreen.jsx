@@ -129,7 +129,7 @@ function OrderCard({ order, onPress }) {
         </View>
 
         <Text className="text-sm">
-          <Text>Toplam Tutar: {fmt(order.totalAmount)} TL</Text>
+          <Text>Toplam Tutar: {fmt(order.totalAmount + (order.cargoPrice ?? 0))} TL</Text>
           {paymentLabel ? ` / ${paymentLabel}` : ""}
         </Text>
       </TouchableOpacity>
