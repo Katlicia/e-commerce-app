@@ -3,6 +3,41 @@ const Category = require("../models/Category");
 const ProductFilter = require("../utils/productFilter");
 const cloudinary = require("cloudinary").v2;
 const mongoose = require("mongoose");
+const PriceAlarm = require("../models/PriceAlarm");
+const nodemailer = require("nodemailer");
+
+async function sendPriceDropEmails(productId, productName, oldPrice, newPrice) {
+  const alarms = await PriceAlarm.find({ product: productId });
+  if (alarms.length === 0) return;
+
+  const transporter = nodemailer.createTransport({
+    port: 465,
+    service: "gmail",
+    host: "smtp.gmail.com",
+    auth: { user: process.env.MAIL, pass: process.env.PASS },
+    secure: true,
+  });
+
+  const subject = `Fiyat Düştü: ${productName}`;
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #eee;border-radius:12px">
+      <h2 style="color:#ff7700;margin-bottom:8px">🔔 Fiyat Alarmı</h2>
+      <p style="color:#212529;font-size:15px">Fiyat alarmı kurduğunuz ürünün fiyatı düştü!</p>
+      <div style="background:#fff8f0;border-radius:8px;padding:16px;margin:16px 0">
+        <p style="margin:0;font-size:15px;font-weight:600;color:#212529">${productName}</p>
+        <p style="margin:8px 0 0;font-size:13px;color:#adb5bd;text-decoration:line-through">Eski fiyat: ${oldPrice.toFixed(2).replace(".", ",")}₺</p>
+        <p style="margin:4px 0 0;font-size:18px;font-weight:700;color:#ff7700">Yeni fiyat: ${newPrice.toFixed(2).replace(".", ",")}₺</p>
+      </div>
+      <p style="color:#6c757d;font-size:12px">Bu bildirimi fiyat alarmı kurduğunuz için alıyorsunuz.</p>
+    </div>
+  `;
+
+  for (const alarm of alarms) {
+    try {
+      await transporter.sendMail({ from: process.env.MAIL, to: alarm.email, subject, html });
+    } catch (_) {}
+  }
+}
 
 async function getAllDescendantIds(categoryId) {
   const objectId = new mongoose.Types.ObjectId(categoryId);
@@ -369,6 +404,15 @@ exports.updateProduct = async (req, res) => {
       returnDocument: "after",
       runValidators: true,
     });
+
+    const oldEffectivePrice = current.discountedPrice ?? current.price;
+    const newEffectivePrice = updateFields.discountedPrice != null
+      ? updateFields.discountedPrice
+      : (price > 0 ? price : current.price);
+
+    if (newEffectivePrice < oldEffectivePrice) {
+      sendPriceDropEmails(req.params.id, current.name, oldEffectivePrice, newEffectivePrice).catch(() => {});
+    }
 
     res.json({ message: "Ürün güncellendi" });
   } catch (err) {
