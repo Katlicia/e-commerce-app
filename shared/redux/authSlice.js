@@ -32,12 +32,18 @@ export const checkPhone = createAsyncThunk(
   },
 );
 
+const persistUser = (data) => {
+  const isWeb = typeof localStorage !== "undefined";
+  const { token, ...userWithoutToken } = data;
+  storage.setItem("user", JSON.stringify(isWeb ? userWithoutToken : data));
+};
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (formData, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/login", formData);
-      storage.setItem("user", JSON.stringify(data));
+      persistUser(data);
       return data;
     } catch (err) {
       return rejectWithValue({
@@ -53,7 +59,7 @@ export const registerUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/register", formData);
-      storage.setItem("user", JSON.stringify(data));
+      persistUser(data);
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Kayıt başarısız.");
@@ -180,7 +186,7 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload;
-        storage.setItem("user", JSON.stringify(action.payload));
+        persistUser(action.payload);
       });
   },
 });

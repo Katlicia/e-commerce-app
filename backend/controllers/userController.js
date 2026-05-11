@@ -20,30 +20,37 @@ exports.getUserDetail = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  const user = await User.findById(req.params.id);
-
-  if (user) {
-    user.name = req.body.name || user.name;
-    user.surname = req.body.surname || user.surname;
-    if (req.body.email !== undefined) user.email = req.body.email || undefined;
-    if (req.body.phone !== undefined) user.phone = req.body.phone || undefined;
-    if (req.body.isAdmin !== undefined) user.isAdmin = req.body.isAdmin;
-
-    const updatedUser = await user.save();
-    res.status(200).json(updatedUser);
-  } else {
-    res.status(404).json({ message: "Kullanıcı bulunamadı" });
+  const isOwner = req.user._id.toString() === req.params.id;
+  if (!isOwner && !req.user.isAdmin) {
+    return res.status(403).json({ message: "Yetkisiz işlem." });
   }
+
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+
+  user.name = req.body.name || user.name;
+  user.surname = req.body.surname || user.surname;
+  if (req.body.email !== undefined) user.email = req.body.email || undefined;
+  if (req.body.phone !== undefined) user.phone = req.body.phone || undefined;
+  if (req.body.isAdmin !== undefined && req.user.isAdmin) {
+    user.isAdmin = req.body.isAdmin;
+  }
+
+  const updatedUser = await user.save();
+  res.status(200).json(updatedUser);
 };
 
 exports.deleteUser = async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (user) {
-    await user.deleteOne();
-    res.status(200).json({ message: "Kullanıcı silindi" });
-  } else {
-    res.status(404).json({ message: "Kullanıcı bulunamadı" });
+  const isOwner = req.user._id.toString() === req.params.id;
+  if (!isOwner && !req.user.isAdmin) {
+    return res.status(403).json({ message: "Yetkisiz işlem." });
   }
+
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+
+  await user.deleteOne();
+  res.status(200).json({ message: "Kullanıcı silindi" });
 };
 
 exports.addUserAddresses = async (req, res) => {

@@ -67,8 +67,35 @@ exports.createPayment = async (req, res) => {
       }
     }
 
+    const productIds = items.map((i) => i.product);
+    const dbProducts = await Product.find({ _id: { $in: productIds } }).select(
+      "price discountedPrice skus"
+    );
+    const productMap = Object.fromEntries(dbProducts.map((p) => [p._id.toString(), p]));
+
+    let calculatedTotal = 0;
+    for (const item of items) {
+      const dbProduct = productMap[item.product?.toString()];
+      if (!dbProduct) {
+        return res.status(400).json({ message: `Ürün bulunamadı: ${item.product}` });
+      }
+      let unitPrice;
+      if (item.skuId) {
+        const sku = dbProduct.skus?.find((s) => s._id.toString() === item.skuId.toString());
+        unitPrice = sku?.discountedPrice ?? sku?.price ?? dbProduct.discountedPrice ?? dbProduct.price;
+      } else {
+        unitPrice = dbProduct.discountedPrice ?? dbProduct.price;
+      }
+      calculatedTotal += unitPrice * item.quantity;
+    }
+    calculatedTotal = +calculatedTotal.toFixed(2);
+
+    if (Math.abs(calculatedTotal - totalAmount) > 0.02) {
+      return res.status(400).json({ message: "Sipariş tutarı doğrulanamadı." });
+    }
+
     const effectiveCargoPrice = cargoPrice ?? 0;
-    const price = +(totalAmount + effectiveCargoPrice).toFixed(2);
+    const price = +(calculatedTotal + effectiveCargoPrice).toFixed(2);
     const multiplier = INSTALLMENT_MULTIPLIERS[installment] ?? 1;
     const paidPrice = +(price * multiplier).toFixed(2);
 
@@ -329,14 +356,10 @@ exports.adminRefundPayment = async (req, res) => {
     };
 
     iyzipay.refund.create(refundRequest, async (err, result) => {
-      console.log("[adminRefundPayment] Iyzico result:", JSON.stringify(result));
       if (err) return res.status(500).json({ message: "Ödeme servisine ulaşılamadı." });
       if (result.status !== "success") {
-        console.error("[adminRefundPayment] Iyzico error:", JSON.stringify(result));
         return res.status(400).json({
           message: result.errorMessage || "İade işlemi başarısız.",
-          iyzicoErrorCode: result.errorCode,
-          iyzicoErrorGroup: result.errorGroup,
         });
       }
       try {

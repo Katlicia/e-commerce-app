@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
 const db = require("./config/db");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -56,6 +57,25 @@ app.use(
 app.use(express.json({ limit: "20mb" }));
 app.use(express.urlencoded({ limit: "20mb", extended: true }));
 app.use(cookieParser());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: "Çok fazla istek gönderildi. Lütfen 15 dakika sonra tekrar deneyin." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/login", authLimiter);
+app.use("/register", authLimiter);
+app.use("/forgetPassword", authLimiter);
+app.use("/check-phone", authLimiter);
+app.use("/api/payment", rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { message: "Çok fazla ödeme isteği. Lütfen bir dakika bekleyin." },
+  standardHeaders: true,
+  legacyHeaders: false,
+}));
 
 db();
 

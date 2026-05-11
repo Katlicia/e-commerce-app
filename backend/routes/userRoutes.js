@@ -13,11 +13,11 @@ const {
   visitProduct,
   getVisitedProducts,
 } = require("../controllers/userController");
-const { authenticationMiddle } = require("../middleware/auth");
+const { authenticationMiddle, isAdmin } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.get("/users", authenticationMiddle, getUsers);
+router.get("/users", authenticationMiddle, isAdmin, getUsers);
 router.get("/users/me", authenticationMiddle, getUserDetail);
 router.get("/users/me/addresses", authenticationMiddle, getUserAddresses);
 router.post("/users/me/addresses", authenticationMiddle, addUserAddresses);
@@ -26,7 +26,7 @@ router.delete("/users/me/addresses/:index", authenticationMiddle, deleteUserAddr
 router.put("/users/me/password", authenticationMiddle, changePassword);
 router.post("/users/me/visited/:id", authenticationMiddle, visitProduct);
 router.get("/users/me/visited", authenticationMiddle, getVisitedProducts);
-router.get("/users/:id", getUserById);
+router.get("/users/:id", authenticationMiddle, isAdmin, getUserById);
 router.put("/users/:id", authenticationMiddle, updateUser);
 router.delete("/users/:id", authenticationMiddle, deleteUser);
 

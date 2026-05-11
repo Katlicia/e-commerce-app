@@ -43,6 +43,8 @@ exports.register = async (req, res) => {
 
   const cookieOptions = {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   };
 
@@ -163,7 +165,7 @@ exports.forgetPassword = async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) {
-    return res.status(404).json({ message: "Kullanıcı bulunamadı." });
+    return res.status(200).json({ message: "E-Postanızı kontrol edin." });
   }
 
   const resetToken = crypto.randomBytes(20).toString("hex");
@@ -253,6 +255,8 @@ exports.resetPassword = async (req, res) => {
 
   const cookieOptions = {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   };
 
