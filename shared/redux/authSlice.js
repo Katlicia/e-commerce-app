@@ -3,11 +3,6 @@ import axiosInstance from "../utils/axiosInstance";
 import { storage } from "../utils/storage";
 import { updateUser } from "./userSlice";
 
-export const hydrateAuth = createAsyncThunk("auth/hydrate", async () => {
-  const raw = await storage.getItem("user");
-  return raw ? JSON.parse(raw) : null;
-});
-
 export const fetchMe = createAsyncThunk("auth/fetchMe", async (_, { rejectWithValue }) => {
   try {
     const { data } = await axiosInstance.get("/me");
@@ -32,10 +27,14 @@ export const checkPhone = createAsyncThunk(
   },
 );
 
-const persistUser = (data) => {
-  const isWeb = typeof localStorage !== "undefined";
-  const { token, ...userWithoutToken } = data;
-  storage.setItem("user", JSON.stringify(isWeb ? userWithoutToken : data));
+const isWeb = typeof localStorage !== "undefined";
+
+const persistToken = (token) => {
+  if (!isWeb && token) storage.setItem("token", token);
+};
+
+const clearToken = () => {
+  if (!isWeb) storage.removeItem("token");
 };
 
 export const loginUser = createAsyncThunk(
@@ -43,7 +42,7 @@ export const loginUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/login", formData);
-      persistUser(data);
+      persistToken(data.token);
       return data;
     } catch (err) {
       return rejectWithValue({
@@ -59,7 +58,7 @@ export const registerUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/register", formData);
-      persistUser(data);
+      persistToken(data.token);
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Kayıt başarısız.");
@@ -69,7 +68,7 @@ export const registerUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   await axiosInstance.get("/logout");
-  storage.removeItem("user");
+  clearToken();
 });
 
 export const resetPassword = createAsyncThunk(
@@ -109,13 +108,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(hydrateAuth.fulfilled, (state, action) => {
-        state.user = action.payload;
-        state.initialized = true;
-      })
-      .addCase(hydrateAuth.rejected, (state) => {
-        state.initialized = true;
-      })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.user = action.payload;
         state.initialized = true;
@@ -186,7 +178,6 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.fulfilled, (state, action) => {
         state.user = action.payload;
-        persistUser(action.payload);
       });
   },
 });

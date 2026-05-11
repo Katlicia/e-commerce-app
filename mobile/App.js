@@ -23,7 +23,7 @@ import {
   setBearerToken,
 } from "@mobile/shared/utils/axiosInstance";
 import { configureStorage } from "@mobile/shared/utils/storage";
-import { hydrateAuth } from "@mobile/shared/redux/authSlice";
+import { fetchMe } from "@mobile/shared/redux/authSlice";
 import {
   fetchFavourites,
   hydrateFavouritesFromStorage,
@@ -61,10 +61,12 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    dispatch(hydrateAuth()).then(async (action) => {
-      const user = action.payload;
-      if (user) {
-        setBearerToken(user.token ?? null);
+    (async () => {
+      const token = await AsyncStorage.getItem("token");
+      if (token) setBearerToken(token);
+
+      const action = await dispatch(fetchMe());
+      if (action.payload) {
         await dispatch(hydrateCartFromStorage());
         dispatch(fetchFavourites());
         dispatch(fetchCart());
@@ -73,7 +75,7 @@ function AppContent() {
         dispatch(hydrateFavouritesFromStorage());
         dispatch(hydrateCartFromStorage());
       }
-    });
+    })();
   }, [dispatch]);
 
   if (!initialized) {
