@@ -17,6 +17,7 @@ import {
   TbSpeakerphone,
   TbLayoutDashboard,
   TbListCheck,
+  TbMessageCircleQuestion,
 } from "react-icons/tb";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -70,6 +71,12 @@ const MENU_ITEMS = [
     key: "listedProducts",
     label: "Ürün Listeleri",
     icon: <TbListCheck />,
+    path: "/",
+  },
+  {
+    key: "questions",
+    label: "Soru & Cevap",
+    icon: <TbMessageCircleQuestion />,
     path: "/",
   },
 ];
