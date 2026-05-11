@@ -720,7 +720,7 @@ export default function CheckoutScreen() {
                           {opt.label}
                         </Text>
                         <Text className="text-md font-sans-bold text-text-primary">
-                          {fmt(finalAmount * opt.multiplier)}₺
+                          {fmt((finalAmount + (effectiveCargoPrice ?? 0)) * opt.multiplier)}₺
                         </Text>
                       </TouchableOpacity>
                     ))}
