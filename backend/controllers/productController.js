@@ -5,6 +5,7 @@ const cloudinary = require("cloudinary").v2;
 const mongoose = require("mongoose");
 const PriceAlarm = require("../models/PriceAlarm");
 const nodemailer = require("nodemailer");
+const logActivity = require("../utils/activityLogger");
 
 async function sendPriceDropEmails(productId, productName, oldPrice, newPrice) {
   const alarms = await PriceAlarm.find({ product: productId });
@@ -292,6 +293,7 @@ exports.createProduct = async (req, res) => {
 
   const product = await Product.create(req.body);
 
+  logActivity(req, "Oluşturuldu", "Ürün", product.name).catch(() => {});
   res.json(product);
 };
 
@@ -304,6 +306,7 @@ exports.deleteProduct = async (req, res) => {
     }
 
     await Product.deleteOne({ _id: product._id });
+    logActivity(req, "Silindi", "Ürün", product.name).catch(() => {});
     res.json({ message: "Ürün silindi" });
   } else {
     res.status(404).json({ message: "Ürün bulunamadı" });
@@ -414,6 +417,19 @@ exports.updateProduct = async (req, res) => {
       sendPriceDropEmails(req.params.id, current.name, oldEffectivePrice, newEffectivePrice).catch(() => {});
     }
 
+    const changes = [];
+    if (updateFields.name && updateFields.name !== current.name)
+      changes.push(`ad: "${current.name}" → "${updateFields.name}"`);
+    if (price > 0 && price !== current.price)
+      changes.push(`fiyat: ${current.price}₺ → ${price}₺`);
+    if (updateFields.discountPercent && updateFields.discountPercent !== current.discountPercent)
+      changes.push(`indirim: %${current.discountPercent || 0} → %${updateFields.discountPercent}`);
+    else if (!updateFields.discountPercent && current.discountPercent)
+      changes.push(`indirim kaldırıldı (%${current.discountPercent})`);
+    if (updateFields.stock !== undefined && updateFields.stock !== current.stock)
+      changes.push(`stok: ${current.stock} → ${updateFields.stock}`);
+    const updateDetail = `${current.name}${changes.length ? ` — ${changes.join(", ")}` : ""}`;
+    logActivity(req, "Güncellendi", "Ürün", updateDetail).catch(() => {});
     res.json({ message: "Ürün güncellendi" });
   } catch (err) {
     res.status(500).json({ message: err.message });

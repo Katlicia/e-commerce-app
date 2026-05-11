@@ -2,6 +2,7 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
+const logActivity = require("../utils/activityLogger");
 
 exports.createOrder = async (req, res) => {
   try {
@@ -186,6 +187,7 @@ exports.adminGetOrders = async (req, res) => {
 exports.adminUpdateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    const prev = await Order.findById(req.params.id).select("status");
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { status },
@@ -194,6 +196,7 @@ exports.adminUpdateOrderStatus = async (req, res) => {
       .populate("user", "name surname email")
       .populate("items.product", "name images");
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
+    logActivity(req, "Durum Güncellendi", "Sipariş", `${prev?.status} → ${status}`).catch(() => {});
     res.status(200).json({ success: true, order });
   } catch (err) {
     res.status(500).json({ message: err.message });

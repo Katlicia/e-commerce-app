@@ -1,4 +1,5 @@
 const ProductQuestion = require("../models/ProductQuestion");
+const logActivity = require("../utils/activityLogger");
 
 exports.getQuestions = async (req, res) => {
   try {
@@ -55,6 +56,7 @@ exports.createAnswer = async (req, res) => {
     q.isAnswered = true;
     await q.save();
 
+    logActivity(req, "Cevaplandı", "S&C", q.question.slice(0, 60)).catch(() => {});
     res.status(201).json(q);
   } catch (err) {
     res.status(500).json({ message: err.message });

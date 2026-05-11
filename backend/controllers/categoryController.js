@@ -1,5 +1,6 @@
 const Category = require("../models/Category");
 const Product = require("../models/Product");
+const logActivity = require("../utils/activityLogger");
 
 exports.getCategories = async (req, res) => {
   const [all, counts] = await Promise.all([
@@ -80,6 +81,7 @@ exports.createCategory = async (req, res) => {
     slug,
     parent: parent || null,
   });
+  logActivity(req, "Oluşturuldu", "Kategori", name).catch(() => {});
   res.json(category);
 };
 
@@ -133,6 +135,7 @@ exports.updateCategory = async (req, res) => {
     }
   }
 
+  logActivity(req, "Güncellendi", "Kategori", category.name).catch(() => {});
   res.json({ message: "Kategori güncellendi" });
 };
 
@@ -142,6 +145,6 @@ exports.deleteCategory = async (req, res) => {
     return res.status(404).json({ message: "Kategori bulunamadı." });
 
   await Category.deleteMany({ parent: req.params.id });
-
+  logActivity(req, "Silindi", "Kategori", category.name).catch(() => {});
   res.json({ message: "Kategori ve alt kategorileri silindi." });
 };

@@ -1,5 +1,6 @@
 const Coupon = require("../models/Coupon");
 const Order = require("../models/Order");
+const logActivity = require("../utils/activityLogger");
 
 // GET /coupons — list all coupons (admin)
 exports.getCoupons = async (req, res) => {
@@ -92,6 +93,7 @@ exports.createCoupon = async (req, res) => {
     usageLimit,
     expiryDate,
   });
+  logActivity(req, "Oluşturuldu", "Kupon", coupon.code).catch(() => {});
   res.status(201).json(coupon);
 };
 
@@ -102,6 +104,7 @@ exports.updateCoupon = async (req, res) => {
     runValidators: true,
   });
   if (!coupon) return res.status(404).json({ message: "Kupon bulunamadı." });
+  logActivity(req, "Güncellendi", "Kupon", coupon.code).catch(() => {});
   res.json(coupon);
 };
 
@@ -109,5 +112,6 @@ exports.updateCoupon = async (req, res) => {
 exports.deleteCoupon = async (req, res) => {
   const coupon = await Coupon.findByIdAndDelete(req.params.id);
   if (!coupon) return res.status(404).json({ message: "Kupon bulunamadı." });
+  logActivity(req, "Silindi", "Kupon", coupon.code).catch(() => {});
   res.json({ message: "Kupon silindi." });
 };
