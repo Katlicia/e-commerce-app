@@ -84,6 +84,17 @@ exports.deleteQuestion = async (req, res) => {
   }
 };
 
+exports.getUserQuestions = async (req, res) => {
+  try {
+    const questions = await ProductQuestion.find({ user: req.user._id })
+      .populate("product", "name images")
+      .sort({ createdAt: -1 });
+    res.json(questions);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.adminGetAllQuestions = async (req, res) => {
   try {
     const questions = await ProductQuestion.find()
