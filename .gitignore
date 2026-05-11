@@ -36,3 +36,5 @@ Thumbs.db
 todo.txt
 
 node_modules/
+
+.claude/
