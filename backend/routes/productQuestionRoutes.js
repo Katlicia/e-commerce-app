@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   getQuestions,
+  getUserQuestions,
   createQuestion,
   createAnswer,
   deleteQuestion,
@@ -12,6 +13,7 @@ const { authenticationMiddle, isAdmin } = require("../middleware/auth");
 const router = express.Router();
 
 router.get("/admin/questions", authenticationMiddle, isAdmin, adminGetAllQuestions);
+router.get("/users/me/questions", authenticationMiddle, getUserQuestions);
 router.get("/products/:productId/questions", getQuestions);
 router.post("/products/:productId/questions", authenticationMiddle, createQuestion);
 router.post("/products/:productId/questions/:questionId/answers", authenticationMiddle, createAnswer);
