@@ -18,6 +18,7 @@ import {
   TbLayoutDashboard,
   TbListCheck,
   TbMessageCircleQuestion,
+  TbActivityHeartbeat,
 } from "react-icons/tb";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -77,6 +78,12 @@ const MENU_ITEMS = [
     key: "questions",
     label: "Soru & Cevap",
     icon: <TbMessageCircleQuestion />,
+    path: "/",
+  },
+  {
+    key: "logs",
+    label: "Aktivite Logları",
+    icon: <TbActivityHeartbeat />,
     path: "/",
   },
 ];
