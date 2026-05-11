@@ -21,6 +21,7 @@ import ChangePasswordScreen from "../screens/ChangePasswordScreen";
 import ListsScreen from "../screens/ListsScreen";
 import ListDetailScreen from "../screens/ListDetailScreen";
 import ListedProductsScreen from "../screens/ListedProductsScreen";
+import QuestionsScreen from "../screens/QuestionsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +48,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Lists" component={ListsScreen} />
       <Stack.Screen name="ListDetail" component={ListDetailScreen} />
       <Stack.Screen name="ListedProducts" component={ListedProductsScreen} />
+      <Stack.Screen name="Questions" component={QuestionsScreen} />
       <Stack.Screen name="CampaignDetail" component={CampaignDetailScreen} />
       <Stack.Screen
         name="Login"
