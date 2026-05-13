@@ -27,6 +27,7 @@ const listedProductsRoutes = require("./routes/listedProductsRoutes");
 const priceAlarmRoutes = require("./routes/priceAlarmRoutes");
 const productQuestionRoutes = require("./routes/productQuestionRoutes");
 const activityLogRoutes = require("./routes/activityLogRoutes");
+const corporateOfferRoutes = require("./routes/corporateOfferRoutes");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -100,6 +101,7 @@ app.use("/", listedProductsRoutes);
 app.use("/", priceAlarmRoutes);
 app.use("/", productQuestionRoutes);
 app.use("/", activityLogRoutes);
+app.use("/", corporateOfferRoutes);
 
 app.get("/", (req, res) => {
   res.send("API working.");
