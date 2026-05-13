@@ -43,6 +43,7 @@ import axiosInstance from "@mobile/shared/utils/axiosInstance";
 import { addLocalRecentlyViewed } from "@mobile/shared/utils/recentlyViewed";
 import AddToListModal from "../components/AddToListModal";
 import PriceAlarmModal from "../components/PriceAlarmModal";
+import CorporateOfferModal from "../components/CorporateOfferModal";
 
 function maskName(name, surname) {
   const parts = [name, surname].filter(Boolean);
@@ -77,6 +78,7 @@ export default function ProductDetailScreen() {
   const [editMode, setEditMode] = useState(false);
   const [listModalVisible, setListModalVisible] = useState(false);
   const [priceAlarmModalVisible, setPriceAlarmModalVisible] = useState(false);
+  const [corporateOfferModalVisible, setCorporateOfferModalVisible] = useState(false);
   const [hasAlarm, setHasAlarm] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [questionText, setQuestionText] = useState("");
@@ -400,7 +402,7 @@ export default function ProductDetailScreen() {
             {
               image: icons.briefcase,
               label: "KURUMSAL\nTEKLİF",
-              onPress: () => {},
+              onPress: () => setCorporateOfferModalVisible(true),
             },
             {
               image: icons.bell,
@@ -1523,6 +1525,12 @@ export default function ProductDetailScreen() {
         product={product}
         hasAlarm={hasAlarm}
         onAlarmChange={(val) => setHasAlarm(val)}
+      />
+
+      <CorporateOfferModal
+        visible={corporateOfferModalVisible}
+        onClose={() => setCorporateOfferModalVisible(false)}
+        product={product}
       />
     </SafeAreaView>
   );
