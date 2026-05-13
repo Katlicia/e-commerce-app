@@ -72,7 +72,7 @@ export default function ProfileScreen({ navigation }) {
           { label: "Siparişler", icon: "bag-outline", screen: "Orders" },
           { label: "Mesajlar", icon: "chatbubble-outline" },
           { label: "Soru Cevap", icon: "help-circle-outline", screen: "Questions" },
-          { label: "Kurumsal Teklif", icon: "business-outline" },
+          { label: "Kurumsal Teklif", icon: "business-outline", screen: "CorporateOffers" },
           { label: "Fiyat Alarmlarım", icon: "notifications-outline" },
           {
             label: "Şifre Değiştir",

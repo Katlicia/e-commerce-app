@@ -35,6 +35,18 @@ exports.getOffers = async (req, res) => {
   }
 };
 
+exports.getMyOffers = async (req, res) => {
+  try {
+    const offers = await CorporateOffer.find({ user: req.user._id })
+      .populate("product", "name images")
+      .sort({ createdAt: -1 });
+
+    res.json(offers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.updateOfferStatus = async (req, res) => {
   try {
     const offer = await CorporateOffer.findByIdAndUpdate(

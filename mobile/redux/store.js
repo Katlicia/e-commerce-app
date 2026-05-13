@@ -13,6 +13,7 @@ import bannerReducer from "@mobile/shared/redux/bannerSlice";
 import homeSectionReducer from "@mobile/shared/redux/homeSectionSlice";
 import homeLayoutReducer from "@mobile/shared/redux/homeLayoutSlice";
 import questionReducer from "@mobile/shared/redux/questionSlice";
+import corporateOfferReducer from "@mobile/shared/redux/corporateOfferSlice";
 
 export const store = configureStore({
   reducer: {
@@ -30,5 +31,6 @@ export const store = configureStore({
     homeSection: homeSectionReducer,
     homeLayout: homeLayoutReducer,
     question: questionReducer,
+    corporateOffer: corporateOfferReducer,
   },
 });
