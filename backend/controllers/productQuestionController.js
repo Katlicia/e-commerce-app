@@ -1,17 +1,17 @@
 const ProductQuestion = require("../models/ProductQuestion");
 const logActivity = require("../utils/activityLogger");
 
-exports.getQuestions = async (req, res) => {
+exports.getQuestions = async (req, res, next) => {
   try {
     const questions = await ProductQuestion.find({ product: req.params.productId })
       .sort({ createdAt: -1 });
     res.json(questions);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createQuestion = async (req, res) => {
+exports.createQuestion = async (req, res, next) => {
   try {
     const { question } = req.body;
     if (!question?.trim()) {
@@ -28,11 +28,11 @@ exports.createQuestion = async (req, res) => {
 
     res.status(201).json(q);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createAnswer = async (req, res) => {
+exports.createAnswer = async (req, res, next) => {
   try {
     const { answer } = req.body;
     if (!answer?.trim()) {
@@ -59,11 +59,11 @@ exports.createAnswer = async (req, res) => {
     logActivity(req, "Cevaplandı", "S&C", q.question.slice(0, 60)).catch(() => {});
     res.status(201).json(q);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.deleteQuestion = async (req, res) => {
+exports.deleteQuestion = async (req, res, next) => {
   try {
     const q = await ProductQuestion.findOne({
       _id: req.params.questionId,
@@ -80,33 +80,33 @@ exports.deleteQuestion = async (req, res) => {
     await q.deleteOne();
     res.json({ message: "Soru silindi." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getUserQuestions = async (req, res) => {
+exports.getUserQuestions = async (req, res, next) => {
   try {
     const questions = await ProductQuestion.find({ user: req.user._id })
       .populate("product", "name images")
       .sort({ createdAt: -1 });
     res.json(questions);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.adminGetAllQuestions = async (req, res) => {
+exports.adminGetAllQuestions = async (req, res, next) => {
   try {
     const questions = await ProductQuestion.find()
       .populate("product", "name")
       .sort({ createdAt: -1 });
     res.json(questions);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.deleteAnswer = async (req, res) => {
+exports.deleteAnswer = async (req, res, next) => {
   try {
     const q = await ProductQuestion.findOne({
       _id: req.params.questionId,
@@ -129,6 +129,6 @@ exports.deleteAnswer = async (req, res) => {
 
     res.json({ message: "Cevap silindi." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

@@ -1,6 +1,6 @@
 const TaxSettings = require("../models/TaxSettings");
 
-exports.getTaxSettings = async (req, res) => {
+exports.getTaxSettings = async (req, res, next) => {
   try {
     let settings = await TaxSettings.findOne();
     if (!settings) {
@@ -12,7 +12,7 @@ exports.getTaxSettings = async (req, res) => {
   }
 };
 
-exports.updateTaxSettings = async (req, res) => {
+exports.updateTaxSettings = async (req, res, next) => {
   try {
     let settings = await TaxSettings.findOne();
     if (!settings) {

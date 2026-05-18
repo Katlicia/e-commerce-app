@@ -1,6 +1,6 @@
 const CorporateOffer = require("../models/CorporateOffer");
 
-exports.createOffer = async (req, res) => {
+exports.createOffer = async (req, res, next) => {
   try {
     const { productId, fullName, email, message } = req.body;
 
@@ -18,11 +18,11 @@ exports.createOffer = async (req, res) => {
 
     res.status(201).json({ message: "Talebiniz alındı." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getOffers = async (req, res) => {
+exports.getOffers = async (req, res, next) => {
   try {
     const offers = await CorporateOffer.find()
       .populate("product", "name images")
@@ -31,11 +31,11 @@ exports.getOffers = async (req, res) => {
 
     res.json(offers);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getMyOffers = async (req, res) => {
+exports.getMyOffers = async (req, res, next) => {
   try {
     const offers = await CorporateOffer.find({ user: req.user._id })
       .populate("product", "name images")
@@ -43,11 +43,11 @@ exports.getMyOffers = async (req, res) => {
 
     res.json(offers);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.updateOfferStatus = async (req, res) => {
+exports.updateOfferStatus = async (req, res, next) => {
   try {
     const offer = await CorporateOffer.findByIdAndUpdate(
       req.params.id,
@@ -61,6 +61,6 @@ exports.updateOfferStatus = async (req, res) => {
 
     res.json(offer);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

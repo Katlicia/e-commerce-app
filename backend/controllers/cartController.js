@@ -1,15 +1,15 @@
 const User = require("../models/User");
 
-exports.getCart = async (req, res) => {
+exports.getCart = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).populate("cart.product", "name images price discountedPrice discountPercent stock hasVariants skus");
     res.status(200).json(user.cart);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.addToCart = async (req, res) => {
+exports.addToCart = async (req, res, next) => {
   try {
     const { productId, quantity = 1, skuId, selectedVariants } = req.body;
     const user = await User.findById(req.user._id);
@@ -30,11 +30,11 @@ exports.addToCart = async (req, res) => {
     const updated = await User.findById(req.user._id).populate("cart.product", "name images price discountedPrice discountPercent stock hasVariants skus");
     res.status(200).json(updated.cart);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.updateCartItem = async (req, res) => {
+exports.updateCartItem = async (req, res, next) => {
   try {
     const { productId } = req.params;
     const { quantity, skuId } = req.body;
@@ -55,11 +55,11 @@ exports.updateCartItem = async (req, res) => {
     const updated = await User.findById(req.user._id).populate("cart.product", "name images price discountedPrice discountPercent stock hasVariants skus");
     res.status(200).json(updated.cart);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.removeFromCart = async (req, res) => {
+exports.removeFromCart = async (req, res, next) => {
   try {
     const { productId } = req.params;
     const { skuId } = req.body;
@@ -75,15 +75,15 @@ exports.removeFromCart = async (req, res) => {
     const updated = await User.findById(req.user._id).populate("cart.product", "name images price discountedPrice discountPercent stock hasVariants skus");
     res.status(200).json(updated.cart);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.clearCart = async (req, res) => {
+exports.clearCart = async (req, res, next) => {
   try {
     await User.findByIdAndUpdate(req.user._id, { cart: [] });
     res.status(200).json([]);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

@@ -3,13 +3,13 @@ const Order = require("../models/Order");
 const logActivity = require("../utils/activityLogger");
 
 // GET /coupons — list all coupons (admin)
-exports.getCoupons = async (req, res) => {
+exports.getCoupons = async (req, res, next) => {
   const coupons = await Coupon.find().sort({ createdAt: -1 });
   res.json(coupons);
 };
 
 // GET /coupons/active — active coupons (return 2)
-exports.getActiveCoupons = async (req, res) => {
+exports.getActiveCoupons = async (req, res, next) => {
   const coupons = await Coupon.find({
     isActive: true,
     expiryDate: { $gt: new Date() },
@@ -27,7 +27,7 @@ exports.getActiveCoupons = async (req, res) => {
 };
 
 // POST /coupons/apply — apply coupon, calculate new amount
-exports.applyCoupon = async (req, res) => {
+exports.applyCoupon = async (req, res, next) => {
   const { code, orderTotal } = req.body;
 
   const coupon = await Coupon.findOne({ code: code?.toUpperCase().trim() });
@@ -74,7 +74,7 @@ exports.applyCoupon = async (req, res) => {
 };
 
 // POST /coupons/new — create new coupon (admin)
-exports.createCoupon = async (req, res) => {
+exports.createCoupon = async (req, res, next) => {
   const {
     code,
     discountType,
@@ -98,7 +98,7 @@ exports.createCoupon = async (req, res) => {
 };
 
 // PUT /coupons/:id — update coupon (admin)
-exports.updateCoupon = async (req, res) => {
+exports.updateCoupon = async (req, res, next) => {
   const coupon = await Coupon.findByIdAndUpdate(req.params.id, req.body, {
     returnDocument: "after",
     runValidators: true,
@@ -109,7 +109,7 @@ exports.updateCoupon = async (req, res) => {
 };
 
 // DELETE /coupons/:id — delete coupon (admin)
-exports.deleteCoupon = async (req, res) => {
+exports.deleteCoupon = async (req, res, next) => {
   const coupon = await Coupon.findByIdAndDelete(req.params.id);
   if (!coupon) return res.status(404).json({ message: "Kupon bulunamadı." });
   logActivity(req, "Silindi", "Kupon", coupon.code).catch(() => {});

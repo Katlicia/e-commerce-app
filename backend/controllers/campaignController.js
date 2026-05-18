@@ -1,7 +1,7 @@
 const Campaign = require("../models/Campaign");
 const cloudinary = require("cloudinary").v2;
 
-exports.getCampaigns = async (req, res) => {
+exports.getCampaigns = async (req, res, next) => {
   try {
     const campaigns = await Campaign.find()
       .populate("coupon", "code discountType discountValue minOrderAmount")
@@ -9,11 +9,11 @@ exports.getCampaigns = async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(campaigns);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getCampaignById = async (req, res) => {
+exports.getCampaignById = async (req, res, next) => {
   try {
     const campaign = await Campaign.findById(req.params.id)
       .populate("coupon", "code discountType discountValue minOrderAmount")
@@ -22,11 +22,11 @@ exports.getCampaignById = async (req, res) => {
       return res.status(404).json({ message: "Kampanya bulunamadı." });
     res.json(campaign);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createCampaign = async (req, res) => {
+exports.createCampaign = async (req, res, next) => {
   try {
     const {
       title,
@@ -65,11 +65,11 @@ exports.createCampaign = async (req, res) => {
 
     res.status(201).json(populated);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.updateCampaign = async (req, res) => {
+exports.updateCampaign = async (req, res, next) => {
   try {
     const {
       title,
@@ -122,11 +122,11 @@ exports.updateCampaign = async (req, res) => {
 
     res.json(updated);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.deleteCampaign = async (req, res) => {
+exports.deleteCampaign = async (req, res, next) => {
   try {
     const campaign = await Campaign.findByIdAndDelete(req.params.id);
     if (!campaign)
@@ -138,6 +138,6 @@ exports.deleteCampaign = async (req, res) => {
 
     res.json({ message: "Kampanya silindi." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

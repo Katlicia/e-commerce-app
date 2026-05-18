@@ -2,7 +2,7 @@ const Banner = require("../models/Banner");
 const HomeLayout = require("../models/HomeLayout");
 const cloudinary = require("cloudinary").v2;
 
-exports.getAllAdBanners = async (req, res) => {
+exports.getAllAdBanners = async (req, res, next) => {
   try {
     const banners = await Banner.find({ type: /^adbanner-/ }).select("type label");
     res.json(banners);
@@ -11,7 +11,7 @@ exports.getAllAdBanners = async (req, res) => {
   }
 };
 
-exports.getBanner = async (req, res) => {
+exports.getBanner = async (req, res, next) => {
   try {
     const banner = await Banner.findOne({ type: req.params.type });
     res.json(banner || { type: req.params.type, label: "", images: [] });
@@ -20,7 +20,7 @@ exports.getBanner = async (req, res) => {
   }
 };
 
-exports.updateBanner = async (req, res) => {
+exports.updateBanner = async (req, res, next) => {
   try {
     const { type } = req.params;
     const { label = "", keepImages = [], newImages = [] } = req.body;
@@ -54,7 +54,7 @@ exports.updateBanner = async (req, res) => {
   }
 };
 
-exports.deleteBanner = async (req, res) => {
+exports.deleteBanner = async (req, res, next) => {
   try {
     const banner = await Banner.findOne({ type: req.params.type });
     if (!banner) return res.status(404).json({ message: "Banner bulunamadı." });

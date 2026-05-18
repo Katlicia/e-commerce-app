@@ -50,7 +50,7 @@ const ensureHomeSection = async (type, sectionKey) => {
   );
 };
 
-exports.getHomeLayout = async (req, res) => {
+exports.getHomeLayout = async (req, res, next) => {
   try {
     let layout = await HomeLayout.findOne();
 
@@ -64,7 +64,7 @@ exports.getHomeLayout = async (req, res) => {
   }
 };
 
-exports.updateHomeLayout = async (req, res) => {
+exports.updateHomeLayout = async (req, res, next) => {
   try {
     const { sections } = req.body;
 

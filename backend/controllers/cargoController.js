@@ -1,6 +1,6 @@
 const Cargo = require("../models/Cargo");
 
-exports.createCargo = async (req, res) => {
+exports.createCargo = async (req, res, next) => {
   const { companyName, cargoPrice } = req.body;
   try {
     const cargo = await Cargo.create({ companyName, cargoPrice });
@@ -13,7 +13,7 @@ exports.createCargo = async (req, res) => {
   }
 };
 
-exports.getCargos = async (req, res) => {
+exports.getCargos = async (req, res, next) => {
   try {
     const cargos = await Cargo.find();
     res.json(cargos);
@@ -25,7 +25,7 @@ exports.getCargos = async (req, res) => {
   }
 };
 
-exports.getCargoById = async (req, res) => {
+exports.getCargoById = async (req, res, next) => {
   try {
     const cargo = await Cargo.findById(req.params.id);
     if (!cargo) return res.status(404).json({ message: "Kargo bulunamadı." });
@@ -37,7 +37,7 @@ exports.getCargoById = async (req, res) => {
   }
 };
 
-exports.updateCargo = async (req, res) => {
+exports.updateCargo = async (req, res, next) => {
   try {
     const cargo = await Cargo.findByIdAndUpdate(req.params.id, req.body, {
       returnDocument: "after",
@@ -52,7 +52,7 @@ exports.updateCargo = async (req, res) => {
   }
 };
 
-exports.deleteCargo = async (req, res) => {
+exports.deleteCargo = async (req, res, next) => {
   try {
     const cargo = await Cargo.findByIdAndDelete(req.params.id);
     if (!cargo) return res.status(404).json({ message: "Kargo bulunamadı." });

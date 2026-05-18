@@ -1,6 +1,6 @@
 const PriceAlarm = require("../models/PriceAlarm");
 
-exports.setPriceAlarm = async (req, res) => {
+exports.setPriceAlarm = async (req, res, next) => {
   try {
     const { productId } = req.body;
     const email = req.user.email;
@@ -20,35 +20,35 @@ exports.setPriceAlarm = async (req, res) => {
 
     res.status(201).json({ message: "Fiyat alarmı kuruldu." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.removePriceAlarm = async (req, res) => {
+exports.removePriceAlarm = async (req, res, next) => {
   try {
     await PriceAlarm.findOneAndDelete({ user: req.user._id, product: req.params.productId });
     res.json({ message: "Fiyat alarmı kaldırıldı." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getAlarmStatus = async (req, res) => {
+exports.getAlarmStatus = async (req, res, next) => {
   try {
     const alarm = await PriceAlarm.findOne({ user: req.user._id, product: req.params.productId });
     res.json({ hasAlarm: !!alarm });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getMyAlarms = async (req, res) => {
+exports.getMyAlarms = async (req, res, next) => {
   try {
     const alarms = await PriceAlarm.find({ user: req.user._id })
       .populate("product", "name images price discountedPrice")
       .sort({ createdAt: -1 });
     res.json(alarms);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

@@ -2,7 +2,7 @@ const Category = require("../models/Category");
 const Product = require("../models/Product");
 const logActivity = require("../utils/activityLogger");
 
-exports.getCategories = async (req, res) => {
+exports.getCategories = async (req, res, next) => {
   const [all, counts] = await Promise.all([
     Category.find().lean(),
     Product.aggregate([
@@ -52,12 +52,12 @@ exports.getCategories = async (req, res) => {
   res.json(tree);
 };
 
-exports.getRootCategories = async (req, res) => {
+exports.getRootCategories = async (req, res, next) => {
   const categories = await Category.find({ parent: null });
   res.json(categories);
 };
 
-exports.getChildren = async (req, res) => {
+exports.getChildren = async (req, res, next) => {
   const parent = await Category.findOne({ slug: req.params.slug });
   if (!parent) return res.status(404).json({ message: "Kategori bulunamadı." });
 
@@ -65,7 +65,7 @@ exports.getChildren = async (req, res) => {
   res.json(children);
 };
 
-exports.getCategoryBySlug = async (req, res) => {
+exports.getCategoryBySlug = async (req, res, next) => {
   const category = await Category.findOne({ slug: req.params.slug }).populate(
     "parent",
   );
@@ -74,7 +74,7 @@ exports.getCategoryBySlug = async (req, res) => {
   res.json(category);
 };
 
-exports.createCategory = async (req, res) => {
+exports.createCategory = async (req, res, next) => {
   const { name, slug, parent } = req.body;
   const category = await Category.create({
     name,
@@ -85,7 +85,7 @@ exports.createCategory = async (req, res) => {
   res.json(category);
 };
 
-exports.updateCategory = async (req, res) => {
+exports.updateCategory = async (req, res, next) => {
   const { name, slug, parent, subcategories } = req.body;
 
   let parentId = undefined;
@@ -139,7 +139,7 @@ exports.updateCategory = async (req, res) => {
   res.json({ message: "Kategori güncellendi" });
 };
 
-exports.deleteCategory = async (req, res) => {
+exports.deleteCategory = async (req, res, next) => {
   const category = await Category.findByIdAndDelete(req.params.id);
   if (!category)
     return res.status(404).json({ message: "Kategori bulunamadı." });

@@ -4,7 +4,7 @@ const Product = require("../models/Product");
 const Coupon = require("../models/Coupon");
 const logActivity = require("../utils/activityLogger");
 
-exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res, next) => {
   try {
     const {
       items,
@@ -96,11 +96,11 @@ exports.createOrder = async (req, res) => {
 
     res.status(201).json({ success: true, order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.cancelOrder = async (req, res) => {
+exports.cancelOrder = async (req, res, next) => {
   try {
     const order = await Order.findOne({
       _id: req.params.id,
@@ -136,7 +136,7 @@ exports.cancelOrder = async (req, res) => {
   }
 };
 
-exports.returnOrder = async (req, res) => {
+exports.returnOrder = async (req, res, next) => {
   try {
     const order = await Order.findOne({
       _id: req.params.id,
@@ -168,11 +168,11 @@ exports.returnOrder = async (req, res) => {
     await order.populate("items.product", "name images price discountedPrice stock skus hasVariants");
     res.status(200).json({ success: true, order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.adminGetOrders = async (req, res) => {
+exports.adminGetOrders = async (req, res, next) => {
   try {
     const orders = await Order.find()
       .populate("user", "name surname email")
@@ -180,11 +180,11 @@ exports.adminGetOrders = async (req, res) => {
       .sort({ createdAt: -1 });
     res.status(200).json({ success: true, orders });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.adminUpdateOrderStatus = async (req, res) => {
+exports.adminUpdateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
     const prev = await Order.findById(req.params.id).select("status");
@@ -199,11 +199,11 @@ exports.adminUpdateOrderStatus = async (req, res) => {
     logActivity(req, "Durum Güncellendi", "Sipariş", `${prev?.status} → ${status}`).catch(() => {});
     res.status(200).json({ success: true, order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getUserOrders = async (req, res) => {
+exports.getUserOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ user: req.user._id })
       .populate("items.product", "name images price discountedPrice discountPercent stock skus hasVariants")
@@ -211,6 +211,6 @@ exports.getUserOrders = async (req, res) => {
 
     res.status(200).json({ success: true, orders });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

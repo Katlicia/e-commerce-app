@@ -1,12 +1,12 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
-exports.getUsers = async (req, res) => {
+exports.getUsers = async (req, res, next) => {
   const users = await User.find().select("-password");
   res.status(200).json(users);
 };
 
-exports.getUserById = async (req, res) => {
+exports.getUserById = async (req, res, next) => {
   const user = await User.findById(req.params.id).select("-password");
   if (!user) {
     return res.status(404).json({ message: "Kullanıcı bulunamadı" });
@@ -14,12 +14,12 @@ exports.getUserById = async (req, res) => {
   res.status(200).json(user);
 };
 
-exports.getUserDetail = async (req, res) => {
+exports.getUserDetail = async (req, res, next) => {
   const user = await User.findById(req.user._id).select("-password -isAdmin");
   res.status(200).json(user);
 };
 
-exports.updateUser = async (req, res) => {
+exports.updateUser = async (req, res, next) => {
   const isOwner = req.user._id.toString() === req.params.id;
   if (!isOwner && !req.user.isAdmin) {
     return res.status(403).json({ message: "Yetkisiz işlem." });
@@ -36,11 +36,12 @@ exports.updateUser = async (req, res) => {
     user.isAdmin = req.body.isAdmin;
   }
 
-  const updatedUser = await user.save();
+  await user.save();
+  const updatedUser = await User.findById(user._id).select("-password");
   res.status(200).json(updatedUser);
 };
 
-exports.deleteUser = async (req, res) => {
+exports.deleteUser = async (req, res, next) => {
   const isOwner = req.user._id.toString() === req.params.id;
   if (!isOwner && !req.user.isAdmin) {
     return res.status(403).json({ message: "Yetkisiz işlem." });
@@ -53,7 +54,7 @@ exports.deleteUser = async (req, res) => {
   res.status(200).json({ message: "Kullanıcı silindi" });
 };
 
-exports.addUserAddresses = async (req, res) => {
+exports.addUserAddresses = async (req, res, next) => {
   try {
     const {
       addressName, fullName, firstName, lastName,
@@ -81,20 +82,20 @@ exports.addUserAddresses = async (req, res) => {
     res.status(201).json(updated.addresses);
   } catch (err) {
     console.error("addUserAddresses error:", err.message);
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getUserAddresses = async (req, res) => {
+exports.getUserAddresses = async (req, res, next) => {
   try {
     res.status(200).json(req.user.addresses);
   } catch (err) {
     console.error("getUserAddresses error:", err.message);
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.changePassword = async (req, res) => {
+exports.changePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
@@ -114,11 +115,11 @@ exports.changePassword = async (req, res) => {
     await user.save();
     res.status(200).json({ message: "Şifre güncellendi." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.deleteUserAddress = async (req, res) => {
+exports.deleteUserAddress = async (req, res, next) => {
   try {
     const index = parseInt(req.params.index);
     if (isNaN(index) || index < 0 || index >= req.user.addresses.length) {
@@ -128,11 +129,11 @@ exports.deleteUserAddress = async (req, res) => {
     await req.user.save();
     res.status(200).json(req.user.addresses);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.visitProduct = async (req, res) => {
+exports.visitProduct = async (req, res, next) => {
   try {
     const productId = req.params.id;
     const user = req.user;
@@ -147,11 +148,11 @@ exports.visitProduct = async (req, res) => {
     await user.save();
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getVisitedProducts = async (req, res) => {
+exports.getVisitedProducts = async (req, res, next) => {
   try {
     const user = await req.user.populate({
       path: "visitedProducts",
@@ -159,11 +160,11 @@ exports.getVisitedProducts = async (req, res) => {
     });
     res.json(user.visitedProducts);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.updateUserAddress = async (req, res) => {
+exports.updateUserAddress = async (req, res, next) => {
   try {
     const {
       index, addressName, fullName, firstName, lastName,
@@ -186,6 +187,6 @@ exports.updateUserAddress = async (req, res) => {
     await req.user.save();
     res.status(200).json(req.user.addresses);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

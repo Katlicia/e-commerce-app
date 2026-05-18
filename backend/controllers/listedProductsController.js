@@ -18,18 +18,18 @@ function computeTotals(doc) {
   return { ...obj, total: +total.toFixed(2), discountedTotal };
 }
 
-exports.getAllListedProducts = async (req, res) => {
+exports.getAllListedProducts = async (req, res, next) => {
   try {
     const lists = await ListedProducts.find()
       .populate("products.product")
       .sort({ createdAt: -1 });
     res.json(lists.map(computeTotals));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getListedProductsById = async (req, res) => {
+exports.getListedProductsById = async (req, res, next) => {
   try {
     const list = await ListedProducts.findById(req.params.id).populate(
       "products.product",
@@ -37,11 +37,11 @@ exports.getListedProductsById = async (req, res) => {
     if (!list) return res.status(404).json({ message: "Liste bulunamadı" });
     res.json(computeTotals(list));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createListedProducts = async (req, res) => {
+exports.createListedProducts = async (req, res, next) => {
   try {
     const { name, products, discountPercent } = req.body;
     const list = await ListedProducts.create({
@@ -54,11 +54,11 @@ exports.createListedProducts = async (req, res) => {
     );
     res.status(201).json(computeTotals(populated));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.updateListedProducts = async (req, res) => {
+exports.updateListedProducts = async (req, res, next) => {
   try {
     const { name, products, discountPercent } = req.body;
     const list = await ListedProducts.findByIdAndUpdate(
@@ -69,16 +69,16 @@ exports.updateListedProducts = async (req, res) => {
     if (!list) return res.status(404).json({ message: "Liste bulunamadı" });
     res.json(computeTotals(list));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.deleteListedProducts = async (req, res) => {
+exports.deleteListedProducts = async (req, res, next) => {
   try {
     const list = await ListedProducts.findByIdAndDelete(req.params.id);
     if (!list) return res.status(404).json({ message: "Liste bulunamadı" });
     res.json({ message: "Silindi" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

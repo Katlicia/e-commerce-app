@@ -1,17 +1,17 @@
 const FeaturedList = require("../models/FeaturedList");
 
-exports.getFeaturedList = async (req, res) => {
+exports.getFeaturedList = async (req, res, next) => {
   try {
     const list = await FeaturedList.findOne({ key: req.params.key }).populate(
       "products",
     );
     res.json(list || { key: req.params.key, products: [] });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.updateFeaturedList = async (req, res) => {
+exports.updateFeaturedList = async (req, res, next) => {
   try {
     const { key } = req.params;
     const { products } = req.body;
@@ -24,6 +24,6 @@ exports.updateFeaturedList = async (req, res) => {
 
     res.json(list);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

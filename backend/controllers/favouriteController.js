@@ -1,17 +1,17 @@
 const User = require("../models/User");
 
-exports.getFavourites = async (req, res) => {
+exports.getFavourites = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).populate(
       "favourites.product",
     );
     res.status(200).json(user.favourites);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.addToFavourites = async (req, res) => {
+exports.addToFavourites = async (req, res, next) => {
   try {
     const { productId } = req.body;
     const user = await User.findById(req.user._id);
@@ -30,11 +30,11 @@ exports.addToFavourites = async (req, res) => {
     );
     res.status(200).json(updated.favourites);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.removeFromFavourites = async (req, res) => {
+exports.removeFromFavourites = async (req, res, next) => {
   try {
     const { productId } = req.params;
     const user = await User.findById(req.user._id);
@@ -49,15 +49,15 @@ exports.removeFromFavourites = async (req, res) => {
     );
     res.status(200).json(updated.favourites);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.clearFavourites = async (req, res) => {
+exports.clearFavourites = async (req, res, next) => {
   try {
     await User.findByIdAndUpdate(req.user._id, { favourites: [] });
     res.status(200).json([]);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

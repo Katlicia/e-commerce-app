@@ -1,27 +1,27 @@
 const List = require("../models/List");
 
-exports.getLists = async (req, res) => {
+exports.getLists = async (req, res, next) => {
   try {
     const lists = await List.find({ user: req.user._id })
       .populate("products")
       .sort({ createdAt: 1 });
     res.status(200).json(lists);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createList = async (req, res) => {
+exports.createList = async (req, res, next) => {
   try {
     const { name } = req.body;
     const list = await List.create({ user: req.user._id, name });
     res.status(201).json(list);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.deleteList = async (req, res) => {
+exports.deleteList = async (req, res, next) => {
   try {
     const list = await List.findOne({
       _id: req.params.listId,
@@ -31,11 +31,11 @@ exports.deleteList = async (req, res) => {
     await list.deleteOne();
     res.status(200).json({ message: "Liste silindi" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.addProductToList = async (req, res) => {
+exports.addProductToList = async (req, res, next) => {
   try {
     const { productId } = req.body;
     const list = await List.findOne({
@@ -52,11 +52,11 @@ exports.addProductToList = async (req, res) => {
     const updated = await List.findById(list._id).populate("products");
     res.status(200).json(updated);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.removeProductFromList = async (req, res) => {
+exports.removeProductFromList = async (req, res, next) => {
   try {
     const { listId, productId } = req.params;
     const list = await List.findOne({ _id: listId, user: req.user._id });
@@ -68,6 +68,6 @@ exports.removeProductFromList = async (req, res) => {
     const updated = await List.findById(list._id).populate("products");
     res.status(200).json(updated);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

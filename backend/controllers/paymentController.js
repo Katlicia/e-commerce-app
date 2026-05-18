@@ -19,7 +19,7 @@ const iyzipay = new Iyzipay({
 
 const INSTALLMENT_MULTIPLIERS = { 1: 1, 2: 1.077, 3: 1.1 };
 
-exports.createPayment = async (req, res) => {
+exports.createPayment = async (req, res, next) => {
   try {
     const {
       items,
@@ -277,11 +277,11 @@ exports.createPayment = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.adminCancelPayment = async (req, res) => {
+exports.adminCancelPayment = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
@@ -329,11 +329,11 @@ exports.adminCancelPayment = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.adminRefundPayment = async (req, res) => {
+exports.adminRefundPayment = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Sipariş bulunamadı." });
@@ -380,11 +380,11 @@ exports.adminRefundPayment = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.cancelPayment = async (req, res) => {
+exports.cancelPayment = async (req, res, next) => {
   try {
     const order = await Order.findOne({
       _id: req.params.id,
@@ -445,11 +445,11 @@ exports.cancelPayment = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.refundPayment = async (req, res) => {
+exports.refundPayment = async (req, res, next) => {
   try {
     const order = await Order.findOne({
       _id: req.params.id,
@@ -507,6 +507,6 @@ exports.refundPayment = async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };

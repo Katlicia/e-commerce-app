@@ -25,7 +25,7 @@ const DEFAULTS = [
   },
 ];
 
-exports.getHomeSections = async (req, res) => {
+exports.getHomeSections = async (req, res, next) => {
   try {
     await Promise.all(
       DEFAULTS.map((def) =>
@@ -51,7 +51,7 @@ const slugifyKey = (str) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-exports.deleteHomeSection = async (req, res) => {
+exports.deleteHomeSection = async (req, res, next) => {
   try {
     const { key } = req.params;
     const section = await HomeSection.findOne({ key });
@@ -75,7 +75,7 @@ exports.deleteHomeSection = async (req, res) => {
   }
 };
 
-exports.createHomeSection = async (req, res) => {
+exports.createHomeSection = async (req, res, next) => {
   try {
     const { title, type = "product-list" } = req.body;
     if (!title?.trim()) return res.status(400).json({ message: "Başlık gerekli." });
@@ -118,7 +118,7 @@ const uploadBanner = async (newBanner, keepBanner, currentBanner, folder) => {
   return { public_id: "", url: "" };
 };
 
-exports.updateHomeSection = async (req, res) => {
+exports.updateHomeSection = async (req, res, next) => {
   try {
     const { key } = req.params;
     const {

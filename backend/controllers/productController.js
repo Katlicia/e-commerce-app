@@ -62,7 +62,7 @@ async function getAllDescendantIds(categoryId) {
   return [categoryId.toString(), ...descendantIds];
 }
 
-exports.getProducts = async (req, res) => {
+exports.getProducts = async (req, res, next) => {
   try {
     const resultPerPage = req.query.limit ? parseInt(req.query.limit) : 12;
     const queryCopy = { ...req.query };
@@ -154,11 +154,11 @@ exports.getProducts = async (req, res) => {
 
     res.json({ products, total });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.adminProducts = async (req, res) => {
+exports.adminProducts = async (req, res, next) => {
   const products = await Product.find()
     .populate("category", "name")
     .sort({ createdAt: -1 });
@@ -166,7 +166,7 @@ exports.adminProducts = async (req, res) => {
   res.json(products);
 };
 
-exports.getBrands = async (req, res) => {
+exports.getBrands = async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.category) {
@@ -187,11 +187,11 @@ exports.getBrands = async (req, res) => {
     ]);
     res.json(brands.map((b) => ({ name: b._id, count: b.count })));
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getProductById = async (req, res) => {
+exports.getProductById = async (req, res, next) => {
   const product = await Product.findById(req.params.id).populate({
     path: "category",
     select: "name slug parent",
@@ -201,7 +201,7 @@ exports.getProductById = async (req, res) => {
   res.json(product);
 };
 
-exports.getProductByBadge = async (req, res) => {
+exports.getProductByBadge = async (req, res, next) => {
   const { badge } = req.params;
 
   if (badge !== "yeni") {
@@ -225,17 +225,17 @@ exports.getProductByBadge = async (req, res) => {
   res.json([...badged, ...fill]);
 };
 
-exports.getBestSellers = async (req, res) => {
+exports.getBestSellers = async (req, res, next) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 12;
     const products = await Product.find().sort({ soldCount: -1 }).limit(limit);
     res.json({ products });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.getNewProducts = async (req, res) => {
+exports.getNewProducts = async (req, res, next) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit) : 12;
     const products = await Product.find({
@@ -246,11 +246,11 @@ exports.getNewProducts = async (req, res) => {
       .limit(limit);
     res.json({ products, total: products.length });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createProduct = async (req, res) => {
+exports.createProduct = async (req, res, next) => {
   let images = [];
 
   if (typeof req.body.images === "string") {
@@ -297,7 +297,7 @@ exports.createProduct = async (req, res) => {
   res.json(product);
 };
 
-exports.deleteProduct = async (req, res) => {
+exports.deleteProduct = async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
@@ -313,7 +313,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-exports.updateProduct = async (req, res) => {
+exports.updateProduct = async (req, res, next) => {
   try {
     const keepImages = req.body.keepImages || [];
     const rawNewImages = req.body.newImages || [];
@@ -432,11 +432,11 @@ exports.updateProduct = async (req, res) => {
     logActivity(req, "Güncellendi", "Ürün", updateDetail).catch(() => {});
     res.json({ message: "Ürün güncellendi" });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
-exports.createReview = async (req, res) => {
+exports.createReview = async (req, res, next) => {
   const { productId, comment, rating } = req.body;
 
   const product = await Product.findById(productId);
@@ -470,7 +470,7 @@ exports.createReview = async (req, res) => {
   res.json({ message: "Yorum eklendi" });
 };
 
-exports.updateReview = async (req, res) => {
+exports.updateReview = async (req, res, next) => {
   const { productId, comment, rating } = req.body;
 
   const product = await Product.findById(productId);
@@ -497,7 +497,7 @@ exports.updateReview = async (req, res) => {
   res.json({ message: "Yorum güncellendi" });
 };
 
-exports.deleteReview = async (req, res) => {
+exports.deleteReview = async (req, res, next) => {
   const { productId } = req.body;
 
   const product = await Product.findById(productId);
