@@ -4,6 +4,7 @@ const {
   login,
   adminLogin,
   logout,
+  refresh,
   forgetPassword,
   resetPassword,
   getMe,
@@ -18,6 +19,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/adminlogin", adminLogin);
 router.get("/logout", logout);
+router.post("/refresh", refresh);
 router.get("/me", authenticationMiddle, getMe);
 router.post("/forgetPassword", forgetPassword);
 router.post("/reset/:token", resetPassword);
