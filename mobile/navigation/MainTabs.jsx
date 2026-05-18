@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,7 +10,19 @@ import HomeScreen from "../screens/HomeScreen";
 import CategoryScreen from "../screens/CategoryScreen";
 import CartScreen from "../screens/CartScreen";
 import CampaignsScreen from "../screens/CampaignsScreen";
+import CampaignDetailScreen from "../screens/CampaignDetailScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+
+const CampaignsStack = createNativeStackNavigator();
+
+function CampaignsNavigator() {
+  return (
+    <CampaignsStack.Navigator screenOptions={{ headerShown: false }}>
+      <CampaignsStack.Screen name="CampaignsList" component={CampaignsScreen} />
+      <CampaignsStack.Screen name="CampaignDetail" component={CampaignDetailScreen} />
+    </CampaignsStack.Navigator>
+  );
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -86,7 +99,7 @@ export default function MainTabs({ navigation }) {
       />
       <Tab.Screen
         name="Kampanyalar"
-        component={CampaignsScreen}
+        component={CampaignsNavigator}
         options={{
           tabBarLabel: "Kampanyalar",
           tabBarIcon: ({ color, size }) => (
