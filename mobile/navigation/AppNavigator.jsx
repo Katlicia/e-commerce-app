@@ -9,11 +9,9 @@ import OrdersScreen from "../screens/OrdersScreen";
 import OrderDetailScreen from "../screens/OrderDetailScreen";
 import FavouritesScreen from "../screens/FavouritesScreen";
 import LoginScreen from "../screens/LoginScreen";
-import RegisterScreen from "../screens/RegisterScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import EmailLoginScreen from "../screens/EmailLoginScreen";
 import PhoneRegisterScreen from "../screens/PhoneRegisterScreen";
-import CampaignDetailScreen from "../screens/CampaignDetailScreen";
 import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import AccountEditScreen from "../screens/AccountEditScreen";
 import AddressEditScreen from "../screens/AddressEditScreen";
@@ -53,15 +51,9 @@ export default function AppNavigator() {
       <Stack.Screen name="Questions" component={QuestionsScreen} />
       <Stack.Screen name="CorporateOffers" component={CorporateOffersScreen} />
       <Stack.Screen name="PriceAlarms" component={PriceAlarmsScreen} />
-      <Stack.Screen name="CampaignDetail" component={CampaignDetailScreen} />
       <Stack.Screen
         name="Login"
         component={LoginScreen}
-        options={{ animation: "slide_from_bottom" }}
-      />
-      <Stack.Screen
-        name="Register"
-        component={RegisterScreen}
         options={{ animation: "slide_from_bottom" }}
       />
       <Stack.Screen
