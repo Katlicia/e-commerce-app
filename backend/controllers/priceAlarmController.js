@@ -41,3 +41,14 @@ exports.getAlarmStatus = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.getMyAlarms = async (req, res) => {
+  try {
+    const alarms = await PriceAlarm.find({ user: req.user._id })
+      .populate("product", "name images price discountedPrice")
+      .sort({ createdAt: -1 });
+    res.json(alarms);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
