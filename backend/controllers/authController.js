@@ -5,19 +5,19 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 
-const ACCESS_COOKIE_OPTIONS = {
+const accessCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
   expires: new Date(Date.now() + 15 * 60 * 1000),
-};
+});
 
-const REFRESH_COOKIE_OPTIONS = {
+const refreshCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict",
   expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-};
+});
 
 exports.register = async (req, res, next) => {
   try {
@@ -52,8 +52,8 @@ exports.register = async (req, res, next) => {
 
     res
       .status(201)
-      .cookie("token", accessToken, ACCESS_COOKIE_OPTIONS)
-      .cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS)
+      .cookie("token", accessToken, accessCookieOptions())
+      .cookie("refreshToken", refreshToken, refreshCookieOptions())
       .json({
         _id: user._id,
         name: user.name,
@@ -104,8 +104,8 @@ exports.login = async (req, res, next) => {
 
     res
       .status(200)
-      .cookie("token", accessToken, ACCESS_COOKIE_OPTIONS)
-      .cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS)
+      .cookie("token", accessToken, accessCookieOptions())
+      .cookie("refreshToken", refreshToken, refreshCookieOptions())
       .json({
         _id: user._id,
         name: user.name,
@@ -148,8 +148,8 @@ exports.adminLogin = async (req, res, next) => {
 
     res
       .status(200)
-      .cookie("token", accessToken, ACCESS_COOKIE_OPTIONS)
-      .cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS)
+      .cookie("token", accessToken, accessCookieOptions())
+      .cookie("refreshToken", refreshToken, refreshCookieOptions())
       .json({
         _id: user._id,
         name: user.name,
@@ -195,8 +195,8 @@ exports.refresh = async (req, res, next) => {
 
     res
       .status(200)
-      .cookie("token", accessToken, ACCESS_COOKIE_OPTIONS)
-      .cookie("refreshToken", newRefreshToken, REFRESH_COOKIE_OPTIONS)
+      .cookie("token", accessToken, accessCookieOptions())
+      .cookie("refreshToken", newRefreshToken, refreshCookieOptions())
       .json({ token: accessToken, refreshToken: newRefreshToken });
   } catch (err) {
     next(err);
@@ -279,8 +279,8 @@ exports.resetPassword = async (req, res, next) => {
 
     res
       .status(200)
-      .cookie("token", accessToken, ACCESS_COOKIE_OPTIONS)
-      .cookie("refreshToken", refreshToken, REFRESH_COOKIE_OPTIONS)
+      .cookie("token", accessToken, accessCookieOptions())
+      .cookie("refreshToken", refreshToken, refreshCookieOptions())
       .json({
         token: accessToken,
         refreshToken,
