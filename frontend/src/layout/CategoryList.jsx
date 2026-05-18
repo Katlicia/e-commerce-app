@@ -193,28 +193,28 @@ function CategoryList() {
         >
           {brands.map((brand) => (
             <div
-              key={brand}
+              key={brand.name}
               className="d-flex align-items-center py-1 rounded"
               style={{ paddingLeft: "4px" }}
             >
               <input
                 type="checkbox"
-                id={`brand-${brand}`}
-                checked={selectedBrands.includes(brand)}
+                id={`brand-${brand.name}`}
+                checked={selectedBrands.includes(brand.name)}
                 style={{
                   accentColor: "#dc3545",
                   marginRight: 6,
                   cursor: "pointer",
                   flexShrink: 0,
                 }}
-                onChange={() => handleBrandChange(brand)}
+                onChange={() => handleBrandChange(brand.name)}
               />
               <label
-                htmlFor={`brand-${brand}`}
-                className={`flex-grow-1 mb-0 ${selectedBrands.includes(brand) ? "text-danger fw-semibold" : ""}`}
+                htmlFor={`brand-${brand.name}`}
+                className={`flex-grow-1 mb-0 ${selectedBrands.includes(brand.name) ? "text-danger fw-semibold" : ""}`}
                 style={{ fontSize: "0.875rem", cursor: "pointer" }}
               >
-                {brand}
+                {brand.name}
               </label>
             </div>
           ))}
