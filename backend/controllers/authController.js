@@ -9,14 +9,13 @@ exports.register = async (req, res) => {
   const { name, surname, email, phone, password } = req.body;
 
   if (!email && !phone) {
-    return res.status(400).json({ message: "Email veya telefon numarası zorunludur." });
+    return res
+      .status(400)
+      .json({ message: "Email veya telefon numarası zorunludur." });
   }
 
   const existingUser = await User.findOne({
-    $or: [
-      ...(email ? [{ email }] : []),
-      ...(phone ? [{ phone }] : []),
-    ],
+    $or: [...(email ? [{ email }] : []), ...(phone ? [{ phone }] : [])],
   });
 
   if (existingUser) {
@@ -60,7 +59,8 @@ exports.register = async (req, res) => {
 
 exports.checkPhone = async (req, res) => {
   const { phone } = req.body;
-  if (!phone) return res.status(400).json({ message: "Telefon numarası gerekli." });
+  if (!phone)
+    return res.status(400).json({ message: "Telefon numarası gerekli." });
 
   const user = await User.findOne({ phone });
   if (user) {
@@ -73,7 +73,9 @@ exports.login = async (req, res) => {
   const { email, phone, password } = req.body;
 
   if (!email && !phone) {
-    return res.status(400).json({ message: "Email veya telefon numarası gerekli." });
+    return res
+      .status(400)
+      .json({ message: "Email veya telefon numarası gerekli." });
   }
 
   const conditions = [];
@@ -111,7 +113,9 @@ exports.adminLogin = async (req, res) => {
   const { email, phone, password } = req.body;
 
   if (!email && !phone) {
-    return res.status(400).json({ message: "Email veya telefon numarası gerekli." });
+    return res
+      .status(400)
+      .json({ message: "Email veya telefon numarası gerekli." });
   }
 
   const conditions = [];
@@ -180,7 +184,7 @@ exports.forgetPassword = async (req, res) => {
   // don't validate mongoose schemas this is for password change only
   await user.save({ validateBeforeSave: false });
 
-  const passwordUrl = `${process.env.CLIENT_URL}/reset/${resetToken}`;
+  const xpasswordUrl = `${process.env.CLIENT_URL}/reset/${resetToken}`;
 
   const message = `Password Reset: ${passwordUrl}`;
 
