@@ -14,6 +14,7 @@ import homeSectionReducer from "@mobile/shared/redux/homeSectionSlice";
 import homeLayoutReducer from "@mobile/shared/redux/homeLayoutSlice";
 import questionReducer from "@mobile/shared/redux/questionSlice";
 import corporateOfferReducer from "@mobile/shared/redux/corporateOfferSlice";
+import priceAlarmReducer from "@mobile/shared/redux/priceAlarmSlice";
 
 export const store = configureStore({
   reducer: {
@@ -32,5 +33,6 @@ export const store = configureStore({
     homeLayout: homeLayoutReducer,
     question: questionReducer,
     corporateOffer: corporateOfferReducer,
+    priceAlarm: priceAlarmReducer,
   },
 });
