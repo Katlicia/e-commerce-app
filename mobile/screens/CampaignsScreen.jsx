@@ -83,19 +83,17 @@ function CampaignCard({ item }) {
         <Text
           style={{
             fontSize: 14,
-            fontWeight: "700",
-            color: "#212529",
+            fontWeight: "400",
             flex: 1,
           }}
           numberOfLines={2}
         >
           {item.title}
         </Text>
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color="#adb5bd"
-          style={{ marginLeft: 6 }}
+        <Image
+          source={require("../assets/carrow.png")}
+          style={{ width: 25, height: 18, marginLeft: 6 }}
+          resizeMode="contain"
         />
       </View>
     </TouchableOpacity>

@@ -113,13 +113,14 @@ export default function CampaignDetailScreen() {
             )}
           </View>
 
-          <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+          <View
+            style={{ paddingHorizontal: 16, paddingTop: 16, paddingRight: 24 }}
+          >
             {/* Title + CTA */}
             <Text
               style={{
                 fontSize: 16,
-                fontWeight: "800",
-                color: "#212529",
+                fontWeight: "400",
                 lineHeight: 24,
                 marginBottom: 14,
               }}
@@ -157,31 +158,35 @@ export default function CampaignDetailScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Description */}
-            {descriptionLines.length > 0 && (
+            {/* Description + coupon steps */}
+            {(descriptionLines.length > 0 || campaign.coupon?.code) && (
               <View style={{ marginBottom: 20 }}>
                 <Text
                   style={{
                     fontSize: 14,
                     fontWeight: "700",
-                    color: "#212529",
                     marginBottom: 10,
                   }}
                 >
                   Kampanya Koşulları:
                 </Text>
-                {descriptionLines.map((line, i) => (
+                {[
+                  ...descriptionLines,
+                  ...(campaign.coupon?.code
+                    ? [
+                        "Üye girişi yapın.",
+                        `Sepetinize ${campaign.coupon.minOrderAmount ? campaign.coupon.minOrderAmount + " TL ve üzeri" : ""} ürün ekleyin.`,
+                        "Sepetinizin üst kısmındaki alandan indirimi uygula butonuna basın.",
+                        "İndirimin toplam tutardan düştüğünü göreceksiniz.",
+                      ]
+                    : []),
+                ].map((line, i) => (
                   <View
                     key={i}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      marginBottom: 6,
-                    }}
+                    style={{ flexDirection: "row", alignItems: "flex-start" }}
                   >
                     <Text
                       style={{
-                        color: "#555",
                         fontSize: 13,
                         marginRight: 6,
                         marginTop: 1,
@@ -191,65 +196,12 @@ export default function CampaignDetailScreen() {
                     </Text>
                     <Text
                       style={{
-                        color: "#555",
                         fontSize: 13,
                         lineHeight: 20,
                         flex: 1,
                       }}
                     >
                       {line}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Coupon usage instructions */}
-            {campaign.coupon?.code && (
-              <View style={{ marginBottom: 20 }}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "700",
-                    color: "#212529",
-                    marginBottom: 10,
-                  }}
-                >
-                  Kupon Kullanımı
-                </Text>
-                {[
-                  "Üye girişi yapın.",
-                  `Sepetinize ${campaign.coupon.minOrderAmount ? campaign.coupon.minOrderAmount + " TL ve üzeri" : ""} ürün ekleyin.`,
-                  "Sepetinizin üst kısmındaki alandan indirimi uygula butonuna basın.",
-                  "İndirimin toplam tutardan düştüğünü göreceksiniz.",
-                ].map((step, i) => (
-                  <View
-                    key={i}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      marginBottom: 6,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#555",
-                        fontSize: 13,
-                        marginRight: 6,
-                        marginTop: 1,
-                      }}
-                    >
-                      •
-                    </Text>
-                    <Text
-                      style={{
-                        color: "#555",
-                        fontSize: 13,
-                        lineHeight: 20,
-                        flex: 1,
-                      }}
-                    >
-                      {step}
                     </Text>
                   </View>
                 ))}
@@ -305,7 +257,7 @@ export default function CampaignDetailScreen() {
 
             {/* Date range */}
             {campaign.startDate && campaign.endDate && (
-              <Text style={{ fontSize: 13, color: "#888", marginTop: 4 }}>
+              <Text style={{ fontSize: 14, marginTop: 4 }}>
                 {formatDate(campaign.startDate)} —{" "}
                 {formatDate(campaign.endDate)} tarihlerinde geçerlidir.
               </Text>

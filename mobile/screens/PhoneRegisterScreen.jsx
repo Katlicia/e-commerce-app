@@ -131,7 +131,7 @@ export default function PhoneRegisterScreen({ navigation, route }) {
             {/* Name */}
             <View className="mb-3">
               <TextInput
-                className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
+                className="border border-border-input rounded-xs px-4 h-16 text-base text-text-primary bg-white"
                 style={fieldErrors.name ? { borderColor: "#ef4444" } : null}
                 value={formData.name}
                 onChangeText={update("name")}
@@ -149,7 +149,7 @@ export default function PhoneRegisterScreen({ navigation, route }) {
             {/* Surname */}
             <View className="mb-3">
               <TextInput
-                className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
+                className="border border-border-input rounded-xs px-4 h-16 text-base text-text-primary bg-white"
                 style={fieldErrors.surname ? { borderColor: "#ef4444" } : null}
                 value={formData.surname}
                 onChangeText={update("surname")}
@@ -167,7 +167,7 @@ export default function PhoneRegisterScreen({ navigation, route }) {
             {/* Email */}
             <View className="mb-3">
               <TextInput
-                className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
+                className="border border-border-input rounded-xs px-4 h-16 text-base text-text-primary bg-white"
                 style={fieldErrors.email ? { borderColor: "#ef4444" } : null}
                 value={formData.email}
                 onChangeText={update("email")}
@@ -187,7 +187,7 @@ export default function PhoneRegisterScreen({ navigation, route }) {
             {/* Password */}
             <View className="mb-6">
               <TextInput
-                className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
+                className="border border-border-input rounded-xs px-4 h-16 text-base text-text-primary bg-white"
                 style={fieldErrors.password ? { borderColor: "#ef4444" } : null}
                 value={formData.password}
                 onChangeText={update("password")}
@@ -252,16 +252,15 @@ export default function PhoneRegisterScreen({ navigation, route }) {
 
             {/* Register button */}
             <TouchableOpacity
-              className="bg-brand-red rounded-sm py-4 items-center justify-center w-full mb-6 flex-row gap-2"
+              className="bg-brand-red rounded-md h-16 flex-row items-center justify-center gap-5 mb-5"
               onPress={handleRegister}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <>
-                  <Text className="text-white font-bold text-base">
-                    Kayıt Ol
-                  </Text>
+                  <Text className="text-white font-sans text-xl">Kayıt Ol</Text>
                   <Image
                     source={require("../assets/arrow.png")}
                     style={{ width: 40, height: 18 }}
