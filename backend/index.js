@@ -1,10 +1,12 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
+const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const db = require("./config/db");
-const dotenv = require("dotenv");
-dotenv.config();
+
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -28,6 +30,7 @@ const priceAlarmRoutes = require("./routes/priceAlarmRoutes");
 const productQuestionRoutes = require("./routes/productQuestionRoutes");
 const activityLogRoutes = require("./routes/activityLogRoutes");
 const corporateOfferRoutes = require("./routes/corporateOfferRoutes");
+const errorHandler = require("./middleware/errorHandler");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -36,6 +39,22 @@ cloudinary.config({
 });
 
 const app = express();
+
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use((req, res, next) => {
+  const sanitize = (obj) => {
+    if (!obj || typeof obj !== "object" || Array.isArray(obj)) return;
+    for (const key of Object.keys(obj)) {
+      if (key.startsWith("$") || key.includes(".")) {
+        delete obj[key];
+      } else {
+        sanitize(obj[key]);
+      }
+    }
+  };
+  if (req.body) sanitize(req.body);
+  next();
+});
 
 app.use(
   cors({
@@ -55,8 +74,8 @@ app.use(
   }),
 );
 
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ limit: "20mb", extended: true }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ limit: "1mb", extended: true }));
 app.use(cookieParser());
 
 const authLimiter = rateLimit({
@@ -70,6 +89,7 @@ app.use("/login", authLimiter);
 app.use("/register", authLimiter);
 app.use("/forgetPassword", authLimiter);
 app.use("/check-phone", authLimiter);
+app.use("/reset", authLimiter);
 app.use("/api/payment", rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -102,6 +122,8 @@ app.use("/", priceAlarmRoutes);
 app.use("/", productQuestionRoutes);
 app.use("/", activityLogRoutes);
 app.use("/", corporateOfferRoutes);
+
+app.use(errorHandler);
 
 app.get("/", (req, res) => {
   res.send("API working.");
