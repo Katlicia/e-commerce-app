@@ -29,12 +29,18 @@ export const checkPhone = createAsyncThunk(
 
 const isWeb = typeof localStorage !== "undefined";
 
-const persistToken = (token) => {
-  if (!isWeb && token) storage.setItem("token", token);
+const persistTokens = (token, refreshToken) => {
+  if (!isWeb) {
+    if (token) storage.setItem("token", token);
+    if (refreshToken) storage.setItem("refreshToken", refreshToken);
+  }
 };
 
 const clearToken = () => {
-  if (!isWeb) storage.removeItem("token");
+  if (!isWeb) {
+    storage.removeItem("token");
+    storage.removeItem("refreshToken");
+  }
 };
 
 export const loginUser = createAsyncThunk(
@@ -42,7 +48,7 @@ export const loginUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/login", formData);
-      persistToken(data.token);
+      persistTokens(data.token, data.refreshToken);
       return data;
     } catch (err) {
       return rejectWithValue({
@@ -58,7 +64,7 @@ export const registerUser = createAsyncThunk(
   async (formData, { rejectWithValue }) => {
     try {
       const { data } = await axiosInstance.post("/register", formData);
-      persistToken(data.token);
+      persistTokens(data.token, data.refreshToken);
       return data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || "Kayıt başarısız.");
