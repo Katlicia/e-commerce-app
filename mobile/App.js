@@ -21,9 +21,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   configureAxios,
   setBearerToken,
+  configureRefreshCallback,
 } from "@mobile/shared/utils/axiosInstance";
 import { configureStorage } from "@mobile/shared/utils/storage";
-import { fetchMe } from "@mobile/shared/redux/authSlice";
+import { fetchMe, logoutUser } from "@mobile/shared/redux/authSlice";
 import {
   fetchFavourites,
   hydrateFavouritesFromStorage,
@@ -45,6 +46,7 @@ function getActiveRouteName(state) {
 }
 
 configureAxios(process.env.EXPO_PUBLIC_API_URL || "http://192.168.1.121:5000");
+configureRefreshCallback(() => store.dispatch(logoutUser()));
 configureStorage({
   getItem: (key) => AsyncStorage.getItem(key),
   setItem: (key, value) => AsyncStorage.setItem(key, value),
@@ -64,6 +66,7 @@ function AppContent() {
     (async () => {
       const token = await AsyncStorage.getItem("token");
       if (token) setBearerToken(token);
+      // refreshToken is read lazily by the axios interceptor via storage adapter
 
       const action = await dispatch(fetchMe());
       if (action.payload) {
