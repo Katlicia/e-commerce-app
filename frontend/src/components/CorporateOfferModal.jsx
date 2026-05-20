@@ -38,8 +38,8 @@ export default function CorporateOfferModal({ open, onClose, product }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!fullName.trim() || !email.trim()) {
-      setErrorMsg("Ad Soyad ve e-posta alanları zorunludur.");
+    if (!fullName.trim() || !email.trim() || !message.trim()) {
+      setErrorMsg("Tüm alanlar zorunludur.");
       return;
     }
     setLoading(true);
@@ -158,11 +158,12 @@ export default function CorporateOfferModal({ open, onClose, product }) {
           />
 
           <textarea
-            placeholder="Mesajınız (isteğe bağlı)"
+            placeholder="Mesajınız"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             rows={4}
             style={{ ...inputStyle, resize: "vertical" }}
+            required
           />
 
           <p style={{ fontSize: 13, color: "#6c757d", textAlign: "center", marginBottom: 16 }}>

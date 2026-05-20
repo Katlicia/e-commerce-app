@@ -42,8 +42,8 @@ export default function CorporateOfferModal({ visible, onClose, product }) {
   }, [visible]);
 
   async function handleSubmit() {
-    if (!fullName.trim() || !email.trim()) {
-      setErrorMsg("Ad Soyad ve e-posta alanları zorunludur.");
+    if (!fullName.trim() || !email.trim() || !message.trim()) {
+      setErrorMsg("Tüm alanlar zorunludur.");
       return;
     }
     setLoading(true);
@@ -165,7 +165,7 @@ export default function CorporateOfferModal({ visible, onClose, product }) {
             <TextInput
               value={message}
               onChangeText={setMessage}
-              placeholder="Mesajınız"
+              placeholder="Mesajınız *"
               placeholderTextColor="#7B7B7B"
               multiline
               style={{

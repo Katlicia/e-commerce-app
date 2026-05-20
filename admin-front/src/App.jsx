@@ -1,12 +1,21 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchMe } from "./redux/authSlice.jsx";
 import LoginPage from "./Components/LoginPage.jsx";
 import AdminProductFormPage from "./Components/AdminProductFormPage.jsx";
 import AdminToast from "./Components/AdminToast.jsx";
 import Home from "./Components/Home.jsx";
 
 function App() {
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user, initialized } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    dispatch(fetchMe());
+  }, [dispatch]);
+
+  if (!initialized) return null;
 
   return (
     <BrowserRouter>
