@@ -24,8 +24,10 @@ The repository is organized as a monorepo with four separate applications and on
 
 - Node.js with Express 5
 - MongoDB with Mongoose for data modeling
-- JWT for authentication, stored in HTTP-only cookies
+- JWT authentication with short-lived access tokens (15 min) and sliding refresh tokens (7 days), stored in HTTP-only cookies
 - bcryptjs for password hashing
+- Helmet for HTTP security headers
+- express-rate-limit for brute-force protection on auth endpoints
 - Cloudinary for image storage
 - Iyzipay for payment processing (Turkish market)
 - Nodemailer for transactional emails
@@ -60,6 +62,8 @@ Checkout supports multiple saved addresses, cargo company selection, and payment
 
 After placing an order, users can view their order history and track individual order status. Account settings cover profile information, address management, and password changes.
 
+Users can set price alarms on products and receive an email notification when the price drops. Product detail pages include a corporate offer request form where users can submit a message; admin replies are visible in the user's profile under the corporate offers tab. Product pages also support a Q&A section where customers can ask questions and admins can post answers.
+
 ### Admin features
 
 The admin panel provides full CRUD for products including variant management, stock tracking, and badge assignment. Categories can be organized in a nested hierarchy.
@@ -67,6 +71,8 @@ The admin panel provides full CRUD for products including variant management, st
 Order management shows all orders with status tracking and fulfillment controls. The user list gives admins visibility over registered accounts.
 
 Promotion tools include banner management, campaign creation, coupon generation, and homepage section configuration. The homepage layout and content order can be adjusted via drag-and-drop. Analytics panels show sales, order, and product performance data through charts.
+
+The admin panel also includes a corporate offers panel where incoming customer requests are displayed as cards. Admins can write a reply and send it, after which the offer is marked as answered and the reply becomes visible to the customer.
 
 ### Mobile app
 
@@ -76,7 +82,9 @@ The mobile app delivers the same customer experience as the web frontend with a 
 
 The supported login method for customers is email/phone and password. Admins authenticate through a separate endpoint with role enforcement.
 
-On the web, tokens are stored in HTTP-only cookies. On mobile, tokens are stored using Expo Secure Store and sent as Bearer tokens in the Authorization header. The backend middleware supports both approaches and applies optional or required authentication per route.
+On the web, authentication relies entirely on HTTP-only cookies. The access token expires after 15 minutes; when a request returns 401, the Axios interceptor automatically calls the refresh endpoint using the refresh cookie and retries the original request. If the refresh also fails, the user is logged out via a Redux dispatch.
+
+On mobile, tokens are stored using Expo Secure Store and sent as Bearer tokens in the Authorization header. The same refresh interceptor logic applies, reading and writing the token from secure storage. The admin panel uses the same cookie-based approach as the web frontend, with its own Axios instance and refresh interceptor.
 
 Password recovery is handled via a reset link sent by email. The reset token has a time limit and is consumed on use.
 
@@ -104,7 +112,7 @@ Then open the app in the Expo Go client or in a simulator.
 
 ## Project Structure Notes
 
-The shared directory is aliased in the frontend and mobile Vite/Metro configs so both apps can import from it using a consistent path. Redux slices in shared cover authentication, products, cart, favorites, orders, user profile, lists, cargo options, coupons, banners, homepage sections, homepage layout, and tax settings.
+The shared directory is aliased in the frontend and mobile Vite/Metro configs so both apps can import from it using a consistent path. Redux slices in shared cover authentication, products, cart, favorites, orders, user profile, lists, cargo options, coupons, banners, homepage sections, homepage layout, tax settings, price alarms, and corporate offers.
 
 The admin panel has its own Redux store separate from the shared one, with slices for admin authentication and admin-specific operations.
 
