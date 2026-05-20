@@ -1,4 +1,4 @@
-export { default as axiosInstance, configureAxios } from "./utils/axiosInstance.js";
+export { default as axiosInstance, configureAxios, configureRefreshCallback } from "./utils/axiosInstance.js";
 export { configureStorage, storage } from "./utils/storage.js";
 export { store } from "./redux/store.js";
 

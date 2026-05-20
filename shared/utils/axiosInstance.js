@@ -5,6 +5,9 @@ const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Web uses httpOnly cookies exclusively — tokens must never touch localStorage.
+const isWeb = typeof localStorage !== "undefined";
+
 // Web:    configureAxios(import.meta.env.VITE_API_URL)
 // Mobile: configureAxios(process.env.EXPO_PUBLIC_API_URL)
 export const configureAxios = (baseURL) => {
@@ -65,12 +68,14 @@ axiosInstance.interceptors.response.use(
       _isRefreshing = true;
 
       try {
-        const refreshToken = await storage.getItem("refreshToken");
+        const refreshToken = isWeb ? null : await storage.getItem("refreshToken");
         const { data } = await axiosInstance.post("/refresh", { refreshToken });
 
         setBearerToken(data.token);
-        await storage.setItem("token", data.token);
-        if (data.refreshToken) await storage.setItem("refreshToken", data.refreshToken);
+        if (!isWeb) {
+          await storage.setItem("token", data.token);
+          if (data.refreshToken) await storage.setItem("refreshToken", data.refreshToken);
+        }
 
         processPendingQueue(null, data.token);
         originalRequest.headers["Authorization"] = `Bearer ${data.token}`;
@@ -78,8 +83,10 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processPendingQueue(refreshError);
         setBearerToken(null);
-        await storage.removeItem("token");
-        await storage.removeItem("refreshToken");
+        if (!isWeb) {
+          await storage.removeItem("token");
+          await storage.removeItem("refreshToken");
+        }
         if (_onRefreshFailed) _onRefreshFailed();
         return Promise.reject(refreshError);
       } finally {

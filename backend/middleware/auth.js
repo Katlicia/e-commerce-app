@@ -9,7 +9,7 @@ exports.authenticationMiddle = async (req, res, next) => {
   }
 
   if (!token) {
-    return res.status(403).json({ message: "Giriş yapın." });
+    return res.status(401).json({ message: "Giriş yapın." });
   }
 
   let decodedData;
@@ -17,7 +17,7 @@ exports.authenticationMiddle = async (req, res, next) => {
     decodedData = jwt.verify(token, process.env.JWT_KEY);
   } catch (err) {
     return res
-      .status(403)
+      .status(401)
       .json({ message: "Geçersiz veya süresi bitmiş token." });
   }
 

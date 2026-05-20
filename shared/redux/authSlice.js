@@ -37,10 +37,8 @@ const persistTokens = (token, refreshToken) => {
 };
 
 const clearToken = () => {
-  if (!isWeb) {
-    storage.removeItem("token");
-    storage.removeItem("refreshToken");
-  }
+  storage.removeItem("token");
+  storage.removeItem("refreshToken");
 };
 
 export const loginUser = createAsyncThunk(
