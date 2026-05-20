@@ -39,6 +39,8 @@ import briefcaseIcon from "../assets/ProductDetails/briefcase.svg";
 import bellIcon from "../assets/ProductDetails/bell.svg";
 import ProductFeaturesSection from "../components/ProductFeaturesSection";
 import CouponBanner from "../components/CouponBanner";
+import PriceAlarmModal from "../components/PriceAlarmModal";
+import CorporateOfferModal from "../components/CorporateOfferModal";
 import { getKeyword } from "../redux/generalSlice";
 
 const TARGET = new Date(
@@ -80,13 +82,20 @@ function ProductDetails() {
   const [activeImg, setActiveImg] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [time, setTime] = useState(getTimeLeft());
+  const [priceAlarmOpen, setPriceAlarmOpen] = useState(false);
+  const [corporateOfferOpen, setCorporateOfferOpen] = useState(false);
+  const [hasAlarm, setHasAlarm] = useState(false);
 
   useEffect(() => {
     dispatch(getProductDetail(id));
     setActiveImg(0);
     setSelectedVariants({});
+    setHasAlarm(false);
     if (user) {
       axiosInstance.post(`/users/me/visited/${id}`).catch(() => {});
+      axiosInstance.get(`/price-alarms/${id}`)
+        .then((res) => setHasAlarm(res.data?.hasAlarm ?? false))
+        .catch(() => {});
     }
   }, [dispatch, id]);
 
@@ -544,13 +553,20 @@ function ProductDetails() {
                     onClose={() => setListDropdownOpen(false)}
                   />
                 </div>
-                <button className="pd-action-btn">
+                <button
+                  className="pd-action-btn"
+                  onClick={() => setCorporateOfferOpen(true)}
+                >
                   <img src={briefcaseIcon} alt="Briefcase Icon" />
                   <span>KURUMSAL TEKLİF</span>
                 </button>
-                <button className="pd-action-btn">
+                <button
+                  className={`pd-action-btn${hasAlarm ? " active" : ""}`}
+                  onClick={() => setPriceAlarmOpen(true)}
+                  style={hasAlarm ? { color: "#ff7700" } : {}}
+                >
                   <img src={bellIcon} alt="Bell Icon" />
-                  <span>FİYAT ALARMI</span>
+                  <span>{hasAlarm ? "ALARM KURULU" : "FİYAT ALARMI"}</span>
                 </button>
               </div>
 
@@ -787,6 +803,19 @@ function ProductDetails() {
           </div>
         )}
       </div>
+
+      <PriceAlarmModal
+        open={priceAlarmOpen}
+        onClose={() => setPriceAlarmOpen(false)}
+        product={product}
+        hasAlarm={hasAlarm}
+        onAlarmChange={setHasAlarm}
+      />
+      <CorporateOfferModal
+        open={corporateOfferOpen}
+        onClose={() => setCorporateOfferOpen(false)}
+        product={product}
+      />
     </>
   );
 }
