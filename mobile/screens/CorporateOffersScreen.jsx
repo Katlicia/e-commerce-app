@@ -70,6 +70,23 @@ function OfferCard({ item }) {
         </View>
       </View>
 
+      {item.reply ? (
+        <View
+          style={{
+            marginHorizontal: 12,
+            marginBottom: 10,
+            borderLeftWidth: 3,
+            borderLeftColor: "#F83B0A",
+            paddingLeft: 10,
+          }}
+        >
+          <Text style={{ fontSize: 11, fontWeight: "600", color: "#F83B0A", marginBottom: 2 }}>
+            Yanıt
+          </Text>
+          <Text style={{ fontSize: 13, color: "#212529" }}>{item.reply}</Text>
+        </View>
+      ) : null}
+
       <View className="flex-row items-center gap-2 px-3 pb-3">
         <Text className="text-xs text-text-muted">{formatDate(item.createdAt)}</Text>
 
