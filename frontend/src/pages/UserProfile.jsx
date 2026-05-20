@@ -12,6 +12,8 @@ import { getUserOrders } from "../redux/orderSlice";
 import ProfileOrderDetails from "../components/ProfileOrderDetails";
 import ProfileListsSection from "../components/ProfileListsSection";
 import ProfileQASection from "../components/ProfileQASection";
+import ProfilePriceAlarmsSection from "../components/ProfilePriceAlarmsSection";
+import ProfileCorporateOffersSection from "../components/ProfileCorporateOffersSection";
 import arrowIcon from "../assets/Profile/arrow.svg";
 
 const CONTENT_TITLES = {
@@ -222,6 +224,8 @@ function UserProfile() {
             {activeNav === "sifre-degistir" && <ProfilePasswordForm />}
             {activeNav === "listelerim" && <ProfileListsSection />}
             {activeNav === "soru-cevap" && <ProfileQASection />}
+            {activeNav === "fiyat-alarmlari" && <ProfilePriceAlarmsSection />}
+            {activeNav === "kurumsal" && <ProfileCorporateOffersSection />}
 
             {![
               "siparisler",
@@ -230,6 +234,8 @@ function UserProfile() {
               "sifre-degistir",
               "listelerim",
               "soru-cevap",
+              "fiyat-alarmlari",
+              "kurumsal",
             ].includes(activeNav) && (
               <p className="text-muted">Bu bölüm yakında aktif olacak.</p>
             )}
