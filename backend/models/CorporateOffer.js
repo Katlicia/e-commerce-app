@@ -31,6 +31,10 @@ const corporateOfferSchema = new mongoose.Schema(
       enum: ["pending", "answered"],
       default: "pending",
     },
+    reply: {
+      type: String,
+      trim: true,
+    },
   },
   { timestamps: true },
 );
