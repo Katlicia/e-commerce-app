@@ -13,6 +13,8 @@ import bannerReducer from "./bannerSlice";
 import homeSectionReducer from "./homeSectionSlice";
 import homeLayoutReducer from "./homeLayoutSlice";
 import questionReducer from "./questionSlice";
+import priceAlarmReducer from "./priceAlarmSlice";
+import corporateOfferReducer from "./corporateOfferSlice";
 
 export const store = configureStore({
   reducer: {
@@ -30,5 +32,7 @@ export const store = configureStore({
     homeSection: homeSectionReducer,
     homeLayout: homeLayoutReducer,
     question: questionReducer,
+    priceAlarm: priceAlarmReducer,
+    corporateOffer: corporateOfferReducer,
   },
 });
