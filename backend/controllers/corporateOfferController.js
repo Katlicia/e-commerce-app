@@ -53,7 +53,31 @@ exports.updateOfferStatus = async (req, res, next) => {
       req.params.id,
       { status: req.body.status },
       { new: true },
-    );
+    ).populate("product", "name images");
+
+    if (!offer) {
+      return res.status(404).json({ message: "Teklif bulunamadı." });
+    }
+
+    res.json(offer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.replyToOffer = async (req, res, next) => {
+  try {
+    const { reply } = req.body;
+
+    if (!reply?.trim()) {
+      return res.status(400).json({ message: "Yanıt boş olamaz." });
+    }
+
+    const offer = await CorporateOffer.findByIdAndUpdate(
+      req.params.id,
+      { reply: reply.trim(), status: "answered" },
+      { new: true },
+    ).populate("product", "name images");
 
     if (!offer) {
       return res.status(404).json({ message: "Teklif bulunamadı." });
