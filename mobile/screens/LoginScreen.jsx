@@ -24,6 +24,9 @@ import { fetchFavourites } from "@mobile/shared/redux/favouriteSlice";
 import { fetchLists } from "@mobile/shared/redux/listSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 
+const PHONE_TEMPLATE = "0(5__) ___ __ __";
+
+// Progressive format, no underscores — used once the user starts typing
 function formatPhone(d) {
   if (!d) return "";
   if (d.length <= 3) return `0(${d}`;
@@ -42,6 +45,8 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [fieldWidth, setFieldWidth] = useState(0);
+  const [contentWidth, setContentWidth] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -96,6 +101,14 @@ export default function LoginScreen({ navigation }) {
     }
   }
 
+  const phoneValue = formatPhone(phoneDigits);
+  // Centre the placeholder by left-insetting the input half the slack;
+  // textAlign would re-centre the value on every keystroke.
+  const phoneSideMargin =
+    fieldWidth > 0 && contentWidth > 0
+      ? Math.max(0, (fieldWidth - contentWidth) / 2)
+      : 0;
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <KeyboardAvoidingView
@@ -109,7 +122,11 @@ export default function LoginScreen({ navigation }) {
           {/* X Button */}
           <View className="items-end px-4 pt-3">
             <TouchableOpacity
-              onPress={() => navigation.navigate("MainTabs")}
+              onPress={() =>
+                navigation.canGoBack()
+                  ? navigation.goBack()
+                  : navigation.navigate("MainTabs")
+              }
               className="p-2"
             >
               <Ionicons name="close" size={32} color="#212529" />
@@ -133,19 +150,42 @@ export default function LoginScreen({ navigation }) {
 
                 {/* Phone Input */}
                 <View
-                  className="w-full border-b-2 mb-1"
+                  className="self-stretch border-b-2 mb-1"
                   style={{ borderColor: phoneError ? "#ef4444" : "#dee2e6" }}
+                  onLayout={(e) => setFieldWidth(e.nativeEvent.layout.width)}
                 >
                   <TextInput
-                    className="text-3xl sans-medium py-3 text-center"
-                    style={{ letterSpacing: 2 }}
-                    value={formatPhone(phoneDigits)}
+                    className="text-3xl sans-medium py-3"
+                    style={{
+                      letterSpacing: 2,
+                      paddingHorizontal: 0,
+                      marginLeft: phoneSideMargin,
+                    }}
+                    value={phoneValue}
                     onChangeText={handlePhoneChange}
                     keyboardType="phone-pad"
-                    placeholder="0(5__) ___ __ __"
-                    placeholderTextColor="#000000"
-                    maxLength={16}
+                    placeholder={PHONE_TEMPLATE}
+                    placeholderTextColor="#212529"
+                    maxLength={PHONE_TEMPLATE.length}
+                    selection={{
+                      start: phoneValue.length,
+                      end: phoneValue.length,
+                    }}
                   />
+                  {/* Hidden sizer: measures the placeholder width */}
+                  <Text
+                    className="text-3xl sans-medium"
+                    style={{
+                      letterSpacing: 2,
+                      position: "absolute",
+                      opacity: 0,
+                    }}
+                    onLayout={(e) =>
+                      setContentWidth(e.nativeEvent.layout.width)
+                    }
+                  >
+                    {PHONE_TEMPLATE}
+                  </Text>
                 </View>
                 {phoneError ? (
                   <Text className="text-red-500 text-sm mb-6 self-start">
@@ -183,7 +223,7 @@ export default function LoginScreen({ navigation }) {
               <>
                 {/* Phone shown (read-only) */}
                 <Text className="text-text-primary text-lg font-medium mb-8">
-                  {formatPhone(phoneDigits)}
+                  {phoneValue}
                 </Text>
 
                 {/* Error */}
