@@ -10,7 +10,6 @@ import {
   Dimensions,
   Platform,
   ToastAndroid,
-  Alert,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -35,6 +34,7 @@ import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import AddressModal from "../components/AddressModal";
 import ScreenHeader from "../components/ScreenHeader";
+import CustomAlert from "../components/CustomAlert";
 
 const BANKS = [
   {
@@ -51,12 +51,12 @@ const BANKS = [
   },
 ];
 
-function copyToClipboard(text) {
+function copyToClipboard(text, showAlert) {
   Clipboard.setStringAsync(text);
   if (Platform.OS === "android") {
     ToastAndroid.show("Kopyalandı", ToastAndroid.SHORT);
   } else {
-    Alert.alert("Kopyalandı", text);
+    showAlert({ title: "Kopyalandı", message: text });
   }
 }
 
@@ -238,6 +238,9 @@ export default function CheckoutScreen() {
   );
   const totalQuantity = cart.reduce((s, i) => s + i.quantity, 0);
 
+  const [guestAddresses, setGuestAddresses] = useState([]);
+  const addresses = user ? apiAddresses : guestAddresses;
+
   const [productsExpanded, setProductsExpanded] = useState(false);
   const [selectedAddressIdx, setSelectedAddressIdx] = useState(0);
   const [selectedKargo, setSelectedKargo] = useState(null);
@@ -251,12 +254,14 @@ export default function CheckoutScreen() {
   const [addressError, setAddressError] = useState("");
   const [summaryExpanded, setSummaryExpanded] = useState(false);
 
+  const [guestEmail, setGuestEmail] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [alertConfig, setAlertConfig] = useState(null);
 
   useEffect(() => {
     if (user) dispatch(getUserAddresses());
@@ -284,12 +289,24 @@ export default function CheckoutScreen() {
     }
     if (orderError) {
       dispatch(resetOrderState());
-      navigation.replace("OrderSuccess", { success: false });
+      if (orderError.includes("kayıtlı")) {
+        setFormErrors((prev) => ({ ...prev, guestEmail: orderError }));
+      } else {
+        navigation.replace("OrderSuccess", { success: false });
+      }
     }
   }, [orderSuccess, orderError]);
 
   const handleSaveAddress = (values) => {
-    if (editingIndex !== null) {
+    if (!user) {
+      if (editingIndex !== null) {
+        setGuestAddresses((prev) =>
+          prev.map((a, i) => (i === editingIndex ? values : a)),
+        );
+      } else {
+        setGuestAddresses((prev) => [...prev, values]);
+      }
+    } else if (editingIndex !== null) {
       dispatch(editUserAddress({ index: editingIndex, ...values }));
     } else {
       dispatch(addUserAddress(values)).then(() => dispatch(getUserAddresses()));
@@ -300,7 +317,7 @@ export default function CheckoutScreen() {
   };
 
   const openEditAddress = (idx) => {
-    setEditingAddress(apiAddresses[idx]);
+    setEditingAddress(addresses[idx]);
     setEditingIndex(idx);
     setAddressModalVisible(true);
   };
@@ -312,13 +329,18 @@ export default function CheckoutScreen() {
   };
 
   const handleSubmit = () => {
-    if (apiAddresses.length === 0) {
+    if (addresses.length === 0) {
       setAddressError("Lütfen en az bir adres ekleyiniz");
       return;
     }
     setAddressError("");
 
     const errors = {};
+    if (!user) {
+      if (!guestEmail) errors.guestEmail = "E-posta adresi zorunludur";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail))
+        errors.guestEmail = "Geçerli bir e-posta adresi giriniz";
+    }
     if (selectedPayment === "kredi") {
       if (!cardNumber || !/^\d{16}$/.test(cardNumber))
         errors.cardNumber = "16 haneli kart numarası giriniz";
@@ -353,14 +375,15 @@ export default function CheckoutScreen() {
     const orderPayload = {
       items,
       totalAmount: finalAmount,
-      address: apiAddresses[selectedAddressIdx],
+      address: addresses[selectedAddressIdx],
       cargoCompany: selectedCargoData?.companyName,
       cargoPrice: effectiveCargoPrice,
       paymentMethod: selectedPayment,
       ...(!sameAsBilling && {
-        billingAddress: apiAddresses[selectedBillingIdx],
+        billingAddress: addresses[selectedBillingIdx],
       }),
       ...(appliedCoupon && { coupon: appliedCoupon }),
+      ...(!user && { guestEmail }),
     };
 
     if (selectedPayment === "kredi") {
@@ -419,47 +442,59 @@ export default function CheckoutScreen() {
           setProductsExpanded={setProductsExpanded}
         />
 
+        {/* Guest email */}
+        {!user && (
+          <View className="mt-3 px-4 py-3">
+            <Text className="text-md font-sans-bold text-text-primary mb-3">
+              İLETİŞİM
+            </Text>
+            <TextInput
+              className="border border-border-input rounded-sm px-3 py-3 text-base text-text-primary"
+              placeholder="E-posta adresiniz"
+              placeholderTextColor="#818181"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={guestEmail}
+              onChangeText={setGuestEmail}
+            />
+            {formErrors.guestEmail ? (
+              <Text className="text-price-red text-xs mt-1">
+                {formErrors.guestEmail}
+              </Text>
+            ) : null}
+          </View>
+        )}
+
         {/* Delivery */}
         <View className="mt-3 px-4 py-3">
           <View className="flex-row justify-between items-center mb-3">
             <Text className="text-md font-sans-bold text-text-primary">
               TESLİMAT
             </Text>
-            {user && (
-              <TouchableOpacity
-                onPress={() => {
-                  setEditingAddress(null);
-                  setEditingIndex(null);
-                  setAddressModalVisible(true);
-                }}
-              >
-                <Text className="text-primary text-sm font-sans-semibold">
-                  Adres Ekle
-                </Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              onPress={() => {
+                setEditingAddress(null);
+                setEditingIndex(null);
+                setAddressModalVisible(true);
+              }}
+            >
+              <Text className="text-primary text-sm font-sans-semibold">
+                Adres Ekle
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {addressError ? (
             <Text className="text-price-red text-xs mb-2">{addressError}</Text>
           ) : null}
 
-          {!user ? (
-            <TouchableOpacity
-              className="border border-border-input rounded-xl py-3 items-center"
-              onPress={() => navigation.navigate("Login")}
-            >
-              <Text className="text-primary font-sans-semibold text-sm">
-                Adres eklemek için giriş yapın
-              </Text>
-            </TouchableOpacity>
-          ) : apiAddresses.length === 0 ? (
+          {addresses.length === 0 ? (
             <Text className="text-text-muted text-sm">
               Kayıtlı adresiniz yok.
             </Text>
           ) : (
             <View className="gap-2">
-              {apiAddresses.map((addr, idx) => (
+              {addresses.map((addr, idx) => (
                 <TouchableOpacity
                   key={idx}
                   className="px-3 py-3 flex-row items-start"
@@ -522,7 +557,7 @@ export default function CheckoutScreen() {
 
               {!sameAsBilling && (
                 <View className="gap-2 mt-1">
-                  {apiAddresses.map((addr, idx) => (
+                  {addresses.map((addr, idx) => (
                     <TouchableOpacity
                       key={idx}
                       className="px-3 py-3 flex-row items-start"
@@ -758,7 +793,7 @@ export default function CheckoutScreen() {
                           {bank.name}
                         </Text>
                         <TouchableOpacity
-                          onPress={() => copyToClipboard(bank.name)}
+                          onPress={() => copyToClipboard(bank.name, setAlertConfig)}
                           activeOpacity={0.7}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         >
@@ -775,7 +810,7 @@ export default function CheckoutScreen() {
                         </Text>
                         <TouchableOpacity
                           onPress={() =>
-                            copyToClipboard(bank.iban.replace(/\s/g, ""))
+                            copyToClipboard(bank.iban.replace(/\s/g, ""), setAlertConfig)
                           }
                           activeOpacity={0.7}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -957,6 +992,13 @@ export default function CheckoutScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }
