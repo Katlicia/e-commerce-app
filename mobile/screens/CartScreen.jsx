@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import ScreenHeader from "../components/ScreenHeader";
 import CartSummaryBar from "../components/CartSummaryBar";
+import CustomAlert from "../components/CustomAlert";
 import {
   addToCartWithSync,
   decreaseCartWithSync,
@@ -32,6 +32,7 @@ function CampaignStrip({ totalAmount }) {
   const user = useSelector((state) => state.auth.user);
   const navigation = useNavigation();
   const [campaigns, setCampaigns] = useState([]);
+  const [alertConfig, setAlertConfig] = useState(null);
 
   useEffect(() => {
     axiosInstance
@@ -55,23 +56,23 @@ function CampaignStrip({ totalAmount }) {
 
   const handleApply = async (campaign) => {
     if (!user) {
-      Alert.alert(
-        "Giriş Yapın",
-        "Kampanya uygulamak için giriş yapmanız gerekiyor.",
-        [
+      setAlertConfig({
+        title: "Giriş Yapın",
+        message: "Kampanya uygulamak için giriş yapmanız gerekiyor.",
+        buttons: [
           { text: "Vazgeç", style: "cancel" },
           { text: "Giriş Yap", onPress: () => navigation.navigate("Login") },
         ],
-      );
+      });
       return;
     }
     if (!campaign.coupon?.code) return;
     const min = campaign.coupon.minOrderAmount ?? 0;
     if (min > 0 && totalAmount < min) {
-      Alert.alert(
-        "Minimum Tutar",
-        `Bu kampanyayı kullanmak için sepet tutarınız en az ${Math.floor(min)}₺ olmalıdır.`,
-      );
+      setAlertConfig({
+        title: "Minimum Tutar",
+        message: `Bu kampanyayı kullanmak için sepet tutarınız en az ${Math.floor(min)}₺ olmalıdır.`,
+      });
       return;
     }
     try {
@@ -81,7 +82,10 @@ function CampaignStrip({ totalAmount }) {
       });
       dispatch(setAppliedCoupon(data));
     } catch (err) {
-      Alert.alert("Hata", err?.response?.data?.message ?? "Kampanya uygulanamadı.");
+      setAlertConfig({
+        title: "Hata",
+        message: err?.response?.data?.message ?? "Kampanya uygulanamadı.",
+      });
     }
   };
 
@@ -146,6 +150,13 @@ function CampaignStrip({ totalAmount }) {
           );
         })}
       </ScrollView>
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </View>
   );
 }

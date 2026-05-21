@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   TextInput,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -16,6 +15,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { createList, deleteList } from "@mobile/shared/redux/listSlice";
 import ScreenHeader from "../components/ScreenHeader";
+import CustomAlert from "../components/CustomAlert";
 
 export default function ListsScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -25,6 +25,7 @@ export default function ListsScreen({ navigation }) {
   const [newListName, setNewListName] = useState("");
   const [showInput, setShowInput] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [alertConfig, setAlertConfig] = useState(null);
 
   const handleCreate = async () => {
     const name = newListName.trim();
@@ -37,10 +38,10 @@ export default function ListsScreen({ navigation }) {
   };
 
   const handleDelete = (list) => {
-    Alert.alert(
-      "Listeyi Sil",
-      `"${list.name}" listesini silmek istediğinize emin misiniz?`,
-      [
+    setAlertConfig({
+      title: "Listeyi Sil",
+      message: `"${list.name}" listesini silmek istediğinize emin misiniz?`,
+      buttons: [
         { text: "İptal", style: "cancel" },
         {
           text: "Sil",
@@ -48,7 +49,7 @@ export default function ListsScreen({ navigation }) {
           onPress: () => dispatch(deleteList(list._id)),
         },
       ],
-    );
+    });
   };
 
   if (!user) {
@@ -264,6 +265,13 @@ export default function ListsScreen({ navigation }) {
           />
         ) : null}
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }

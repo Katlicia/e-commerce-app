@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   ScrollView,
   ToastAndroid,
   Platform,
-  Alert,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +14,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import HomeProductList from "../components/home/HomeProductList";
+import CustomAlert from "../components/CustomAlert";
 
 const BANKS = [
   {
@@ -31,12 +31,12 @@ const BANKS = [
   },
 ];
 
-function copyToClipboard(text) {
+function copyToClipboard(text, showAlert) {
   Clipboard.setStringAsync(text);
   if (Platform.OS === "android") {
     ToastAndroid.show("Kopyalandı", ToastAndroid.SHORT);
   } else {
-    Alert.alert("Kopyalandı", text);
+    showAlert({ title: "Kopyalandı", message: text });
   }
 }
 
@@ -50,6 +50,7 @@ export default function OrderSuccessScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const { orderNo, paymentMethod, success = true } = route.params ?? {};
+  const [alertConfig, setAlertConfig] = useState(null);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -146,7 +147,7 @@ export default function OrderSuccessScreen() {
                       {bank.name}
                     </Text>
                     <TouchableOpacity
-                      onPress={() => copyToClipboard(bank.name)}
+                      onPress={() => copyToClipboard(bank.name, setAlertConfig)}
                       activeOpacity={0.7}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
@@ -163,7 +164,7 @@ export default function OrderSuccessScreen() {
                     </Text>
                     <TouchableOpacity
                       onPress={() =>
-                        copyToClipboard(bank.iban.replace(/\s/g, ""))
+                        copyToClipboard(bank.iban.replace(/\s/g, ""), setAlertConfig)
                       }
                       activeOpacity={0.7}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -248,6 +249,13 @@ export default function OrderSuccessScreen() {
           />
         )}
       </ScrollView>
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }

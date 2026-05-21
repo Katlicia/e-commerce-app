@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,6 +15,7 @@ import {
   deleteUserQuestion,
 } from "@mobile/shared/redux/questionSlice";
 import ScreenHeader from "../components/ScreenHeader";
+import CustomAlert from "../components/CustomAlert";
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString("tr-TR", {
@@ -156,20 +156,25 @@ export default function QuestionsScreen({ navigation }) {
   const { questions = [], loading = false } = useSelector(
     (state) => state.question ?? {},
   );
+  const [alertConfig, setAlertConfig] = useState(null);
 
   useEffect(() => {
     dispatch(getUserQuestions());
   }, []);
 
   const handleDelete = (productId, questionId) => {
-    Alert.alert("Soruyu Sil", "Bu soruyu silmek istediğinize emin misiniz?", [
-      { text: "Vazgeç", style: "cancel" },
-      {
-        text: "Sil",
-        style: "destructive",
-        onPress: () => dispatch(deleteUserQuestion({ productId, questionId })),
-      },
-    ]);
+    setAlertConfig({
+      title: "Soruyu Sil",
+      message: "Bu soruyu silmek istediğinize emin misiniz?",
+      buttons: [
+        { text: "Vazgeç", style: "cancel" },
+        {
+          text: "Sil",
+          style: "destructive",
+          onPress: () => dispatch(deleteUserQuestion({ productId, questionId })),
+        },
+      ],
+    });
   };
 
   return (
@@ -201,6 +206,13 @@ export default function QuestionsScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
         />
       )}
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }

@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
-  Alert,
   Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +18,7 @@ import { clearFavouritesLocal } from "@mobile/shared/redux/favouriteSlice";
 import { clearCartLocal } from "@mobile/shared/redux/cartSlice";
 import { setBearerToken } from "@mobile/shared/utils/axiosInstance";
 import ScreenHeader from "../components/ScreenHeader";
+import CustomAlert from "../components/CustomAlert";
 
 export default function AccountEditScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -33,12 +33,13 @@ export default function AccountEditScreen({ navigation }) {
   const [phoneEditable, setPhoneEditable] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [saved, setSaved] = useState(false);
+  const [alertConfig, setAlertConfig] = useState(null);
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      "Hesabımı Sil",
-      "Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
-      [
+    setAlertConfig({
+      title: "Hesabımı Sil",
+      message: "Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      buttons: [
         { text: "Vazgeç", style: "cancel" },
         {
           text: "Hesabı Sil",
@@ -55,7 +56,7 @@ export default function AccountEditScreen({ navigation }) {
           },
         },
       ],
-    );
+    });
   };
 
   const handleSave = async () => {
@@ -225,6 +226,13 @@ export default function AccountEditScreen({ navigation }) {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }

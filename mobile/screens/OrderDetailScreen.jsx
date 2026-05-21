@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import {
   SafeAreaView,
@@ -26,6 +25,7 @@ import {
 } from "@mobile/shared/redux/cartSlice";
 import { fmt } from "@mobile/shared/utils/format";
 import ScreenHeader from "../components/ScreenHeader";
+import CustomAlert from "../components/CustomAlert";
 
 const STEPS = [
   { label: "Sipariş\nAlındı", icon: require("../assets/Profile/ship.png") },
@@ -56,6 +56,7 @@ export default function OrderDetailScreen({ navigation, route }) {
   const { orderId } = route.params ?? {};
   const { bottom } = useSafeAreaInsets();
   const [actionLoading, setActionLoading] = useState(false);
+  const [alertConfig, setAlertConfig] = useState(null);
 
   const order = useSelector((state) =>
     state.order.orders.find((o) => o._id === orderId),
@@ -80,10 +81,10 @@ export default function OrderDetailScreen({ navigation, route }) {
   };
 
   const handleCancel = async () => {
-    Alert.alert(
-      "Siparişi İptal Et",
-      "Bu siparişi iptal etmek istediğinize emin misiniz?",
-      [
+    setAlertConfig({
+      title: "Siparişi İptal Et",
+      message: "Bu siparişi iptal etmek istediğinize emin misiniz?",
+      buttons: [
         { text: "Vazgeç", style: "cancel" },
         {
           text: "İptal Et",
@@ -98,14 +99,14 @@ export default function OrderDetailScreen({ navigation, route }) {
           },
         },
       ],
-    );
+    });
   };
 
   const handleReturn = async () => {
-    Alert.alert(
-      "Siparişi İade Et",
-      "Bu siparişi iade etmek istediğinize emin misiniz?",
-      [
+    setAlertConfig({
+      title: "Siparişi İade Et",
+      message: "Bu siparişi iade etmek istediğinize emin misiniz?",
+      buttons: [
         { text: "Vazgeç", style: "cancel" },
         {
           text: "İade Et",
@@ -122,7 +123,7 @@ export default function OrderDetailScreen({ navigation, route }) {
           },
         },
       ],
-    );
+    });
   };
 
   const handleReorder = async () => {
@@ -147,18 +148,18 @@ export default function OrderDetailScreen({ navigation, route }) {
     });
 
     if (addableItems.length === 0) {
-      Alert.alert(
-        "Stok Yok",
-        "Siparişinizdeki ürünler şu an stokta bulunmamaktadır.",
-      );
+      setAlertConfig({
+        title: "Stok Yok",
+        message: "Siparişinizdeki ürünler şu an stokta bulunmamaktadır.",
+      });
       return;
     }
 
     if (outOfStock.length > 0) {
-      Alert.alert(
-        "Bazı Ürünler Stokta Yok",
-        outOfStock.join(", ") + " sepete eklenemedi.",
-      );
+      setAlertConfig({
+        title: "Bazı Ürünler Stokta Yok",
+        message: outOfStock.join(", ") + " sepete eklenemedi.",
+      });
     }
 
     await dispatch(syncClearCart());
@@ -560,6 +561,13 @@ export default function OrderDetailScreen({ navigation, route }) {
           </View>
         )}
       </ScrollView>
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }

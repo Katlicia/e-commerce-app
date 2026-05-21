@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   Image,
-  Alert,
   TextInput,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +18,7 @@ import {
 } from "@mobile/shared/redux/listSlice";
 import { addToCartWithSync } from "@mobile/shared/redux/cartSlice";
 import Toast from "react-native-toast-message";
+import CustomAlert from "../components/CustomAlert";
 
 const plusIcon = require("../assets/Liste/plus.png");
 const editIcon = require("../assets/Liste/edit.png");
@@ -234,6 +234,7 @@ export default function ListDetailScreen() {
   const [renameValue, setRenameValue] = useState("");
   const [quantities, setQuantities] = useState({});
   const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const [alertConfig, setAlertConfig] = useState(null);
 
   const { freeShippingThreshold = 500 } = useSelector((state) => state.taxSettings);
 
@@ -272,10 +273,10 @@ export default function ListDetailScreen() {
   }
 
   const handleDeleteList = () => {
-    Alert.alert(
-      "Listeyi Sil",
-      `"${list.name}" listesini silmek istiyor musunuz?`,
-      [
+    setAlertConfig({
+      title: "Listeyi Sil",
+      message: `"${list.name}" listesini silmek istiyor musunuz?`,
+      buttons: [
         { text: "İptal", style: "cancel" },
         {
           text: "Sil",
@@ -286,7 +287,7 @@ export default function ListDetailScreen() {
           },
         },
       ],
-    );
+    });
   };
 
   const handleRenameSubmit = async () => {
@@ -298,10 +299,10 @@ export default function ListDetailScreen() {
   };
 
   const handleRemove = (product) => {
-    Alert.alert(
-      "Listeden Çıkar",
-      `"${product.name}" ürününü listeden çıkarmak istiyor musunuz?`,
-      [
+    setAlertConfig({
+      title: "Listeden Çıkar",
+      message: `"${product.name}" ürününü listeden çıkarmak istiyor musunuz?`,
+      buttons: [
         { text: "İptal", style: "cancel" },
         {
           text: "Çıkar",
@@ -315,7 +316,7 @@ export default function ListDetailScreen() {
             ),
         },
       ],
-    );
+    });
   };
 
   const totalAmount = (list?.products ?? []).reduce((sum, p) => {
@@ -446,6 +447,13 @@ export default function ListDetailScreen() {
         />
       )}
 
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
       {list.products.length > 0 && (
         <View style={{ backgroundColor: "white", borderTopWidth: 1, borderTopColor: "#f0f0f0" }}>
           {!summaryExpanded && (

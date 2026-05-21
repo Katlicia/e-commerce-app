@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +19,7 @@ import {
 } from "@mobile/shared/redux/userSlice";
 import AddressModal from "../components/AddressModal";
 import ScreenHeader from "../components/ScreenHeader";
+import CustomAlert from "../components/CustomAlert";
 
 const markerIcon = require("../assets/Address/marker.png");
 const deleteIcon = require("../assets/Address/delete.png");
@@ -31,6 +31,7 @@ export default function AddressEditScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [alertConfig, setAlertConfig] = useState(null);
 
   useEffect(() => {
     dispatch(getUserAddresses());
@@ -60,14 +61,14 @@ export default function AddressEditScreen({ navigation }) {
   };
 
   const handleDelete = (idx) => {
-    Alert.alert(
-      "Adresi Sil",
-      `"${addresses[idx]?.addressName || "Bu adresi"}" silmek istediğinize emin misiniz?`,
-      [
+    setAlertConfig({
+      title: "Adresi Sil",
+      message: `"${addresses[idx]?.addressName || "Bu adresi"}" silmek istediğinize emin misiniz?`,
+      buttons: [
         { text: "İptal", style: "cancel" },
         { text: "Sil", style: "destructive", onPress: () => dispatch(deleteUserAddress(idx)) },
       ],
-    );
+    });
   };
 
   const handleSetDefault = (idx) => {
@@ -295,6 +296,13 @@ export default function AddressEditScreen({ navigation }) {
           )}
         </ScrollView>
       )}
+      <CustomAlert
+        visible={!!alertConfig}
+        title={alertConfig?.title}
+        message={alertConfig?.message}
+        buttons={alertConfig?.buttons}
+        onDismiss={() => setAlertConfig(null)}
+      />
     </SafeAreaView>
   );
 }
