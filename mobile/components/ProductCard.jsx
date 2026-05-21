@@ -110,8 +110,7 @@ export const ProductCard = memo(function ProductCard({
         <Image
           source={{ uri: image }}
           style={{ width: w, height: IMAGE_HEIGHT }}
-          resizeMode="contain"
-          className="bg-bg-faint"
+          resizeMode="cover"
         />
         <TouchableOpacity
           className="absolute top-1.5 right-1.5 p-1"
