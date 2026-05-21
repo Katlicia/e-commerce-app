@@ -63,6 +63,7 @@ export default function ProfileScreen({ navigation }) {
 
         {/* Menu items */}
         {[
+          { label: "Favorilerim", icon: "heart-outline", screen: "Favourites" },
           { label: "Listelerim", icon: "list-outline", screen: "Lists" },
           {
             label: "Adreslerim",
