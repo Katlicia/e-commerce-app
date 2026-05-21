@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Clipboard,
   Image,
   ScrollView,
   Share,
@@ -9,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -42,7 +42,7 @@ export default function CampaignDetailScreen() {
 
   const handleCopy = () => {
     if (!campaign?.coupon?.code) return;
-    Clipboard.setString(campaign.coupon.code);
+    Clipboard.setStringAsync(campaign.coupon.code);
     setCopied(true);
   };
 
