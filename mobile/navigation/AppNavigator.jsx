@@ -2,6 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import MainTabs from "./MainTabs";
+import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import SearchScreen from "../screens/SearchScreen";
 import ProductDetailScreen from "../screens/ProductDetailScreen";
 import CheckoutScreen from "../screens/CheckoutScreen";
@@ -12,7 +13,6 @@ import LoginScreen from "../screens/LoginScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import EmailLoginScreen from "../screens/EmailLoginScreen";
 import PhoneRegisterScreen from "../screens/PhoneRegisterScreen";
-import OrderSuccessScreen from "../screens/OrderSuccessScreen";
 import AccountEditScreen from "../screens/AccountEditScreen";
 import AddressEditScreen from "../screens/AddressEditScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
