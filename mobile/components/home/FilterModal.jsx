@@ -1,7 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+  useState,
+} from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Image,
   Modal,
@@ -439,14 +446,26 @@ export default function FilterModal({
   const [brands, setBrands] = useState(initialFilter.brands ?? []);
   const [minPrice, setMinPrice] = useState(initialFilter.minPrice ?? "");
   const [maxPrice, setMaxPrice] = useState(initialFilter.maxPrice ?? "");
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
-      setView("main");
-      setCategories(initialFilter.categories ?? []);
-      setBrands(initialFilter.brands ?? []);
-      setMinPrice(initialFilter.minPrice ?? "");
-      setMaxPrice(initialFilter.maxPrice ?? "");
+      slideAnim.setValue(1);
+      fadeAnim.setValue(0);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          useNativeDriver: true,
+          bounciness: 0,
+          speed: 14,
+        }),
+      ]).start();
     }
   }, [visible]);
 
@@ -562,48 +581,71 @@ export default function FilterModal({
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType="none"
       onRequestClose={() => (view !== "main" ? setView("main") : onClose())}
       statusBarTranslucent
     >
-      {view === "main" ? (
-        MainView
-      ) : (
-        <View
-          style={{
-            flex: 1,
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-            backgroundColor: "white",
-          }}
-        >
-          {view === "category" && (
-            <CategoryView
-              selected={categories}
-              onBack={() => setView("main")}
-              onChange={setCategories}
-            />
-          )}
-          {view === "brand" && (
-            <BrandView
-              selected={brands}
-              onBack={() => setView("main")}
-              onChange={setBrands}
-            />
-          )}
-          {view === "price" && (
-            <PriceView
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              onBack={() => setView("main")}
-              onChange={(min, max) => {
-                setMinPrice(min);
-                setMaxPrice(max);
-              }}
-            />
-          )}
-        </View>
-      )}
+      <Animated.View
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.3)",
+          opacity: fadeAnim,
+        }}
+        pointerEvents="none"
+      />
+      <Animated.View
+        style={{
+          position: "absolute",
+          inset: 0,
+          transform: [
+            {
+              translateY: slideAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 800],
+              }),
+            },
+          ],
+        }}
+      >
+        {view === "main" ? (
+          MainView
+        ) : (
+          <View
+            style={{
+              flex: 1,
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+              backgroundColor: "white",
+            }}
+          >
+            {view === "category" && (
+              <CategoryView
+                selected={categories}
+                onBack={() => setView("main")}
+                onChange={setCategories}
+              />
+            )}
+            {view === "brand" && (
+              <BrandView
+                selected={brands}
+                onBack={() => setView("main")}
+                onChange={setBrands}
+              />
+            )}
+            {view === "price" && (
+              <PriceView
+                minPrice={minPrice}
+                maxPrice={maxPrice}
+                onBack={() => setView("main")}
+                onChange={(min, max) => {
+                  setMinPrice(min);
+                  setMaxPrice(max);
+                }}
+              />
+            )}
+          </View>
+        )}
+      </Animated.View>
     </Modal>
   );
 }

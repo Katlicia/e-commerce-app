@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Image,
   Modal,
@@ -105,6 +106,8 @@ export default function SearchScreen() {
   const debounceRef = useRef(null);
   const queryRef = useRef(initialKeyword);
   const sortRef = useRef("");
+  const sortSlide = useRef(new Animated.Value(300)).current;
+  const sortFade = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     async function resolve() {
@@ -219,14 +222,44 @@ export default function SearchScreen() {
 
   const openSort = () => {
     setPendingSort(sort);
+    sortSlide.setValue(300);
+    sortFade.setValue(0);
     setSortVisible(true);
+    Animated.parallel([
+      Animated.timing(sortFade, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(sortSlide, {
+        toValue: 0,
+        bounciness: 0,
+        speed: 14,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeSort = () => {
+    Animated.parallel([
+      Animated.timing(sortFade, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+      Animated.timing(sortSlide, {
+        toValue: 300,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setSortVisible(false));
   };
 
   const handleSortConfirm = () => {
     setSort(pendingSort);
     sortRef.current = pendingSort;
-    setSortVisible(false);
     fetchProducts(1, queryRef.current, pendingSort);
+    closeSort();
   };
 
   const handleFilterApply = (fp) => {
@@ -371,27 +404,30 @@ export default function SearchScreen() {
       <Modal
         visible={sortVisible}
         transparent
-        animationType="slide"
-        onRequestClose={() => setSortVisible(false)}
+        animationType="none"
+        onRequestClose={closeSort}
       >
         <View style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable
+          {/* Overlay — sadece fade */}
+          <Animated.View
             style={{
               position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              inset: 0,
               backgroundColor: "rgba(0,0,0,0.4)",
+              opacity: sortFade,
             }}
-            onPress={() => setSortVisible(false)}
-          />
-          <View
+          >
+            <Pressable style={{ flex: 1 }} onPress={closeSort} />
+          </Animated.View>
+
+          {/* İçerik — sadece slide */}
+          <Animated.View
             className="bg-white px-5 pt-4"
             style={{
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               paddingBottom: Math.max(32, insets.bottom + 16),
+              transform: [{ translateY: sortSlide }],
             }}
           >
             <Text className="text-lg font-bold text-text-primary mb-1 text-center pb-5">
@@ -438,7 +474,7 @@ export default function SearchScreen() {
                 resizeMode="contain"
               />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       </Modal>
     </SafeAreaView>
