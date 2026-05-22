@@ -70,17 +70,21 @@ function ProductCard({ product, overrideBadge }) {
       : null;
   const displayPrice = defaultSku
     ? (defaultSkuDiscounted ?? defaultSku.price)
-    : (discountedPrice || price);
+    : discountedPrice || price;
   const displayOriginalPrice = defaultSku
-    ? (defaultSkuDiscounted ? defaultSku.price : null)
-    : (discountedPrice ? price : null);
+    ? defaultSkuDiscounted
+      ? defaultSku.price
+      : null
+    : discountedPrice
+      ? price
+      : null;
   const outOfStock = product.hasVariants
     ? skus.every((s) => (s.stock ?? 0) <= 0)
     : (product.stock ?? 0) <= 0;
 
   return (
     <div
-      className="card h-100 border rounded-3 p-2"
+      className="card h-100 border rounded-3 overflow-hidden"
       onClick={(e) => {
         e.stopPropagation();
         navigate(`/${_id}`);
@@ -124,10 +128,12 @@ function ProductCard({ product, overrideBadge }) {
         </span>
         <img src={image} alt={name} className="card-img-top img-fluid" />
       </div>
-      <div className="card-body d-flex flex-column gap-2 p-0 mt-2">
+      <div className="card-body d-flex flex-column gap-2 px-2 pb-2 mt-2">
         <div className="flex-grow-1">
           <p className="card-subtitle mute-string">Ürün Kodu: {code}</p>
-          <p className="card-title fw-semibold mb-0 product-card-name">{name}</p>
+          <p className="card-title fw-semibold mb-0 product-card-name">
+            {name}
+          </p>
         </div>
         <div>
           <div className="d-flex align-items-center gap-1">
