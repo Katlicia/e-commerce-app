@@ -8,7 +8,12 @@ import paymentIcon from "../assets/Profile/payment.svg";
 import readyIcon from "../assets/Profile/ready.svg";
 import cargoIcon from "../assets/Profile/cargo.svg";
 import checkIcon from "../assets/Profile/check.svg";
-import { cancelOrder, returnOrder, cancelPayment, refundPayment } from "../redux/orderSlice";
+import {
+  cancelOrder,
+  returnOrder,
+  cancelPayment,
+  refundPayment,
+} from "../redux/orderSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useReorder } from "../hooks/useReorder";
 
@@ -33,8 +38,9 @@ function ProfileOrderDetails({ order }) {
   const { handleReorder } = useReorder();
 
   const liveOrder =
-    useSelector((state) => state.order.orders.find((o) => o._id === order._id)) ||
-    order;
+    useSelector((state) =>
+      state.order.orders.find((o) => o._id === order._id),
+    ) || order;
   const { error } = useSelector((state) => state.order);
 
   const [actionLoading, setActionLoading] = useState(false);
@@ -45,14 +51,18 @@ function ProfileOrderDetails({ order }) {
   const handleCancel = async () => {
     setActionLoading(true);
     const action = liveOrder.paymentId ? cancelPayment : cancelOrder;
-    await dispatch(action(liveOrder._id)).unwrap().catch(() => {});
+    await dispatch(action(liveOrder._id))
+      .unwrap()
+      .catch(() => {});
     setActionLoading(false);
   };
 
   const handleReturn = async () => {
     setActionLoading(true);
     const action = liveOrder.paymentTransactionId ? refundPayment : returnOrder;
-    await dispatch(action(liveOrder._id)).unwrap().catch(() => {});
+    await dispatch(action(liveOrder._id))
+      .unwrap()
+      .catch(() => {});
     setActionLoading(false);
   };
 
@@ -76,7 +86,9 @@ function ProfileOrderDetails({ order }) {
               className="btn buttons flex-grow-1"
               disabled={actionLoading}
               onClick={
-                liveOrder.status === "Hazırlanıyor" ? handleCancel : handleReturn
+                liveOrder.status === "Hazırlanıyor"
+                  ? handleCancel
+                  : handleReturn
               }
             >
               {actionLoading
@@ -117,7 +129,12 @@ function ProfileOrderDetails({ order }) {
                     flexShrink: 0,
                   }}
                 >
-                  <img src={step.icon} width={24} alt={step.label} />
+                  <img
+                    src={step.icon}
+                    width={24}
+                    alt={step.label}
+                    style={i === STEPS.length - 1 ? { marginRight: 2, marginTop: 4 } : undefined}
+                  />
                 </div>
                 <span
                   style={{
