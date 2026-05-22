@@ -194,10 +194,6 @@ function HeaderLinks() {
                     className="hemen-al-card hemen-al-card-recent"
                     onClick={() => {
                       setActiveMenu(null);
-                      if (!user) {
-                        navigate("/login");
-                        return;
-                      }
                       navigate("/", { state: { scrollTo: "recently-viewed" } });
                     }}
                   >

@@ -30,6 +30,7 @@ function renderSection(section, homeSections) {
       return (
         <ProductList
           key={section._id}
+          id={section.sectionKey === "recent" ? "recently-viewed" : undefined}
           title={sec.title || "Ürün Listesi"}
           settings={{
             showTimer: sec.showTimer ?? false,
