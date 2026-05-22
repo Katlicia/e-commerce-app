@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
+import PagerView from "react-native-pager-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
@@ -137,79 +138,108 @@ function OrderCard({ order, onPress }) {
   );
 }
 
+function TabPage({ orders, loading, tabKey, navigation }) {
+  const filtered = orders.filter((o) => TAB_STATUSES[tabKey].includes(o.status));
+
+  const emptyText = {
+    Siparişler: "Henüz bir siparişiniz bulunmuyor.",
+    İptaller: "İptal edilmiş siparişiniz bulunmuyor.",
+    İadeler: "İade edilmiş siparişiniz bulunmuyor.",
+  }[tabKey];
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#F83B0A" />
+      </View>
+    );
+  }
+
+  if (filtered.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center gap-3 px-8">
+        <Ionicons name="bag-outline" size={52} color="#dee2e6" />
+        <Text className="text-text-muted text-sm text-center">{emptyText}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={filtered}
+      keyExtractor={(item) => item._id}
+      renderItem={({ item }) => (
+        <OrderCard
+          order={item}
+          onPress={() => navigation.navigate("OrderDetail", { orderId: item._id })}
+        />
+      )}
+      contentContainerStyle={{ paddingTop: 12, paddingBottom: 24 }}
+      showsVerticalScrollIndicator={false}
+    />
+  );
+}
+
 export default function OrdersScreen({ navigation }) {
   const dispatch = useDispatch();
   const { orders, loading } = useSelector((state) => state.order);
-  const [activeTab, setActiveTab] = useState("Siparişler");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const pagerRef = useRef(null);
 
   useEffect(() => {
     dispatch(getUserOrders());
   }, []);
 
-  const filtered = orders.filter((o) =>
-    TAB_STATUSES[activeTab].includes(o.status),
-  );
+  function handleTabPress(idx) {
+    setActiveIndex(idx);
+    pagerRef.current?.setPage(idx);
+  }
 
   return (
     <SafeAreaView className="flex-1" edges={["top"]}>
       <ScreenHeader title="Siparişlerim" />
 
-      {/* Tabs */}
       <View className="bg-white flex-row border-b border-border-subtle">
-        {TABS.map((tab) => (
+        {TABS.map((tab, idx) => (
           <TouchableOpacity
             key={tab}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => handleTabPress(idx)}
             className="flex-1 items-center py-3"
             activeOpacity={0.7}
           >
             <Text
               className={
-                activeTab === tab
+                activeIndex === idx
                   ? "text-sm font-sans-semibold text-brand-red"
                   : "text-sm font-sans text-text-secondary"
               }
             >
               {tab}
             </Text>
-            {activeTab === tab && (
+            {activeIndex === idx && (
               <View className="absolute bottom-0 left-4 right-4 h-0.5 bg-brand-red rounded-full" />
             )}
           </TouchableOpacity>
         ))}
       </View>
 
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#F83B0A" />
-        </View>
-      ) : filtered.length === 0 ? (
-        <View className="flex-1 items-center justify-center gap-3 px-8">
-          <Ionicons name="bag-outline" size={52} color="#dee2e6" />
-          <Text className="text-text-muted text-sm text-center">
-            {activeTab === "Siparişler"
-              ? "Henüz bir siparişiniz bulunmuyor."
-              : activeTab === "İptaller"
-                ? "İptal edilmiş siparişiniz bulunmuyor."
-                : "İade edilmiş siparişiniz bulunmuyor."}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item._id}
-          renderItem={({ item }) => (
-            <OrderCard
-              order={item}
-              onPress={() =>
-                navigation.navigate("OrderDetail", { orderId: item._id })
-              }
+      <PagerView
+        ref={pagerRef}
+        style={{ flex: 1 }}
+        initialPage={0}
+        onPageSelected={(e) => setActiveIndex(e.nativeEvent.position)}
+      >
+        {TABS.map((tab) => (
+          <View key={tab} style={{ flex: 1 }}>
+            <TabPage
+              orders={orders}
+              loading={loading}
+              tabKey={tab}
+              navigation={navigation}
             />
-          )}
-          contentContainerStyle={{ paddingTop: 12, paddingBottom: 24 }}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+          </View>
+        ))}
+      </PagerView>
     </SafeAreaView>
   );
 }
